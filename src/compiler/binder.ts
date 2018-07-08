@@ -278,6 +278,9 @@ namespace ts {
                     Debug.assert(isWellKnownSymbolSyntactically(nameExpression));
                     return getPropertyNameForKnownSymbolName(idText((<PropertyAccessExpression>nameExpression).name));
                 }
+                if (isPrivateName(node)) {
+                    return nodePosToString(node) as __String;
+                }
                 return isPropertyNameLiteral(name) ? getEscapedTextOfIdentifierOrLiteral(name) : undefined;
             }
             switch (node.kind) {
@@ -1458,7 +1461,7 @@ namespace ts {
             }
             if (node.expression.kind === SyntaxKind.PropertyAccessExpression) {
                 const propertyAccess = <PropertyAccessExpression>node.expression;
-                if (isNarrowableOperand(propertyAccess.expression) && isPushOrUnshiftIdentifier(propertyAccess.name)) {
+                if (isIdentifier(propertyAccess.name) && isNarrowableOperand(propertyAccess.expression) && isPushOrUnshiftIdentifier(propertyAccess.name)) {
                     currentFlow = createFlowArrayMutation(currentFlow, node);
                 }
             }
@@ -2424,7 +2427,7 @@ namespace ts {
             if (!setCommonJsModuleIndicator(node)) {
                 return;
             }
-            const symbol = forEachIdentifierInEntityName(node.arguments[0], /*parent*/ undefined, (id, symbol) => {
+            const symbol = forEachIdentifierOrPrivateNameInEntityName(node.arguments[0], /*parent*/ undefined, (id, symbol) => {
                 if (symbol) {
                     addDeclarationToSymbol(symbol, id, SymbolFlags.Module | SymbolFlags.Assignment);
                 }
@@ -2443,7 +2446,7 @@ namespace ts {
                 return;
             }
             const lhs = node.left as PropertyAccessEntityNameExpression;
-            const symbol = forEachIdentifierInEntityName(lhs.expression, /*parent*/ undefined, (id, symbol) => {
+            const symbol = forEachIdentifierOrPrivateNameInEntityName(lhs.expression, /*parent*/ undefined, (id, symbol) => {
                 if (symbol) {
                     addDeclarationToSymbol(symbol, id, SymbolFlags.Module | SymbolFlags.Assignment);
                 }
@@ -2613,7 +2616,7 @@ namespace ts {
                 // make symbols or add declarations for intermediate containers
                 const flags = SymbolFlags.Module | SymbolFlags.Assignment;
                 const excludeFlags = SymbolFlags.ValueModuleExcludes & ~SymbolFlags.Assignment;
-                namespaceSymbol = forEachIdentifierInEntityName(entityName, namespaceSymbol, (id, symbol, parent) => {
+                namespaceSymbol = forEachIdentifierOrPrivateNameInEntityName(entityName, namespaceSymbol, (id, symbol, parent) => {
                     if (symbol) {
                         addDeclarationToSymbol(symbol, id, flags);
                         return symbol;
@@ -2701,7 +2704,7 @@ namespace ts {
             }
         }
 
-        function forEachIdentifierInEntityName(e: EntityNameExpression, parent: Symbol | undefined, action: (e: Identifier, symbol: Symbol | undefined, parent: Symbol | undefined) => Symbol | undefined): Symbol | undefined {
+        function forEachIdentifierOrPrivateNameInEntityName(e: EntityNameExpression, parent: Symbol | undefined, action: (e: Identifier | PrivateName, symbol: Symbol | undefined, parent: Symbol | undefined) => Symbol | undefined): Symbol | undefined {
             if (isExportsOrModuleExportsOrAlias(file, e)) {
                 return file.symbol;
             }
@@ -2709,7 +2712,7 @@ namespace ts {
                 return action(e, lookupSymbolForPropertyAccess(e), parent);
             }
             else {
-                const s = forEachIdentifierInEntityName(e.expression, parent, action);
+                const s = forEachIdentifierOrPrivateNameInEntityName(e.expression, parent, action);
                 if (!s || !s.exports) return Debug.fail();
                 return action(e.name, s.exports.get(e.name.escapedText), s);
             }

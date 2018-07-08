@@ -4478,6 +4478,14 @@
         "category": "Error",
         "code": 18003
     },
+    "Private names are not allowed in variable declarations.": {
+        "category": "Error",
+        "code": 18004
+    },
+    "Private names cannot be used as parameters": {
+        "category": "Error",
+        "code": 18005
+    },
 
     "File is a CommonJS module; it may be converted to an ES6 module.": {
         "category": "Suggestion",

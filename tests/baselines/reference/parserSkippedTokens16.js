@@ -1,12 +1,13 @@
 //// [parserSkippedTokens16.ts]
 foo(): Bar { }
-function Foo      () #   { }
+function Foo      () ¬   { }
 4+:5
 module M {
 function a(
     : T) { }
 }
 var x       =
+
 
 //// [parserSkippedTokens16.js]
 foo();

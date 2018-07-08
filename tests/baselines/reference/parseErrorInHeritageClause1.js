@@ -1,6 +1,7 @@
 //// [parseErrorInHeritageClause1.ts]
-class C extends A # {
+class C extends A ¬ {
 }
+
 
 //// [parseErrorInHeritageClause1.js]
 var __extends = (this && this.__extends) || (function () {
