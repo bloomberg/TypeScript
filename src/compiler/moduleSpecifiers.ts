@@ -9,7 +9,7 @@ namespace ts.moduleSpecifiers {
     export function getModuleSpecifier(
         compilerOptions: CompilerOptions,
         importingSourceFile: SourceFile,
-        importingSourceFileName: string,
+        importingSourceFileName: Path,
         toFileName: string,
         host: ModuleSpecifierResolutionHost,
         files: ReadonlyArray<SourceFile>,
@@ -18,7 +18,6 @@ namespace ts.moduleSpecifiers {
         const info = getInfo(compilerOptions, importingSourceFile, importingSourceFileName, host);
         const modulePaths = getAllModulePaths(files, toFileName, info.getCanonicalFileName, host);
         return firstDefined(modulePaths, moduleFileName => getGlobalModuleSpecifier(moduleFileName, info, host, compilerOptions)) ||
-            getGlobalModuleSpecifier(toFileName, info, host, compilerOptions) ||
             first(getLocalModuleSpecifiers(toFileName, info, compilerOptions, preferences));
     }
 
@@ -49,10 +48,10 @@ namespace ts.moduleSpecifiers {
         readonly moduleResolutionKind: ModuleResolutionKind;
         readonly addJsExtension: boolean;
         readonly getCanonicalFileName: GetCanonicalFileName;
-        readonly sourceDirectory: string;
+        readonly sourceDirectory: Path;
     }
     // importingSourceFileName is separate because getEditsForFileRename may need to specify an updated path
-    function getInfo(compilerOptions: CompilerOptions, importingSourceFile: SourceFile, importingSourceFileName: string, host: ModuleSpecifierResolutionHost): Info {
+    function getInfo(compilerOptions: CompilerOptions, importingSourceFile: SourceFile, importingSourceFileName: Path, host: ModuleSpecifierResolutionHost): Info {
         const moduleResolutionKind = getEmitModuleResolutionKind(compilerOptions);
         const addJsExtension = usesJsExtensionOnImports(importingSourceFile);
         const getCanonicalFileName = createGetCanonicalFileName(host.useCaseSensitiveFileNames ? host.useCaseSensitiveFileNames() : true);
@@ -67,8 +66,7 @@ namespace ts.moduleSpecifiers {
         compilerOptions: CompilerOptions,
     ) {
         return tryGetModuleNameFromTypeRoots(compilerOptions, host, getCanonicalFileName, moduleFileName, addJsExtension)
-            || tryGetModuleNameAsNodeModule(compilerOptions, moduleFileName, host, getCanonicalFileName, sourceDirectory)
-            || compilerOptions.rootDirs && tryGetModuleNameFromRootDirs(compilerOptions.rootDirs, moduleFileName, sourceDirectory, getCanonicalFileName);
+            || tryGetModuleNameAsNodeModule(compilerOptions, moduleFileName, host, getCanonicalFileName, sourceDirectory);
     }
 
     function getLocalModuleSpecifiers(
@@ -76,10 +74,11 @@ namespace ts.moduleSpecifiers {
         { moduleResolutionKind, addJsExtension, getCanonicalFileName, sourceDirectory }: Info,
         compilerOptions: CompilerOptions,
         preferences: ModuleSpecifierPreferences,
-    ) {
-        const { baseUrl, paths } = compilerOptions;
+    ): ReadonlyArray<string> {
+        const { baseUrl, paths, rootDirs } = compilerOptions;
 
-        const relativePath = removeExtensionAndIndexPostFix(ensurePathIsNonModuleName(getRelativePathFromDirectory(sourceDirectory, moduleFileName, getCanonicalFileName)), moduleResolutionKind, addJsExtension);
+        const relativePath = rootDirs && tryGetModuleNameFromRootDirs(rootDirs, moduleFileName, sourceDirectory, getCanonicalFileName) ||
+            removeExtensionAndIndexPostFix(ensurePathIsNonModuleName(getRelativePathFromDirectory(sourceDirectory, moduleFileName, getCanonicalFileName)), moduleResolutionKind, addJsExtension);
         if (!baseUrl || preferences.importModuleSpecifierPreference === "relative") {
             return [relativePath];
         }
@@ -150,10 +149,11 @@ namespace ts.moduleSpecifiers {
         const result = createMap<string>();
         if (symlinks) {
             const currentDirectory = host.getCurrentDirectory ? host.getCurrentDirectory() : "";
+            const compareStrings = (!host.useCaseSensitiveFileNames || host.useCaseSensitiveFileNames()) ? compareStringsCaseSensitive : compareStringsCaseInsensitive;
             for (const [resolvedPath, originalPath] of symlinks) {
                 const resolvedParts = getPathComponents(toPath(resolvedPath, currentDirectory, getCanonicalFileName));
                 const originalParts = getPathComponents(toPath(originalPath, currentDirectory, getCanonicalFileName));
-                while (resolvedParts[resolvedParts.length - 1] === originalParts[originalParts.length - 1]) {
+                while (compareStrings(resolvedParts[resolvedParts.length - 1], originalParts[originalParts.length - 1]) === Comparison.EqualTo) {
                     resolvedParts.pop();
                     originalParts.pop();
                 }
@@ -194,7 +194,12 @@ namespace ts.moduleSpecifiers {
         const symlinks = mapDefined(files, sf =>
             sf.resolvedModules && firstDefinedIterator(sf.resolvedModules.values(), res =>
                 res && res.resolvedFileName === importedFileName ? res.originalPath : undefined));
-        return symlinks.length === 0 ? getAllModulePathsUsingIndirectSymlinks(files, getNormalizedAbsolutePath(importedFileName, host.getCurrentDirectory ? host.getCurrentDirectory() : ""), getCanonicalFileName, host) : symlinks;
+        const cwd = host.getCurrentDirectory ? host.getCurrentDirectory() : "";
+        const baseOptions = getAllModulePathsUsingIndirectSymlinks(files, getNormalizedAbsolutePath(importedFileName, cwd), getCanonicalFileName, host);
+        if (symlinks.length === 0) {
+            return baseOptions;
+        }
+        return deduplicate(concatenate(baseOptions, flatMap(symlinks, importedFileName => getAllModulePathsUsingIndirectSymlinks(files, getNormalizedAbsolutePath(importedFileName, cwd), getCanonicalFileName, host))));
     }
 
     function getRelativePathNParents(relativePath: string): number {
@@ -218,10 +223,7 @@ namespace ts.moduleSpecifiers {
             for (const patternText of paths[key]) {
                 const pattern = removeFileExtension(normalizePath(patternText));
                 const indexOfStar = pattern.indexOf("*");
-                if (indexOfStar === 0 && pattern.length === 1) {
-                    continue;
-                }
-                else if (indexOfStar !== -1) {
+                if (indexOfStar !== -1) {
                     const prefix = pattern.substr(0, indexOfStar);
                     const suffix = pattern.substr(indexOfStar + 1);
                     if (relativeToBaseUrl.length >= prefix.length + suffix.length &&
@@ -271,7 +273,7 @@ namespace ts.moduleSpecifiers {
         moduleFileName: string,
         host: ModuleSpecifierResolutionHost,
         getCanonicalFileName: (file: string) => string,
-        sourceDirectory: string,
+        sourceDirectory: Path,
     ): string | undefined {
         if (getEmitModuleResolutionKind(options) !== ModuleResolutionKind.NodeJs) {
             // nothing to do here
@@ -290,7 +292,7 @@ namespace ts.moduleSpecifiers {
         const moduleSpecifier = getDirectoryOrExtensionlessFileName(moduleFileName);
         // Get a path that's relative to node_modules or the importing file's path
         // if node_modules folder is in this folder or any of its parent folders, no need to keep it.
-        if (!startsWith(sourceDirectory, moduleSpecifier.substring(0, parts.topLevelNodeModulesIndex))) return undefined;
+        if (!startsWith(sourceDirectory, getCanonicalFileName(moduleSpecifier.substring(0, parts.topLevelNodeModulesIndex)))) return undefined;
         // If the module was found in @types, get the actual Node package name
         return getPackageNameFromAtTypesDirectory(moduleSpecifier.substring(parts.topLevelPackageNameIndex + 1));
 

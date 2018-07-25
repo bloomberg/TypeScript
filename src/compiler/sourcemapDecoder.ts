@@ -61,7 +61,7 @@ namespace ts.sourcemaps {
 
     export function decode(host: SourceMapDecodeHost, mapPath: string, map: SourceMapData, program?: Program, fallbackCache = createSourceFileLikeCache(host)): SourceMapper {
         const currentDirectory = getDirectoryPath(mapPath);
-        const sourceRoot = map.sourceRoot || currentDirectory;
+        const sourceRoot = map.sourceRoot ? getNormalizedAbsolutePath(map.sourceRoot, currentDirectory) : currentDirectory;
         let decodedMappings: ProcessedSourceMapPosition[];
         let generatedOrderedMappings: ProcessedSourceMapPosition[];
         let sourceOrderedMappings: ProcessedSourceMapPosition[];
@@ -98,10 +98,10 @@ namespace ts.sourcemaps {
 
         function getSourceFileLike(fileName: string, location: string): SourceFileLike | undefined {
             // Lookup file in program, if provided
-            const file = program && program.getSourceFile(fileName);
+            const path = toPath(fileName, location, host.getCanonicalFileName);
+            const file = program && program.getSourceFile(path);
             if (!file) {
                 // Otherwise check the cache (which may hit disk)
-                const path = toPath(fileName, location, host.getCanonicalFileName);
                 return fallbackCache.get(path);
             }
             return file;
@@ -190,7 +190,7 @@ namespace ts.sourcemaps {
         };
     }
 
-    export function calculateDecodedMappings<T>(map: SourceMapData, processPosition: (position: RawSourceMapPosition) => T, host?: { log?(s: string): void }): T[] {
+    function calculateDecodedMappings<T>(map: SourceMapData, processPosition: (position: RawSourceMapPosition) => T, host?: { log?(s: string): void }): T[] {
         const decoder = decodeMappings(map);
         const positions = arrayFrom(decoder, processPosition);
         if (decoder.error) {

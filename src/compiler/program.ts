@@ -135,7 +135,7 @@ namespace ts {
 
             sys.writeFile(fileName, data, writeByteOrderMark);
 
-            const mtimeAfter = sys.getModifiedTime!(fileName); // TODO: GH#18217
+            const mtimeAfter = sys.getModifiedTime!(fileName) || missingFileModifiedTime; // TODO: GH#18217
 
             outputFingerprints.set(fileName, {
                 hash,
@@ -329,16 +329,17 @@ namespace ts {
         return context;
     }
 
-    function formatLocation(file: SourceFile, start: number, host: FormatDiagnosticsHost) {
+    /* @internal */
+    export function formatLocation(file: SourceFile, start: number, host: FormatDiagnosticsHost, color = formatColorAndReset) {
         const { line: firstLine, character: firstLineChar } = getLineAndCharacterOfPosition(file, start); // TODO: GH#18217
         const relativeFileName = host ? convertToRelativePath(file.fileName, host.getCurrentDirectory(), fileName => host.getCanonicalFileName(fileName)) : file.fileName;
 
         let output = "";
-        output += formatColorAndReset(relativeFileName, ForegroundColorEscapeSequences.Cyan);
+        output += color(relativeFileName, ForegroundColorEscapeSequences.Cyan);
         output += ":";
-        output += formatColorAndReset(`${firstLine + 1}`, ForegroundColorEscapeSequences.Yellow);
+        output += color(`${firstLine + 1}`, ForegroundColorEscapeSequences.Yellow);
         output += ":";
-        output += formatColorAndReset(`${firstLineChar + 1}`, ForegroundColorEscapeSequences.Yellow);
+        output += color(`${firstLineChar + 1}`, ForegroundColorEscapeSequences.Yellow);
         return output;
     }
 
@@ -591,6 +592,7 @@ namespace ts {
         const programDiagnostics = createDiagnosticCollection();
         const currentDirectory = host.getCurrentDirectory();
         const supportedExtensions = getSupportedExtensions(options);
+        const supportedExtensionsWithJsonIfResolveJsonModule = options.resolveJsonModule ? [...supportedExtensions, Extension.Json] : undefined;
 
         // Map storing if there is emit blocking diagnostics for given input
         const hasEmitBlockingDiagnostics = createMap<boolean>();
@@ -1248,6 +1250,7 @@ namespace ts {
                     return host.fileExists(f);
                 },
                 ...(host.directoryExists ? { directoryExists: f => host.directoryExists!(f) } : {}),
+                useCaseSensitiveFileNames: () => host.useCaseSensitiveFileNames(),
             };
         }
 
@@ -1923,7 +1926,7 @@ namespace ts {
             refFile?: SourceFile): SourceFile | undefined {
 
             if (hasExtension(fileName)) {
-                if (!options.allowNonTsExtensions && !forEach(supportedExtensions, extension => fileExtensionIs(host.getCanonicalFileName(fileName), extension))) {
+                if (!options.allowNonTsExtensions && !forEach(supportedExtensionsWithJsonIfResolveJsonModule || supportedExtensions, extension => fileExtensionIs(host.getCanonicalFileName(fileName), extension))) {
                     if (fail) fail(Diagnostics.File_0_has_unsupported_extension_The_only_supported_extensions_are_1, fileName, "'" + supportedExtensions.join("', '") + "'");
                     return undefined;
                 }
@@ -2005,9 +2008,17 @@ namespace ts {
             if (filesByName.has(path)) {
                 const file = filesByName.get(path);
                 // try to check if we've already seen this file but with a different casing in path
-                // NOTE: this only makes sense for case-insensitive file systems
-                if (file && options.forceConsistentCasingInFileNames && getNormalizedAbsolutePath(file.fileName, currentDirectory) !== getNormalizedAbsolutePath(fileName, currentDirectory)) {
-                    reportFileNamesDifferOnlyInCasingError(fileName, file.fileName, refFile, refPos, refEnd);
+                // NOTE: this only makes sense for case-insensitive file systems, and only on files which are not redirected
+                if (file && options.forceConsistentCasingInFileNames) {
+                    let inputName = fileName;
+                    const checkedName = file.fileName;
+                    const isRedirect = toPath(checkedName) !== toPath(inputName);
+                    if (isRedirect) {
+                        inputName = getProjectReferenceRedirect(fileName) || fileName;
+                    }
+                    if (getNormalizedAbsolutePath(checkedName, currentDirectory) !== getNormalizedAbsolutePath(inputName, currentDirectory)) {
+                        reportFileNamesDifferOnlyInCasingError(inputName, checkedName, refFile, refPos, refEnd);
+                    }
                 }
 
                 // If the file was previously found via a node_modules search, but is now being processed as a root file,
@@ -2327,7 +2338,7 @@ namespace ts {
                     if (!sourceFile.isDeclarationFile) {
                         const absoluteSourceFilePath = host.getCanonicalFileName(getNormalizedAbsolutePath(sourceFile.fileName, currentDirectory));
                         if (absoluteSourceFilePath.indexOf(absoluteRootDirectoryPath) !== 0) {
-                            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_0_is_not_under_rootDir_1_rootDir_is_expected_to_contain_all_source_files, sourceFile.fileName, options.rootDir));
+                            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_0_is_not_under_rootDir_1_rootDir_is_expected_to_contain_all_source_files, sourceFile.fileName, rootDirectory));
                             allFilesBelongToPath = false;
                         }
                     }
@@ -2342,7 +2353,7 @@ namespace ts {
             const refPath = resolveProjectReferencePath(host, ref);
             // An absolute path pointing to the containing directory of the config file
             const basePath = getNormalizedAbsolutePath(getDirectoryPath(refPath), host.getCurrentDirectory());
-            const sourceFile = host.getSourceFile(refPath, ScriptTarget.JSON) as JsonSourceFile;
+            const sourceFile = host.getSourceFile(refPath, ScriptTarget.JSON) as JsonSourceFile | undefined;
             if (sourceFile === undefined) {
                 return undefined;
             }
@@ -2363,7 +2374,7 @@ namespace ts {
         }
 
         function verifyCompilerOptions() {
-            if (options.strictPropertyInitialization && !options.strictNullChecks) {
+            if (options.strictPropertyInitialization && !getStrictOptionValue(options, "strictNullChecks")) {
                 createDiagnosticForOptionName(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "strictPropertyInitialization", "strictNullChecks");
             }
 
@@ -2498,7 +2509,7 @@ namespace ts {
                 }
             }
 
-            if (options.declarationMap && !options.declaration) {
+            if (options.declarationMap && !getEmitDeclarations(options)) {
                 createDiagnosticForOptionName(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "declarationMap", "declaration");
             }
 
@@ -2545,6 +2556,10 @@ namespace ts {
             if (options.resolveJsonModule) {
                 if (getEmitModuleResolutionKind(options) !== ModuleResolutionKind.NodeJs) {
                     createDiagnosticForOptionName(Diagnostics.Option_resolveJsonModule_cannot_be_specified_without_node_module_resolution_strategy, "resolveJsonModule");
+                }
+                // Any emit other than common js is error
+                else if (getEmitModuleKind(options) !== ModuleKind.CommonJS) {
+                    createDiagnosticForOptionName(Diagnostics.Option_resolveJsonModule_can_only_be_specified_when_module_code_generation_is_commonjs, "resolveJsonModule", "module");
                 }
             }
 
@@ -2821,10 +2836,14 @@ namespace ts {
         };
     }
 
+    export interface ResolveProjectReferencePathHost {
+        fileExists(fileName: string): boolean;
+    }
     /**
-     * Returns the target config filename of a project reference
+     * Returns the target config filename of a project reference.
+     * Note: The file might not exist.
      */
-    export function resolveProjectReferencePath(host: CompilerHost | UpToDateHost, ref: ProjectReference): ResolvedConfigFileName {
+    export function resolveProjectReferencePath(host: ResolveProjectReferencePathHost, ref: ProjectReference): ResolvedConfigFileName {
         if (!host.fileExists(ref.path)) {
             return combinePaths(ref.path, "tsconfig.json") as ResolvedConfigFileName;
         }

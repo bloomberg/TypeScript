@@ -755,7 +755,7 @@ namespace ts {
 
     export interface TypeParameterDeclaration extends NamedDeclaration {
         kind: SyntaxKind.TypeParameter;
-        parent: DeclarationWithTypeParameters | InferTypeNode;
+        parent: DeclarationWithTypeParameterChildren | InferTypeNode;
         name: Identifier;
         constraint?: TypeNode;
         default?: TypeNode;
@@ -1761,7 +1761,11 @@ namespace ts {
 
     export type JsxAttributeLike = JsxAttribute | JsxSpreadAttribute;
 
-    export type JsxTagNameExpression = PrimaryExpression | PropertyAccessExpression;
+    export type JsxTagNameExpression = Identifier | ThisExpression | JsxTagNamePropertyAccess;
+
+    export interface JsxTagNamePropertyAccess extends PropertyAccessExpression {
+        expression: JsxTagNameExpression;
+    }
 
     export interface JsxAttributes extends ObjectLiteralExpressionBase<JsxAttributeLike> {
         parent: JsxOpeningLikeElement;
@@ -2032,7 +2036,8 @@ namespace ts {
 
     export type ObjectTypeDeclaration = ClassLikeDeclaration | InterfaceDeclaration | TypeLiteralNode;
 
-    export type DeclarationWithTypeParameters = SignatureDeclaration | ClassLikeDeclaration | InterfaceDeclaration | TypeAliasDeclaration | JSDocTemplateTag | JSDocTypedefTag | JSDocCallbackTag | JSDocSignature;
+    export type DeclarationWithTypeParameters = DeclarationWithTypeParameterChildren | JSDocTypedefTag | JSDocCallbackTag | JSDocSignature;
+    export type DeclarationWithTypeParameterChildren = SignatureDeclaration | ClassLikeDeclaration | InterfaceDeclaration | TypeAliasDeclaration | JSDocTemplateTag;
 
     export interface ClassLikeDeclarationBase extends NamedDeclaration, JSDocContainer {
         kind: SyntaxKind.ClassDeclaration | SyntaxKind.ClassExpression;
@@ -2840,7 +2845,6 @@ namespace ts {
         inputSourceFileNames: string[];      // Input source file (which one can use on program to get the file), 1:1 mapping with the sourceMapSources list
         sourceMapNames?: string[];           // Source map's names field - list of names that can be indexed in this source map
         sourceMapMappings: string;           // Source map's mapping field - encoded source map spans
-        sourceMapDecodedMappings: SourceMapSpan[];  // Raw source map spans that were encoded into the sourceMapMappings
     }
 
     /** Return code used by getEmitOutput function to indicate status of the function */
@@ -2879,6 +2883,7 @@ namespace ts {
         getDeclaredTypeOfSymbol(symbol: Symbol): Type;
         getPropertiesOfType(type: Type): Symbol[];
         getPropertyOfType(type: Type, propertyName: string): Symbol | undefined;
+        /* @internal */ getTypeOfPropertyOfType(type: Type, propertyName: string): Type | undefined;
         getIndexInfoOfType(type: Type, kind: IndexKind): IndexInfo | undefined;
         getSignaturesOfType(type: Type, kind: SignatureKind): ReadonlyArray<Signature>;
         getIndexTypeOfType(type: Type, kind: IndexKind): Type | undefined;
@@ -2932,7 +2937,7 @@ namespace ts {
          */
         getExportSymbolOfSymbol(symbol: Symbol): Symbol;
         getPropertySymbolOfDestructuringAssignment(location: Identifier): Symbol | undefined;
-        getTypeAtLocation(node: Node): Type | undefined;
+        getTypeAtLocation(node: Node): Type;
         getTypeFromTypeNode(node: TypeNode): Type;
 
         signatureToString(signature: Signature, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): string;
@@ -2945,11 +2950,6 @@ namespace ts {
         /* @internal */ writeSymbol(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags, writer?: EmitTextWriter): string;
         /* @internal */ writeTypePredicate(predicate: TypePredicate, enclosingDeclaration?: Node, flags?: TypeFormatFlags, writer?: EmitTextWriter): string;
 
-        /**
-         * @deprecated Use the createX factory functions or XToY typechecker methods and `createPrinter` or the `xToString` methods instead
-         * This will be removed in a future version.
-         */
-        getSymbolDisplayBuilder(): SymbolDisplayBuilder;
         getFullyQualifiedName(symbol: Symbol): string;
         getAugmentedPropertiesOfType(type: Type): Symbol[];
         getRootSymbols(symbol: Symbol): Symbol[];
@@ -2995,9 +2995,9 @@ namespace ts {
          */
         /* @internal */ tryGetMemberInModuleExportsAndProperties(memberName: string, moduleSymbol: Symbol): Symbol | undefined;
         getApparentType(type: Type): Type;
-        getSuggestionForNonexistentProperty(name: Identifier | string, containingType: Type): string | undefined;
-        getSuggestionForNonexistentSymbol(location: Node, name: string, meaning: SymbolFlags): string | undefined;
-        getSuggestionForNonexistentModule(node: Identifier, target: Symbol): string | undefined;
+        /* @internal */ getSuggestionForNonexistentProperty(name: Identifier | string, containingType: Type): string | undefined;
+        /* @internal */ getSuggestionForNonexistentSymbol(location: Node, name: string, meaning: SymbolFlags): string | undefined;
+        /* @internal */ getSuggestionForNonexistentExport(node: Identifier, target: Symbol): string | undefined;
         getBaseConstraintOfType(type: Type): Type | undefined;
         getDefaultFromTypeParameter(type: Type): Type | undefined;
 
@@ -3046,6 +3046,11 @@ namespace ts {
         /* @internal */ getTypeCount(): number;
 
         /* @internal */ isArrayLikeType(type: Type): boolean;
+        /**
+         * True if `contextualType` should not be considered for completions because
+         * e.g. it specifies `kind: "a"` and obj has `kind: "b"`.
+         */
+        /* @internal */ isTypeInvalidDueToUnionDiscriminant(contextualType: Type, obj: ObjectLiteralExpression): boolean;
         /**
          * For a union, will include a property if it's defined in *any* of the member types.
          * So for `{ a } | { b }`, this will include both `a` and `b`.
@@ -3200,27 +3205,9 @@ namespace ts {
         walkSymbol(root: Symbol): { visitedTypes: ReadonlyArray<Type>, visitedSymbols: ReadonlyArray<Symbol> };
     }
 
-    /**
-     * @deprecated
-     */
-    export interface SymbolDisplayBuilder {
-        /** @deprecated */ buildTypeDisplay(type: Type, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags): void;
-        /** @deprecated */ buildSignatureDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): void;
-        /** @deprecated */ buildIndexSignatureDisplay(info: IndexInfo, writer: SymbolWriter, kind: IndexKind, enclosingDeclaration?: Node, globalFlags?: TypeFormatFlags, symbolStack?: Symbol[]): void;
-        /** @deprecated */ buildParameterDisplay(parameter: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildTypePredicateDisplay(predicate: TypePredicate, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildDisplayForParametersAndDelimiters(thisParameter: Symbol, parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-        /** @deprecated */ buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void;
-    }
-
-    /**
-     * @deprecated Migrate to other methods of generating symbol names, ex symbolToEntityName + a printer or symbolToString
-     */
-    export interface SymbolWriter extends SymbolTracker {
+    // This was previously deprecated in our public API, but is still used internally
+    /* @internal */
+    interface SymbolWriter extends SymbolTracker {
         writeKeyword(text: string): void;
         writeOperator(text: string): void;
         writePunctuation(text: string): void;
@@ -3411,6 +3398,7 @@ namespace ts {
         Optional                = 1 << 24,  // Optional property
         Transient               = 1 << 25,  // Transient symbol (created during type check)
         JSContainer             = 1 << 26,  // Contains Javascript special declarations
+        ModuleExports           = 1 << 27,  // Symbol for CommonJS `module` of `module.exports`
 
         /* @internal */
         All = FunctionScopedVariable | BlockScopedVariable | Property | EnumMember | Function | Class | Interface | ConstEnum | RegularEnum | ValueModule | NamespaceModule | TypeLiteral
@@ -3452,9 +3440,6 @@ namespace ts {
         ModuleMember = Variable | Function | Class | Interface | Enum | Module | TypeAlias | Alias,
 
         ExportHasLocal = Function | Class | Enum | ValueModule,
-
-        HasExports = Class | Enum | Module | Variable,
-        HasMembers = Class | Interface | TypeLiteral | ObjectLiteral,
 
         BlockScoped = BlockScopedVariable | Class | Enum,
 
@@ -3658,6 +3643,7 @@ namespace ts {
         hasSuperCall?: boolean;           // recorded result when we try to find super-call. We only try to find one if this flag is undefined, indicating that we haven't made an attempt.
         superCall?: SuperCall;  // Cached first super-call found in the constructor. Used in checking whether super is called before this-accessing
         switchTypes?: Type[];             // Cached array of switch case expression types
+        jsxNamespace?: Symbol | false;          // Resolved jsx namespace symbol for this node
     }
 
     export const enum TypeFlags {
@@ -3766,6 +3752,8 @@ namespace ts {
         aliasTypeArguments?: ReadonlyArray<Type>;     // Alias type arguments (if any)
         /* @internal */
         wildcardInstantiation?: Type;    // Instantiation with type parameters mapped to wildcard type
+        /* @internal */
+        immediateBaseConstraint?: Type;  // Immediate base constraint cache
     }
 
     /* @internal */
@@ -3820,6 +3808,12 @@ namespace ts {
     // Object types (TypeFlags.ObjectType)
     export interface ObjectType extends Type {
         objectFlags: ObjectFlags;
+        /* @internal */ members?: SymbolTable;             // Properties by name
+        /* @internal */ properties?: Symbol[];             // Properties
+        /* @internal */ callSignatures?: ReadonlyArray<Signature>;      // Call signatures of type
+        /* @internal */ constructSignatures?: ReadonlyArray<Signature>; // Construct signatures of type
+        /* @internal */ stringIndexInfo?: IndexInfo;      // String indexing info
+        /* @internal */ numberIndexInfo?: IndexInfo;      // Numeric indexing info
     }
 
     /** Class and interface types (ObjectFlags.Class and ObjectFlags.Interface). */
@@ -3946,8 +3940,6 @@ namespace ts {
         properties: Symbol[];             // Properties
         callSignatures: ReadonlyArray<Signature>;      // Call signatures of type
         constructSignatures: ReadonlyArray<Signature>; // Construct signatures of type
-        stringIndexInfo?: IndexInfo;      // String indexing info
-        numberIndexInfo?: IndexInfo;      // Numeric indexing info
     }
 
     /* @internal */
@@ -4233,14 +4225,14 @@ namespace ts {
     }
 
     export interface Diagnostic extends DiagnosticRelatedInformation {
-        category: DiagnosticCategory;
         /** May store more in future. For now, this will simply be `true` to indicate when a diagnostic is an unused-identifier diagnostic. */
         reportsUnnecessary?: {};
-        code: number;
         source?: string;
         relatedInformation?: DiagnosticRelatedInformation[];
     }
     export interface DiagnosticRelatedInformation {
+        category: DiagnosticCategory;
+        code: number;
         file: SourceFile | undefined;
         start: number | undefined;
         length: number | undefined;
@@ -4371,7 +4363,7 @@ namespace ts {
         strictFunctionTypes?: boolean;  // Always combine with strict property
         strictNullChecks?: boolean;  // Always combine with strict property
         strictPropertyInitialization?: boolean;  // Always combine with strict property
-        /* @internal */ stripInternal?: boolean;
+        stripInternal?: boolean;
         suppressExcessPropertyErrors?: boolean;
         suppressImplicitAnyIndexErrors?: boolean;
         /* @internal */ suppressOutputPathCheck?: boolean;
@@ -4692,7 +4684,7 @@ namespace ts {
 
     export interface UpToDateHost {
         fileExists(fileName: string): boolean;
-        getModifiedTime(fileName: string): Date;
+        getModifiedTime(fileName: string): Date | undefined;
         getUnchangedTime?(fileName: string): Date | undefined;
         getLastStatus?(fileName: string): UpToDateStatus | undefined;
         setLastStatus?(fileName: string, status: UpToDateStatus): void;
@@ -4830,7 +4822,7 @@ namespace ts {
         /* @internal */ hasChangedAutomaticTypeDirectiveNames?: boolean;
         createHash?(data: string): string;
 
-        getModifiedTime?(fileName: string): Date;
+        getModifiedTime?(fileName: string): Date | undefined;
         setModifiedTime?(fileName: string, date: Date): void;
         deleteFile?(fileName: string): void;
     }
@@ -5044,6 +5036,7 @@ namespace ts {
     /* @internal */
     export interface EmitHost extends ScriptReferenceHost, ModuleSpecifierResolutionHost {
         getSourceFiles(): ReadonlyArray<SourceFile>;
+        useCaseSensitiveFileNames(): boolean;
         getCurrentDirectory(): string;
 
         /* @internal */
@@ -5318,8 +5311,8 @@ namespace ts {
         getSourceFiles?(): ReadonlyArray<SourceFile>; // Used for cached resolutions to find symlinks without traversing the fs (again)
     }
 
-    /** @deprecated See comment on SymbolWriter */
-    // Note: this has non-deprecated internal uses.
+    // Note: this used to be deprecated in our public API, but is still used internally
+    /* @internal */
     export interface SymbolTracker {
         // Called when the symbol writer encounters a symbol to write.  Currently only used by the
         // declaration emitter to help determine if it should patch up the final declaration file
@@ -5328,10 +5321,8 @@ namespace ts {
         reportInaccessibleThisError?(): void;
         reportPrivateInBaseOfClassExpression?(propertyName: string): void;
         reportInaccessibleUniqueSymbolError?(): void;
-        /* @internal */
         moduleResolverHost?: ModuleSpecifierResolutionHost;
-        /* @internal */
-        trackReferencedAmbientModule?(decl: ModuleDeclaration): void;
+        trackReferencedAmbientModule?(decl: ModuleDeclaration, symbol: Symbol): void;
     }
 
     export interface TextSpan {
@@ -5348,6 +5339,9 @@ namespace ts {
     export interface DiagnosticCollection {
         // Adds a diagnostic to this diagnostic collection.
         add(diagnostic: Diagnostic): void;
+
+        // Returns the first existing diagnostic that is equivalent to the given one (sans related information)
+        lookup(diagnostic: Diagnostic): Diagnostic | undefined;
 
         // Gets all the diagnostics that aren't associated with a file.
         getGlobalDiagnostics(): Diagnostic[];

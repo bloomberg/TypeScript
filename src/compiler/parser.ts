@@ -494,9 +494,9 @@ namespace ts {
             case SyntaxKind.JSDocSignature:
                 return visitNodes(cbNode, cbNodes, node.decorators) ||
                     visitNodes(cbNode, cbNodes, node.modifiers) ||
-                    visitNodes(cbNode, cbNodes, (<SignatureDeclaration>node).typeParameters) ||
-                    visitNodes(cbNode, cbNodes, (<SignatureDeclaration>node).parameters) ||
-                    visitNode(cbNode, (<SignatureDeclaration>node).type);
+                    forEach((<JSDocSignature>node).typeParameters, cbNode) ||
+                    forEach((<JSDocSignature>node).parameters, cbNode) ||
+                    visitNode(cbNode, (<JSDocSignature>node).type);
             case SyntaxKind.JSDocTypeLiteral:
                 if ((node as JSDocTypeLiteral).jsDocPropertyTags) {
                     for (const tag of (node as JSDocTypeLiteral).jsDocPropertyTags!) {
@@ -1509,7 +1509,9 @@ namespace ts {
                 case ParsingContext.ArgumentExpressions:
                     return token() === SyntaxKind.DotDotDotToken || isStartOfExpression();
                 case ParsingContext.Parameters:
-                    return isStartOfParameter();
+                    return isStartOfParameter(/*isJSDocParameter*/ false);
+                case ParsingContext.JSDocParameters:
+                    return isStartOfParameter(/*isJSDocParameter*/ true);
                 case ParsingContext.TypeArguments:
                 case ParsingContext.TupleElementTypes:
                     return token() === SyntaxKind.CommaToken || isStartOfType();
@@ -1612,6 +1614,7 @@ namespace ts {
                 case ParsingContext.TupleElementTypes:
                 case ParsingContext.ArrayBindingElements:
                     return token() === SyntaxKind.CloseBracketToken;
+                case ParsingContext.JSDocParameters:
                 case ParsingContext.Parameters:
                 case ParsingContext.RestProperties:
                     // Tokens other than ')' and ']' (the latter for index signatures) are here for better error recovery
@@ -1795,6 +1798,7 @@ namespace ts {
                 case ParsingContext.VariableDeclarations:
                     return isReusableVariableDeclaration(node);
 
+                case ParsingContext.JSDocParameters:
                 case ParsingContext.Parameters:
                     return isReusableParameter(node);
 
@@ -2009,6 +2013,7 @@ namespace ts {
                 case ParsingContext.ArgumentExpressions: return Diagnostics.Argument_expression_expected;
                 case ParsingContext.ObjectLiteralMembers: return Diagnostics.Property_assignment_expected;
                 case ParsingContext.ArrayLiteralMembers: return Diagnostics.Expression_or_comma_expected;
+                case ParsingContext.JSDocParameters: return Diagnostics.Parameter_declaration_expected;
                 case ParsingContext.Parameters: return Diagnostics.Parameter_declaration_expected;
                 case ParsingContext.TypeParameters: return Diagnostics.Type_parameter_declaration_expected;
                 case ParsingContext.TypeArguments: return Diagnostics.Type_argument_expected;
@@ -2090,8 +2095,18 @@ namespace ts {
             return result;
         }
 
-        function createMissingList<T extends Node>(): NodeArray<T> {
-            return createNodeArray<T>([], getNodePos());
+        interface MissingList<T extends Node> extends NodeArray<T> {
+            isMissingList: true;
+        }
+
+        function createMissingList<T extends Node>(): MissingList<T> {
+            const list = createNodeArray<T>([], getNodePos()) as MissingList<T>;
+            list.isMissingList = true;
+            return list;
+        }
+
+        function isMissingList(arr: NodeArray<Node>): boolean {
+            return !!(arr as MissingList<Node>).isMissingList;
         }
 
         function parseBracketedList<T extends Node>(kind: ParsingContext, parseElement: () => T, open: SyntaxKind, close: SyntaxKind): NodeArray<T> {
@@ -2260,8 +2275,7 @@ namespace ts {
                 case SyntaxKind.FunctionType:
                 case SyntaxKind.ConstructorType: {
                     const { parameters, type } = node as FunctionOrConstructorTypeNode;
-                    // parameters.pos === parameters.end only if we used parseMissingList, else should contain at least `()`
-                    return parameters.pos === parameters.end || typeHasArrowFunctionBlockingParseError(type);
+                    return isMissingList(parameters) || typeHasArrowFunctionBlockingParseError(type);
                 }
                 case SyntaxKind.ParenthesizedType:
                     return typeHasArrowFunctionBlockingParseError((node as ParenthesizedTypeNode).type);
@@ -2421,12 +2435,12 @@ namespace ts {
             return undefined;
         }
 
-        function isStartOfParameter(): boolean {
+        function isStartOfParameter(isJSDocParameter: boolean): boolean {
             return token() === SyntaxKind.DotDotDotToken ||
                 isIdentifierOrPattern() ||
                 isModifierKind(token()) ||
                 token() === SyntaxKind.AtToken ||
-                isStartOfType(/*inStartOfParameter*/ true);
+                isStartOfType(/*inStartOfParameter*/ !isJSDocParameter);
         }
 
         function parseParameter(): ParameterDeclaration {
@@ -2525,7 +2539,9 @@ namespace ts {
             setYieldContext(!!(flags & SignatureFlags.Yield));
             setAwaitContext(!!(flags & SignatureFlags.Await));
 
-            signature.parameters = parseDelimitedList(ParsingContext.Parameters, flags & SignatureFlags.JSDoc ? parseJSDocParameter : parseParameter);
+            signature.parameters = flags & SignatureFlags.JSDoc ?
+                parseDelimitedList(ParsingContext.JSDocParameters, parseJSDocParameter) :
+                parseDelimitedList(ParsingContext.Parameters, parseParameter);
 
             setYieldContext(savedYieldContext);
             setAwaitContext(savedAwaitContext);
@@ -2951,6 +2967,8 @@ namespace ts {
                 case SyntaxKind.InferKeyword:
                 case SyntaxKind.ImportKeyword:
                     return true;
+                case SyntaxKind.FunctionKeyword:
+                    return !inStartOfParameter;
                 case SyntaxKind.MinusToken:
                     return !inStartOfParameter && lookAhead(nextTokenIsNumericLiteral);
                 case SyntaxKind.OpenParenToken:
@@ -2964,7 +2982,7 @@ namespace ts {
 
         function isStartOfParenthesizedOrFunctionType() {
             nextToken();
-            return token() === SyntaxKind.CloseParenToken || isStartOfParameter() || isStartOfType();
+            return token() === SyntaxKind.CloseParenToken || isStartOfParameter(/*isJSDocParameter*/ false) || isStartOfType();
         }
 
         function parsePostfixTypeOrHigher(): TypeNode {
@@ -3519,8 +3537,9 @@ namespace ts {
                 }
 
                 // If we had "(" followed by something that's not an identifier,
-                // then this definitely doesn't look like a lambda.
-                if (!isIdentifier()) {
+                // then this definitely doesn't look like a lambda.  "this" is not
+                // valid, but we want to parse it and then give a semantic error.
+                if (!isIdentifier() && second !== SyntaxKind.ThisKeyword) {
                     return Tristate.False;
                 }
 
@@ -4314,9 +4333,9 @@ namespace ts {
             // We can't just simply use parseLeftHandSideExpressionOrHigher because then we will start consider class,function etc as a keyword
             // We only want to consider "this" as a primaryExpression
             let expression: JsxTagNameExpression = token() === SyntaxKind.ThisKeyword ?
-                parseTokenNode<PrimaryExpression>() : parseIdentifierName();
+                parseTokenNode<ThisExpression>() : parseIdentifierName();
             while (parseOptional(SyntaxKind.DotToken)) {
-                const propertyAccess: PropertyAccessExpression = <PropertyAccessExpression>createNode(SyntaxKind.PropertyAccessExpression, expression.pos);
+                const propertyAccess: JsxTagNamePropertyAccess = <JsxTagNamePropertyAccess>createNode(SyntaxKind.PropertyAccessExpression, expression.pos);
                 propertyAccess.expression = expression;
                 propertyAccess.name = parseRightSideOfDot(/*allowIdentifierNames*/ true);
                 expression = finishNode(propertyAccess);
@@ -6246,6 +6265,7 @@ namespace ts {
             JsxChildren,               // Things between opening and closing JSX tags
             ArrayLiteralMembers,       // Members in array literal
             Parameters,                // Parameters in parameter list
+            JSDocParameters,           // JSDoc parameters in parameter list of JSDoc function type
             RestProperties,            // Property names in a rest type list
             TypeParameters,            // Type parameters in type parameter list
             TypeArguments,             // Type arguments in type argument list
@@ -7646,7 +7666,8 @@ namespace ts {
         }
     }
 
-    function isDeclarationFileName(fileName: string): boolean {
+    /** @internal */
+    export function isDeclarationFileName(fileName: string): boolean {
         return fileExtensionIs(fileName, Extension.Dts);
     }
 
@@ -7886,7 +7907,7 @@ namespace ts {
         }
 
         if (lhs.kind === SyntaxKind.Identifier) {
-            return (<Identifier>lhs).escapedText === (<Identifier>rhs).escapedText;
+            return lhs.escapedText === (<Identifier>rhs).escapedText;
         }
 
         if (lhs.kind === SyntaxKind.ThisKeyword) {

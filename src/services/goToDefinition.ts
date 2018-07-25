@@ -28,7 +28,8 @@ namespace ts.GoToDefinition {
         }
 
         const calledDeclaration = tryGetSignatureDeclaration(typeChecker, node);
-        if (calledDeclaration) {
+        // Don't go to the component constructor definition for a JSX element, just go to the component definition.
+        if (calledDeclaration && !(isJsxOpeningLikeElement(node.parent) && isConstructorDeclaration(calledDeclaration))) {
             const sigInfo = createDefinitionFromSignatureDeclaration(typeChecker, calledDeclaration);
             // For a function, if this is the original function definition, return just sigInfo.
             // If this is the original constructor definition, parent is the class.
@@ -170,7 +171,7 @@ namespace ts.GoToDefinition {
     // At 'x.foo', see if the type of 'x' has an index signature, and if so find its declarations.
     function getDefinitionInfoForIndexSignatures(node: Node, checker: TypeChecker): DefinitionInfo[] | undefined {
         if (!isPropertyAccessExpression(node.parent) || node.parent.name !== node) return;
-        const type = checker.getTypeAtLocation(node.parent.expression)!;
+        const type = checker.getTypeAtLocation(node.parent.expression);
         return mapDefined(type.isUnionOrIntersection() ? type.types : [type], nonUnionType => {
             const info = checker.getIndexInfoOfType(nonUnionType, IndexKind.String);
             return info && info.declaration && createDefinitionFromSignatureDeclaration(checker, info.declaration);
@@ -271,7 +272,7 @@ namespace ts.GoToDefinition {
     }
 
     export function findReferenceInPosition(refs: ReadonlyArray<FileReference>, pos: number): FileReference | undefined {
-        return find(refs, ref => ref.pos <= pos && pos <= ref.end);
+        return find(refs, ref => textRangeContainsPositionInclusive(ref, pos));
     }
 
     function getDefinitionInfoForFileReference(name: string, targetFileName: string): DefinitionInfo {
