@@ -1,0 +1,22 @@
+tests/cases/conformance/classes/members/privateNames/privateNameConstructorReserved.ts(1,7): error TS2300: Duplicate identifier 'A'.
+tests/cases/conformance/classes/members/privateNames/privateNameConstructorReserved.ts(2,5): error TS18006: #constructor is a reserved word.
+tests/cases/conformance/classes/members/privateNames/privateNameConstructorReserved.ts(5,7): error TS2300: Duplicate identifier 'A'.
+tests/cases/conformance/classes/members/privateNames/privateNameConstructorReserved.ts(6,5): error TS18006: #constructor is a reserved word.
+
+
+==== tests/cases/conformance/classes/members/privateNames/privateNameConstructorReserved.ts (4 errors) ====
+    class A {
+          ~
+!!! error TS2300: Duplicate identifier 'A'.
+        #constructor() {}      // Error: `#constructor` is a reserved word.
+        ~~~~~~~~~~~~
+!!! error TS18006: #constructor is a reserved word.
+    }
+    
+    class A {
+          ~
+!!! error TS2300: Duplicate identifier 'A'.
+        #constructor = 5       // Error: `#constructor` is a reserved word.
+        ~~~~~~~~~~~~
+!!! error TS18006: #constructor is a reserved word.
+    }

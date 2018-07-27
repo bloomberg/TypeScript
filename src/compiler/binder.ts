@@ -271,8 +271,10 @@ namespace ts {
                     Debug.assert(isWellKnownSymbolSyntactically(nameExpression));
                     return getPropertyNameForKnownSymbolName(idText((<PropertyAccessExpression>nameExpression).name));
                 }
-                if (isPrivateName(node)) {
-                    return nodePosToString(node) as __String;
+                if (isPrivateName(name)) {
+                    // containingClass exists because private names only allowed inside classes
+                    const containingClassSymbol = getContainingClass(name.parent)!.symbol;
+                    return getPropertyNameForPrivateNameDescription(containingClassSymbol, name.escapedText);
                 }
                 return isPropertyNameLiteral(name) ? getEscapedTextOfIdentifierOrLiteral(name) : undefined;
             }
@@ -330,6 +332,10 @@ namespace ts {
 
             const isDefaultExport = hasModifier(node, ModifierFlags.Default);
 
+            // need this before getDeclarationName
+            if (isNamedDeclaration(node)) {
+                node.name.parent = node;
+            }
             // The exported symbol for an export default function/class node is always named "default"
             const name = isDefaultExport && parent ? InternalSymbolName.Default : getDeclarationName(node);
 
@@ -1802,6 +1808,18 @@ namespace ts {
             return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode;
         }
 
+        // The binder visits every node, so this is a good place to check for
+        // the reserved private name (there is only one)
+        function checkPrivateName(node: PrivateName) {
+            if (node.escapedText === "#constructor") {
+                // Report error only if there are no parse errors in file
+                if (!file.parseDiagnostics.length) {
+                    file.bindDiagnostics.push(createDiagnosticForNode(node,
+                        Diagnostics.constructor_is_a_reserved_word, declarationNameToString(node)));
+                }
+            }
+        }
+
         function checkStrictModeBinaryExpression(node: BinaryExpression) {
             if (inStrictMode && isLeftHandSideExpression(node.left) && isAssignmentOperator(node.operatorToken.kind)) {
                 // ECMA 262 (Annex C) The identifier eval or arguments may not appear as the LeftHandSideExpression of an
@@ -2074,6 +2092,8 @@ namespace ts {
                         node.flowNode = currentFlow;
                     }
                     return checkStrictModeIdentifier(<Identifier>node);
+                case SyntaxKind.PrivateName:
+                    return checkPrivateName(node as PrivateName);
                 case SyntaxKind.PropertyAccessExpression:
                 case SyntaxKind.ElementAccessExpression:
                     if (currentFlow && isNarrowableReference(<Expression>node)) {

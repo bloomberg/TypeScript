@@ -1,0 +1,17 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNamesAndkeyof.ts ===
+class A {
+>A : A
+
+    #foo;
+>#foo : any
+
+    bar;
+>bar : any
+
+    baz;
+>baz : any
+}
+
+type T = keyof A     // should not include '#foo'
+>T : "bar" | "baz"
+
