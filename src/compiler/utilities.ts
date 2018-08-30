@@ -2650,7 +2650,6 @@ namespace ts {
     export function isPropertyNameLiteral(node: Node): node is PropertyNameLiteral {
         switch (node.kind) {
             case SyntaxKind.Identifier:
-            // TODO: should this be here?
             case SyntaxKind.PrivateName:
             case SyntaxKind.StringLiteral:
             case SyntaxKind.NoSubstitutionTemplateLiteral:
