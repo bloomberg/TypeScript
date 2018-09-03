@@ -1,0 +1,17 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts ===
+class A {
+>A : A
+
+    public #foo;         // Error
+>#foo : any
+
+    private #bar;        // Error
+>#bar : any
+
+    protected #baz;      // Error
+>#baz : any
+
+    readonly #qux;       // OK
+>#qux : any
+}
+

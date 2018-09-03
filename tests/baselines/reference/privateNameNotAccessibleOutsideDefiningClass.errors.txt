@@ -1,0 +1,12 @@
+tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts(5,9): error TS18007: Property '#foo' is only accessible within class 'A' because it has a private name.
+
+
+==== tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts (1 errors) ====
+    class A {
+        #foo: number = 3;
+    }
+    
+    new A().#foo = 4;               // Error
+            ~~~~
+!!! error TS18007: Property '#foo' is only accessible within class 'A' because it has a private name.
+    

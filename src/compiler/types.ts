@@ -3433,6 +3433,7 @@ namespace ts {
         Transient               = 1 << 25,  // Transient symbol (created during type check)
         JSContainer             = 1 << 26,  // Contains Javascript special declarations
         ModuleExports           = 1 << 27,  // Symbol for CommonJS `module` of `module.exports`
+        PrivateNamed            = 1 << 28,  // Symbol's name is a private name (example: `#foo`)
 
         /* @internal */
         All = FunctionScopedVariable | BlockScopedVariable | Property | EnumMember | Function | Class | Interface | ConstEnum | RegularEnum | ValueModule | NamespaceModule | TypeLiteral

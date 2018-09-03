@@ -1,0 +1,12 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts ===
+class A {
+>A : Symbol(A, Decl(privateNameNotAccessibleOutsideDefiningClass.ts, 0, 0))
+
+    #foo: number = 3;
+>#foo : Symbol(A[#foo], Decl(privateNameNotAccessibleOutsideDefiningClass.ts, 0, 9))
+}
+
+new A().#foo = 4;               // Error
+>new A().#foo : Symbol(A[#foo], Decl(privateNameNotAccessibleOutsideDefiningClass.ts, 0, 9))
+>A : Symbol(A, Decl(privateNameNotAccessibleOutsideDefiningClass.ts, 0, 0))
+

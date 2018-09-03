@@ -1,0 +1,36 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses.ts ===
+class A {
+>A : Symbol(A, Decl(privateNamesInNestedClasses.ts, 0, 0))
+
+    #foo: number;
+>#foo : Symbol(A[#foo], Decl(privateNamesInNestedClasses.ts, 0, 9))
+
+    #bar: number;
+>#bar : Symbol(A[#bar], Decl(privateNamesInNestedClasses.ts, 1, 17))
+
+    method() {
+>method : Symbol(A.method, Decl(privateNamesInNestedClasses.ts, 2, 17))
+
+        class B {
+>B : Symbol(B, Decl(privateNamesInNestedClasses.ts, 3, 14))
+
+            #foo: string;
+>#foo : Symbol(B[#foo], Decl(privateNamesInNestedClasses.ts, 4, 17))
+
+            methodNested(a: A) {
+>methodNested : Symbol(B.methodNested, Decl(privateNamesInNestedClasses.ts, 5, 25))
+>a : Symbol(a, Decl(privateNamesInNestedClasses.ts, 6, 25))
+>A : Symbol(A, Decl(privateNamesInNestedClasses.ts, 0, 0))
+
+                a.#foo;  // error: shadowed
+>a.#foo : Symbol(A[#foo], Decl(privateNamesInNestedClasses.ts, 0, 9))
+>a : Symbol(a, Decl(privateNamesInNestedClasses.ts, 6, 25))
+
+                a.#bar; //  OK
+>a.#bar : Symbol(A[#bar], Decl(privateNamesInNestedClasses.ts, 1, 17))
+>a : Symbol(a, Decl(privateNamesInNestedClasses.ts, 6, 25))
+            }
+        }
+    }
+}
+

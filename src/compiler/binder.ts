@@ -225,6 +225,10 @@ namespace ts {
             node.symbol = symbol;
             symbol.declarations = append(symbol.declarations, node);
 
+            if (isNamedDeclaration(node) && isPrivateName(node.name)) {
+                symbol.flags |= SymbolFlags.PrivateNamed;
+            }
+
             if (symbolFlags & (SymbolFlags.Class | SymbolFlags.Enum | SymbolFlags.Module | SymbolFlags.Variable) && !symbol.exports) {
                 symbol.exports = createSymbolTable();
             }
@@ -265,9 +269,6 @@ namespace ts {
 
                     Debug.assert(isWellKnownSymbolSyntactically(nameExpression));
                     return getPropertyNameForKnownSymbolName(idText((<PropertyAccessExpression>nameExpression).name));
-                }
-                if (isPrivateName(node)) {
-                    return nodePosToString(node) as __String;
                 }
                 return isPropertyNameLiteral(name) ? getEscapedTextOfIdentifierOrLiteral(name) : undefined;
             }
@@ -1798,6 +1799,18 @@ namespace ts {
             return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode;
         }
 
+        // The binder visits every node, so this is a good place to check for
+        // the reserved private name (there is only one)
+        function checkPrivateName(node: PrivateName) {
+            if (node.escapedText === "#constructor") {
+                // Report error only if there are no parse errors in file
+                if (!file.parseDiagnostics.length) {
+                    file.bindDiagnostics.push(createDiagnosticForNode(node,
+                        Diagnostics.constructor_is_a_reserved_word, declarationNameToString(node)));
+                }
+            }
+        }
+
         function checkStrictModeBinaryExpression(node: BinaryExpression) {
             if (inStrictMode && isLeftHandSideExpression(node.left) && isAssignmentOperator(node.operatorToken.kind)) {
                 // ECMA 262 (Annex C) The identifier eval or arguments may not appear as the LeftHandSideExpression of an
@@ -2070,6 +2083,8 @@ namespace ts {
                         node.flowNode = currentFlow;
                     }
                     return checkStrictModeIdentifier(<Identifier>node);
+                case SyntaxKind.PrivateName:
+                    return checkPrivateName(node as PrivateName);
                 case SyntaxKind.PropertyAccessExpression:
                 case SyntaxKind.ElementAccessExpression:
                     if (currentFlow && isNarrowableReference(<Expression>node)) {

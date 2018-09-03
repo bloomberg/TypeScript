@@ -13187,6 +13187,9 @@ namespace ts {
             const properties = target.flags & TypeFlags.Intersection ? getPropertiesOfUnionOrIntersectionType(<IntersectionType>target) : getPropertiesOfObjectType(target);
             for (const targetProp of properties) {
                 if (requireOptionalProperties || !(targetProp.flags & SymbolFlags.Optional)) {
+                    if (targetProp.flags & SymbolFlags.PrivateNamed) {
+                        return targetProp;
+                    }
                     const sourceProp = getPropertyOfType(source, targetProp.escapedName);
                     if (!sourceProp) {
                         return targetProp;
@@ -17860,6 +17863,16 @@ namespace ts {
                 }
             }
 
+            if (node.kind === SyntaxKind.PropertyAccessExpression && isPrivateName(node.name)) {
+                const declaringClassDeclaration = getClassLikeDeclarationOfSymbol(getParentOfSymbol(prop)!)!;
+                if (!isNodeWithinClass(node, declaringClassDeclaration)) {
+                    error(errorNode, Diagnostics.Property_0_is_only_accessible_within_class_1_because_it_has_a_private_name, symbolToString(prop), typeToString(getDeclaringClass(prop)!));
+                    return false;
+                }
+                return true;
+            }
+
+
             // Public properties are otherwise accessible.
             if (!(flags & ModifierFlags.NonPublicAccessibilityModifier)) {
                 return true;
@@ -20725,10 +20738,16 @@ namespace ts {
                 error(expr, Diagnostics.The_operand_of_a_delete_operator_must_be_a_property_reference);
                 return booleanType;
             }
+            if (expr.kind === SyntaxKind.PropertyAccessExpression && isPrivateName((expr as PropertyAccessExpression).name)) {
+                error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_private_name);
+
+            }
             const links = getNodeLinks(expr);
             const symbol = getExportSymbolOfValueSymbolIfExported(links.resolvedSymbol);
-            if (symbol && isReadonlySymbol(symbol)) {
-                error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_read_only_property);
+            if (symbol) {
+                if (isReadonlySymbol(symbol)) {
+                    error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_read_only_property);
+                }
             }
             return booleanType;
         }
@@ -21878,9 +21897,6 @@ namespace ts {
             checkGrammarDecoratorsAndModifiers(node);
 
             checkVariableLikeDeclaration(node);
-            if (node.name && isIdentifier(node.name) && node.name.originalKeywordKind === SyntaxKind.PrivateName) {
-                error(node, Diagnostics.Private_names_cannot_be_used_as_parameters);
-            }
             const func = getContainingFunction(node)!;
             if (hasModifier(node, ModifierFlags.ParameterPropertyModifier)) {
                 if (!(func.kind === SyntaxKind.Constructor && nodeIsPresent(func.body))) {
@@ -25426,6 +25442,10 @@ namespace ts {
                 const declaredProp = member.name && getSymbolAtLocation(member.name) || getSymbolAtLocation(member);
                 if (declaredProp) {
                     const prop = getPropertyOfType(typeWithThis, declaredProp.escapedName);
+                    // skip inheritance checks because private names are unique to each class
+                    if (member.name && isPrivateName(member.name)) {
+                        return;
+                    }
                     const baseProp = getPropertyOfType(baseWithThis, declaredProp.escapedName);
                     if (prop && baseProp) {
                         const rootChain = () => chainDiagnosticMessages(
@@ -28515,6 +28535,9 @@ namespace ts {
             else if (node.kind === SyntaxKind.Parameter && (flags & ModifierFlags.ParameterPropertyModifier) && (<ParameterDeclaration>node).dotDotDotToken) {
                 return grammarErrorOnNode(node, Diagnostics.A_parameter_property_cannot_be_declared_using_a_rest_parameter);
             }
+            else if (isNamedDeclaration(node) && (flags & ModifierFlags.AccessibilityModifier) && node.name.kind === SyntaxKind.PrivateName) {
+                return grammarErrorOnNode(node, Diagnostics.Accessibility_modifiers_cannot_be_used_with_private_names);
+            }
             if (flags & ModifierFlags.Async) {
                 return checkGrammarAsyncModifier(node, lastAsync!);
             }
@@ -29291,10 +29314,6 @@ namespace ts {
             if (compilerOptions.module !== ModuleKind.ES2015 && compilerOptions.module !== ModuleKind.ESNext && compilerOptions.module !== ModuleKind.System && !compilerOptions.noEmit &&
                 !(node.parent.parent.flags & NodeFlags.Ambient) && hasModifier(node.parent.parent, ModifierFlags.Export)) {
                 checkESModuleMarker(node.name);
-            }
-
-            if (isIdentifier(node.name) && node.name.originalKeywordKind === SyntaxKind.PrivateName) {
-                return grammarErrorOnNode(node.name, Diagnostics.Private_names_are_not_allowed_in_variable_declarations);
             }
 
             const checkLetConstNames = (isLet(node) || isVarConst(node));

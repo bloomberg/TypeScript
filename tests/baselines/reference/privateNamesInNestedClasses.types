@@ -1,0 +1,35 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses.ts ===
+class A {
+>A : A
+
+    #foo: number;
+>#foo : number
+
+    #bar: number;
+>#bar : number
+
+    method() {
+>method : () => void
+
+        class B {
+>B : B
+
+            #foo: string;
+>#foo : string
+
+            methodNested(a: A) {
+>methodNested : (a: A) => void
+>a : A
+
+                a.#foo;  // error: shadowed
+>a.#foo : number
+>a : A
+
+                a.#bar; //  OK
+>a.#bar : number
+>a : A
+            }
+        }
+    }
+}
+

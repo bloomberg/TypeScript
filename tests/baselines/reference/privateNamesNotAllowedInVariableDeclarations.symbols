@@ -1,0 +1,3 @@
+=== tests/cases/conformance/classes/privateNames/privateNamesNotAllowedInVariableDeclarations.ts ===
+const #foo = 3;
+No type information for this code.
