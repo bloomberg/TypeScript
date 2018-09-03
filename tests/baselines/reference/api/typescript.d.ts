@@ -2063,7 +2063,6 @@ declare namespace ts {
         Transient = 33554432,
         JSContainer = 67108864,
         ModuleExports = 134217728,
-        PrivateNamed = 268435456,
         Enum = 384,
         Variable = 3,
         Value = 67216319,

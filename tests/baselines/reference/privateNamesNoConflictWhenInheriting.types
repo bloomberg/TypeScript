@@ -10,7 +10,12 @@ class B extends A {
 >B : B
 >A : A
 
-    #foo: string;   // OK: private names are unique to each class
+    #foo: string;    // OK: private names are unique to each class
 >#foo : string
 }
+
+const b: A = new B() // OK
+>b : A
+>new B() : B
+>B : typeof B
 

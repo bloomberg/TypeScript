@@ -4,8 +4,10 @@ class A {
 }
 
 class B extends A {
-    #foo: string;   // OK: private names are unique to each class
+    #foo: string;    // OK: private names are unique to each class
 }
+
+const b: A = new B() // OK
 
 
 //// [privateNamesNoConflictWhenInheriting.js]
@@ -34,3 +36,4 @@ var B = /** @class */ (function (_super) {
     }
     return B;
 }(A));
+var b = new B(); // OK
