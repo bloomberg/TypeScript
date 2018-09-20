@@ -33,6 +33,7 @@ namespace ts {
         addRange(transformers, customTransformers && customTransformers.before);
 
         transformers.push(transformTypeScript);
+        transformers.push(transformClassProperties);
 
         if (jsx === JsxEmit.React) {
             transformers.push(transformJsx);
