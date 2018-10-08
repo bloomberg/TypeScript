@@ -1,0 +1,11 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameDuplicateField.ts ===
+class A {
+>A : A
+
+    #foo;
+>#foo : any
+
+    #foo;
+>#foo : any
+}
+

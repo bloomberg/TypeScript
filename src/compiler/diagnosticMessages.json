@@ -4307,7 +4307,7 @@
         "category": "Error",
         "code": 18005
     },
-    "#constructor is a reserved word.": {
+    "'#constructor' is a reserved word.": {
         "category": "Error",
         "code": 18006
     },

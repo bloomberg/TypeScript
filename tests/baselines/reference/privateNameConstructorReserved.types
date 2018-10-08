@@ -6,10 +6,3 @@ class A {
 >#constructor : () => void
 }
 
-class A {
->A : A
-
-    #constructor = 5       // Error: `#constructor` is a reserved word.
->#constructor : number
->5 : 5
-}

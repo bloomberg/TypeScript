@@ -6,9 +6,3 @@ class A {
 >#constructor : Symbol(A[#constructor], Decl(privateNameConstructorReserved.ts, 0, 9))
 }
 
-class A {
->A : Symbol(A, Decl(privateNameConstructorReserved.ts, 2, 1))
-
-    #constructor = 5       // Error: `#constructor` is a reserved word.
->#constructor : Symbol(A[#constructor], Decl(privateNameConstructorReserved.ts, 4, 9))
-}

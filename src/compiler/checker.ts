@@ -2680,7 +2680,7 @@ namespace ts {
         }
 
         // A reserved member name starts with two underscores, but the third character cannot be an underscore,
-        // @ or #. A third underscore indicates an escaped form of an identifer that started
+        // @, or #. A third underscore indicates an escaped form of an identifer that started
         // with at least two underscores. The @ character indicates that the name is denoted by a well known ES
         // Symbol instance and the # indicates that the name is a PrivateName.
         function isReservedMemberName(name: __String) {
@@ -12222,7 +12222,7 @@ namespace ts {
                                 reportError(
                                     Diagnostics.Property_0_is_missing_in_type_1_While_type_1_has_a_private_member_with_the_same_spelling_its_declaration_and_accessibility_are_distinct,
                                     diagnosticName(privateNameDescription),
-                                    diagnosticName(source.symbol.valueDeclaration.name || ("anonymous" as __String))
+                                    diagnosticName(source.symbol.valueDeclaration.name || ("(anonymous)" as __String))
                                 );
                                 hasReported = true;
                             }
@@ -18460,7 +18460,7 @@ namespace ts {
                                 right,
                                 Diagnostics.This_usage_of_0_refers_to_the_private_member_declared_in_its_enclosing_class_While_type_1_has_a_private_member_with_the_same_spelling_its_declaration_and_accessibility_are_distinct,
                                 diagnosticName(right),
-                                diagnosticName(classWithShadowedPrivateName.name || ("anonymous" as __String))
+                                diagnosticName(classWithShadowedPrivateName.name || ("(anonymous)" as __String))
                             );
                             return undefined;
                         }
@@ -21442,14 +21442,11 @@ namespace ts {
             }
             if (expr.kind === SyntaxKind.PropertyAccessExpression && isPrivateName((expr as PropertyAccessExpression).name)) {
                 error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_private_name);
-
             }
             const links = getNodeLinks(expr);
             const symbol = getExportSymbolOfValueSymbolIfExported(links.resolvedSymbol);
-            if (symbol) {
-                if (isReadonlySymbol(symbol)) {
-                    error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_read_only_property);
-                }
+            if (symbol && isReadonlySymbol(symbol)) {
+                error(expr, Diagnostics.The_operand_of_a_delete_operator_cannot_be_a_read_only_property);
             }
             return booleanType;
         }
