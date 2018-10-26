@@ -17446,6 +17446,23 @@ namespace ts {
             const links = getNodeLinks(node.expression);
             if (!links.resolvedType) {
                 links.resolvedType = checkExpression(node.expression);
+
+                if (isPropertyDeclaration(node.parent) && isClassLike(node.parent.parent)) {
+                    const container = getEnclosingBlockScopeContainer(node);
+                    let current = container;
+                    let containedInIterationStatement = false;
+                    while (current && !nodeStartsNewLexicalEnvironment(current)) {
+                        if (isIterationStatement(current, /*lookInLabeledStatements*/ false)) {
+                            containedInIterationStatement = true;
+                            break;
+                        }
+                        current = current.parent;
+                    }
+                    if (containedInIterationStatement) {
+                        getNodeLinks(current).flags |= NodeCheckFlags.LoopWithCapturedBlockScopedBinding;
+                    }
+                    links.flags |= NodeCheckFlags.BlockScopedBindingInLoop;
+                }
                 // This will allow types number, string, symbol or any. It will also allow enums, the unknown
                 // type, and any union of these types (like string | number).
                 if (links.resolvedType.flags & TypeFlags.Nullable ||

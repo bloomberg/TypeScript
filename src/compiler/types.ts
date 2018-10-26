@@ -5212,6 +5212,11 @@ namespace ts {
         writeFile: WriteFileCallback;
     }
 
+    export const enum LexicalEnvironmentScoping {
+        Function,
+        Block
+    }
+
     export interface TransformationContext {
         /*@internal*/ getEmitResolver(): EmitResolver;
         /*@internal*/ getEmitHost(): EmitHost;
@@ -5220,7 +5225,7 @@ namespace ts {
         getCompilerOptions(): CompilerOptions;
 
         /** Starts a new lexical environment. */
-        startLexicalEnvironment(): void;
+        startLexicalEnvironment(scoping?: LexicalEnvironmentScoping): void;
 
         /** Suspends the current lexical environment, usually after visiting a parameter list. */
         suspendLexicalEnvironment(): void;

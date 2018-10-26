@@ -208,7 +208,10 @@ namespace ts {
          * @param node The node to visit.
          */
         function visitorWorker(node: Node): VisitResult<Node> {
-            if (node.transformFlags & TransformFlags.TypeScript) {
+            if (node.kind === SyntaxKind.Block && node.transformFlags & TransformFlags.AssertTypeScript) {
+                return visitBlock(node as Block);
+            }
+            else if (node.transformFlags & TransformFlags.TypeScript) {
                 // This node is explicitly marked as TypeScript, so we should transform the node.
                 return visitTypeScript(node);
             }
@@ -558,6 +561,19 @@ namespace ts {
                 default:
                     return Debug.failBadSyntaxKind(node);
             }
+        }
+
+        function visitBlock(node: Block): Block {
+            startLexicalEnvironment(LexicalEnvironmentScoping.Block);
+            node = visitEachChild(node, visitor, context);
+            const declarations = endLexicalEnvironment();
+            if (some(declarations)) {
+                return updateBlock(
+                    node,
+                    mergeLexicalEnvironment(node.statements, declarations)
+                );
+            }
+            return node;
         }
 
         function visitSourceFile(node: SourceFile) {
