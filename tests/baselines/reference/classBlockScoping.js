@@ -35,9 +35,9 @@ function f(b: boolean) {
 
 //// [classBlockScoping.js]
 function f(b) {
-    var _a;
     var Foo;
     if (b) {
+        var _a = void 0;
         Foo = (_a = /** @class */ (function () {
                 function Foo() {
                 }

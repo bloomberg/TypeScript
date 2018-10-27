@@ -1,0 +1,36 @@
+=== tests/cases/conformance/es6/computedProperties/computedPropertyNames52_ES6.ts ===
+const classes = [];
+>classes : Symbol(classes, Decl(computedPropertyNames52_ES6.ts, 0, 5))
+
+for (let i = 0; i <= 10; ++i) {
+>i : Symbol(i, Decl(computedPropertyNames52_ES6.ts, 1, 8))
+>i : Symbol(i, Decl(computedPropertyNames52_ES6.ts, 1, 8))
+>i : Symbol(i, Decl(computedPropertyNames52_ES6.ts, 1, 8))
+
+    classes.push(
+>classes.push : Symbol(Array.push, Decl(lib.es5.d.ts, --, --))
+>classes : Symbol(classes, Decl(computedPropertyNames52_ES6.ts, 0, 5))
+>push : Symbol(Array.push, Decl(lib.es5.d.ts, --, --))
+
+        class A {
+>A : Symbol(A, Decl(computedPropertyNames52_ES6.ts, 2, 17))
+
+            [i] = "my property";
+>[i] : Symbol(A[i], Decl(computedPropertyNames52_ES6.ts, 3, 17))
+>i : Symbol(i, Decl(computedPropertyNames52_ES6.ts, 1, 8))
+        }
+    );
+}
+for (const clazz of classes) {
+>clazz : Symbol(clazz, Decl(computedPropertyNames52_ES6.ts, 8, 10))
+>classes : Symbol(classes, Decl(computedPropertyNames52_ES6.ts, 0, 5))
+
+    console.log(Object.getOwnPropertyNames(new clazz()));
+>console.log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+>console : Symbol(console, Decl(lib.dom.d.ts, --, --))
+>log : Symbol(Console.log, Decl(lib.dom.d.ts, --, --))
+>Object.getOwnPropertyNames : Symbol(ObjectConstructor.getOwnPropertyNames, Decl(lib.es5.d.ts, --, --))
+>Object : Symbol(Object, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>getOwnPropertyNames : Symbol(ObjectConstructor.getOwnPropertyNames, Decl(lib.es5.d.ts, --, --))
+>clazz : Symbol(clazz, Decl(computedPropertyNames52_ES6.ts, 8, 10))
+}

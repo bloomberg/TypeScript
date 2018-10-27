@@ -1,0 +1,47 @@
+=== tests/cases/conformance/es6/computedProperties/computedPropertyNames52_ES6.ts ===
+const classes = [];
+>classes : any[]
+>[] : undefined[]
+
+for (let i = 0; i <= 10; ++i) {
+>i : number
+>0 : 0
+>i <= 10 : boolean
+>i : number
+>10 : 10
+>++i : number
+>i : number
+
+    classes.push(
+>classes.push(        class A {            [i] = "my property";        }    ) : number
+>classes.push : (...items: any[]) => number
+>classes : any[]
+>push : (...items: any[]) => number
+
+        class A {
+>class A {            [i] = "my property";        } : typeof A
+>A : typeof A
+
+            [i] = "my property";
+>[i] : string
+>i : number
+>"my property" : "my property"
+        }
+    );
+}
+for (const clazz of classes) {
+>clazz : any
+>classes : any[]
+
+    console.log(Object.getOwnPropertyNames(new clazz()));
+>console.log(Object.getOwnPropertyNames(new clazz())) : void
+>console.log : (message?: any, ...optionalParams: any[]) => void
+>console : Console
+>log : (message?: any, ...optionalParams: any[]) => void
+>Object.getOwnPropertyNames(new clazz()) : string[]
+>Object.getOwnPropertyNames : (o: any) => string[]
+>Object : ObjectConstructor
+>getOwnPropertyNames : (o: any) => string[]
+>new clazz() : any
+>clazz : any
+}

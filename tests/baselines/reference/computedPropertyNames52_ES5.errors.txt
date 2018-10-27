@@ -1,0 +1,17 @@
+tests/cases/conformance/es6/computedProperties/computedPropertyNames52_ES5.ts(5,13): error TS1166: A computed property name in a class property declaration must refer to an expression whose type is a literal type or a 'unique symbol' type.
+
+
+==== tests/cases/conformance/es6/computedProperties/computedPropertyNames52_ES5.ts (1 errors) ====
+    const classes = [];
+    for (let i = 0; i <= 10; ++i) {
+        classes.push(
+            class A {
+                [i] = "my property";
+                ~~~
+!!! error TS1166: A computed property name in a class property declaration must refer to an expression whose type is a literal type or a 'unique symbol' type.
+            }
+        );
+    }
+    for (const clazz of classes) {
+        console.log(Object.getOwnPropertyNames(new clazz()));
+    }

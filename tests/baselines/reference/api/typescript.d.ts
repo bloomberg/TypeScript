@@ -2752,11 +2752,15 @@ declare namespace ts {
         MappedTypeParameter = 3,
         Unspecified = 4
     }
+    enum LexicalEnvironmentScoping {
+        Function = 0,
+        Block = 1
+    }
     interface TransformationContext {
         /** Gets the compiler options supplied to the transformer. */
         getCompilerOptions(): CompilerOptions;
         /** Starts a new lexical environment. */
-        startLexicalEnvironment(): void;
+        startLexicalEnvironment(scoping?: LexicalEnvironmentScoping): void;
         /** Suspends the current lexical environment, usually after visiting a parameter list. */
         suspendLexicalEnvironment(): void;
         /** Resumes a suspended lexical environment, usually before visiting a function body. */
