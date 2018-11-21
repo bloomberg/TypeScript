@@ -1,4 +1,4 @@
-=== tests/cases/conformance/classes/privateNames/privateNamesNotAllowedInVariableDeclarations.ts ===
+=== tests/cases/conformance/classes/members/privateNames/privateNamesNotAllowedInVariableDeclarations.ts ===
 const #foo = 3;
 >3 : 3
 
