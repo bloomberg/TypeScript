@@ -388,11 +388,6 @@ namespace ts {
                         symbolTable.set(name, symbol = createSymbol(SymbolFlags.None, name));
                     }
                     else if (!(includes & SymbolFlags.Variable && symbol.flags & SymbolFlags.Assignment)) {
-                        // Assignment declarations are allowed to merge with variables, no matter what other flags they have.
-                        if (isNamedDeclaration(node)) {
-                            node.name.parent = node;
-                        }
-
                         // Report errors every position with duplicate declaration
                         // Report errors on previous encountered declarations
                         let message = symbol.flags & SymbolFlags.BlockScopedVariable

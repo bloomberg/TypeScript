@@ -122,6 +122,7 @@ namespace ts {
             getDeclaredTypeOfSymbol,
             getPropertiesOfType,
             getPropertyOfType: (type, name) => getPropertyOfType(type, escapeLeadingUnderscores(name)),
+            getPropertyForPrivateName,
             getTypeOfPropertyOfType: (type, name) => getTypeOfPropertyOfType(type, escapeLeadingUnderscores(name)),
             getIndexInfoOfType,
             getSignaturesOfType,
@@ -18447,38 +18448,40 @@ namespace ts {
             return checkPropertyAccessExpressionOrQualifiedName(node, node.left, node.right);
         }
 
-        function getPropertyByPrivateName(apparentType: Type, leftType: Type, right: PrivateName): Symbol | undefined {
+        function getPropertyForPrivateName(apparentType: Type, leftType: Type, right: PrivateName, errorNode: Node | undefined): Symbol | undefined {
             let classWithShadowedPrivateName;
-            let klass = getContainingClass(right);
-            while (klass) {
-                const symbolTableKey = getPropertyNameForPrivateNameDescription(klass.symbol, right.escapedText);
+            let container = getContainingClass(right);
+            while (container) {
+                const symbolTableKey = getPropertyNameForPrivateNameDescription(container.symbol, right.escapedText);
                 if (symbolTableKey) {
                     const prop = getPropertyOfType(apparentType, symbolTableKey);
                     if (prop) {
                         if (classWithShadowedPrivateName) {
-                            error(
-                                right,
-                                Diagnostics.This_usage_of_0_refers_to_the_private_member_declared_in_its_enclosing_class_While_type_1_has_a_private_member_with_the_same_spelling_its_declaration_and_accessibility_are_distinct,
-                                diagnosticName(right),
-                                diagnosticName(classWithShadowedPrivateName.name || ("(anonymous)" as __String))
-                            );
+                            if (errorNode) {
+                                error(
+                                    errorNode,
+                                    Diagnostics.This_usage_of_0_refers_to_the_private_member_declared_in_its_enclosing_class_While_type_1_has_a_private_member_with_the_same_spelling_its_declaration_and_accessibility_are_distinct,
+                                    diagnosticName(right),
+                                    diagnosticName(classWithShadowedPrivateName.name || ("(anonymous)" as __String))
+                                );
+                            }
                             return undefined;
                         }
                         return prop;
                     }
                     else {
-                        classWithShadowedPrivateName = klass;
+                        classWithShadowedPrivateName = container;
                     }
                 }
-                klass = getContainingClass(klass);
+                container = getContainingClass(container);
             }
             // If this isn't a case of shadowing, and the lhs has a property with the same
             // private name description, then there is a privacy violation
             if (leftType.symbol.members) {
                 const symbolTableKey = getPropertyNameForPrivateNameDescription(leftType.symbol, right.escapedText);
-                if (symbolTableKey) {
-                    const prop = getPropertyOfType(apparentType, symbolTableKey);
-                    if (prop) {
+                const prop = getPropertyOfType(apparentType, symbolTableKey);
+                if (prop) {
+                    if (errorNode) {
                         error(right, Diagnostics.Property_0_is_not_accessible_outside_class_1_because_it_has_a_private_name, symbolToString(prop), typeToString(getDeclaringClass(prop)!));
                     }
                 }
@@ -18499,7 +18502,7 @@ namespace ts {
                 return apparentType;
             }
             const assignmentKind = getAssignmentTargetKind(node);
-            const prop = isPrivateName(right) ? getPropertyByPrivateName(apparentType, leftType, right) : getPropertyOfType(apparentType, right.escapedText);
+            const prop = isPrivateName(right) ? getPropertyForPrivateName(apparentType, leftType, right, /* errorNode */ right) : getPropertyOfType(apparentType, right.escapedText);
             if (isIdentifier(left) && parentSymbol && !(prop && isConstEnumOrConstEnumOnlyModule(prop))) {
                 markAliasReferenced(parentSymbol, node);
             }
