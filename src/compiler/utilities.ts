@@ -2728,6 +2728,10 @@ namespace ts {
         return node.kind === SyntaxKind.Identifier || node.kind === SyntaxKind.PrivateName ? node.escapedText : escapeLeadingUnderscores(node.text);
     }
 
+    export function getPropertyNameForUniqueESSymbol(symbol: Symbol): __String {
+        return `__@${getSymbolId(symbol)}@${symbol.escapedName}` as __String;
+    }
+
     export function getPropertyNameForKnownSymbolName(symbolName: string): __String {
         return "__@" + symbolName as __String;
     }

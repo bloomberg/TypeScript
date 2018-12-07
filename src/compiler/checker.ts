@@ -6252,7 +6252,7 @@ namespace ts {
          */
         function getLateBoundNameFromType(type: LiteralType | UniqueESSymbolType): __String {
             if (type.flags & TypeFlags.UniqueESSymbol) {
-                return `__@${type.symbol.escapedName}@${getSymbolId(type.symbol)}` as __String;
+                return getPropertyNameForUniqueESSymbol(type.symbol);
             }
             if (type.flags & (TypeFlags.StringLiteral | TypeFlags.NumberLiteral)) {
                 return escapeLeadingUnderscores("" + (<LiteralType>type).value);
