@@ -1,4 +1,5 @@
-// @target ESNext
+// @strict: true
+// @target es6
 
 class A {
     static #foo: number;

@@ -1,10 +1,13 @@
+// @strict: true
+// @target es6
+
 class A {
    #foo = "A's #foo";
    #bar = "A's #bar";
    method () {
        class B {
            #foo = "B's #foo";
-           bar (a) {
+           bar (a: any) {
                a.#foo; // OK, no compile-time error, don't know what `a` is
            }
            baz (a: A) {

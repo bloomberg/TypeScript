@@ -1,4 +1,6 @@
 === tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses.ts ===
+// @target es6
+
 class A {
 >A : A
 
@@ -20,7 +22,7 @@ class A {
 >#foo : string
 >"B's #foo" : "B's #foo"
 
-           bar (a) {
+           bar (a: any) {
 >bar : (a: any) => void
 >a : any
 

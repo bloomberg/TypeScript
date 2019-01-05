@@ -1,3 +1,6 @@
+// @strict: true
+// @target es6
+
 class C<T> {
   #foo: T;
   bar(x: C<T>) { return x.#foo; }          // OK

@@ -1,19 +1,21 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(2,12): error TS18004: Accessibility modifiers cannot be used with private names.
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(3,13): error TS18004: Accessibility modifiers cannot be used with private names.
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(4,15): error TS18004: Accessibility modifiers cannot be used with private names.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(4,12): error TS18004: Accessibility modifiers cannot be used with private names.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(5,13): error TS18004: Accessibility modifiers cannot be used with private names.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(6,15): error TS18004: Accessibility modifiers cannot be used with private names.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts (3 errors) ====
+    // @target es6
+    
     class A {
-        public #foo;         // Error
+        public #foo = 3;         // Error
                ~~~~
 !!! error TS18004: Accessibility modifiers cannot be used with private names.
-        private #bar;        // Error
+        private #bar = 3;        // Error
                 ~~~~
 !!! error TS18004: Accessibility modifiers cannot be used with private names.
-        protected #baz;      // Error
+        protected #baz = 3;      // Error
                   ~~~~
 !!! error TS18004: Accessibility modifiers cannot be used with private names.
-        readonly #qux;       // OK
+        readonly #qux = 3;       // OK
     }
     

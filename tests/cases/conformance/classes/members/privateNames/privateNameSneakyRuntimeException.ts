@@ -1,7 +1,10 @@
+// @strict: true
+// @target es6
+
 function createClass () {
     return class {
-        #foo;
-        equals(other) {
+        #foo = 3;
+        equals(other: any) {
             return this.#foo = other.#foo;
         }
     };

@@ -37,6 +37,7 @@ class A {
     async *#baz(a) {
         return 3;
     }
+    #_quux;
     get #quux() {
         return this.#_quux;
     }

@@ -1,3 +1,6 @@
+// @strict: true
+// @target es6
+
 class A {
     #v = 1;
     constructor() {

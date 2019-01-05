@@ -31,12 +31,14 @@ class B extends A {
 
 
 //// [privateNamesAndStaticMethods.js]
+"use strict";
 class A {
     static #foo(a) { }
     static async #bar(a) { }
     static async *#baz(a) {
         return 3;
     }
+    static #_quux;
     static get #quux() {
         return this.#_quux;
     }

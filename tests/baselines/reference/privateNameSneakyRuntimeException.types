@@ -1,20 +1,23 @@
 === tests/cases/conformance/classes/members/privateNames/privateNameSneakyRuntimeException.ts ===
+// @target es6
+
 function createClass () {
 >createClass : () => typeof (Anonymous class)
 
     return class {
->class {        #foo;        equals(other) {            return this.#foo = other.#foo;        }    } : typeof (Anonymous class)
+>class {        #foo = 3;        equals(other: any) {            return this.#foo = other.#foo;        }    } : typeof (Anonymous class)
 
-        #foo;
->#foo : any
+        #foo = 3;
+>#foo : number
+>3 : 3
 
-        equals(other) {
+        equals(other: any) {
 >equals : (other: any) => any
 >other : any
 
             return this.#foo = other.#foo;
 >this.#foo = other.#foo : any
->this.#foo : any
+>this.#foo : number
 >this : this
 >other.#foo : any
 >other : any

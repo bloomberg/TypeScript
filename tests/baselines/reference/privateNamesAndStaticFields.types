@@ -1,5 +1,5 @@
 === tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts ===
-// @target ESNext
+// @target es6
 
 class A {
 >A : A
