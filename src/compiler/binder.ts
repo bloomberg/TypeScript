@@ -273,7 +273,12 @@ namespace ts {
                 }
                 if (isPrivateName(name)) {
                     // containingClass exists because private names only allowed inside classes
-                    const containingClassSymbol = getContainingClass(name.parent)!.symbol;
+                    const containingClass = getContainingClass(name.parent);
+                    if (!containingClass) {
+                        // we're in a case where there's a private name outside a class (invalid)
+                        return undefined;
+                    }
+                    const containingClassSymbol = containingClass.symbol;
                     return getPropertyNameForPrivateNameDescription(containingClassSymbol, name.escapedText);
                 }
                 return isPropertyNameLiteral(name) ? getEscapedTextOfIdentifierOrLiteral(name) : undefined;

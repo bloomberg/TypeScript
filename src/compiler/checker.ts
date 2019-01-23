@@ -29681,6 +29681,10 @@ namespace ts {
                     return grammarErrorOnNode(prop.equalsToken!, Diagnostics.can_only_be_used_in_an_object_literal_property_inside_a_destructuring_assignment);
                 }
 
+                if (name.kind === SyntaxKind.PrivateName) {
+                    return grammarErrorOnNode(name, Diagnostics.Private_names_are_not_allowed_outside_class_bodies);
+                }
+
                 // Modifiers are never allowed on properties except for 'async' on a method declaration
                 if (prop.modifiers) {
                     for (const mod of prop.modifiers!) { // TODO: GH#19955

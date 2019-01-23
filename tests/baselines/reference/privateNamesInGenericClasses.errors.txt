@@ -1,24 +1,22 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(12,3): error TS2339: Property '#foo' does not exist on type 'C<number>'.
-tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(12,3): error TS18007: Property '#foo' is not accessible outside class 'C<T>' because it has a private name.
-tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(13,1): error TS2322: Type 'C<string>' is not assignable to type 'C<number>'.
+tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(10,3): error TS2339: Property '#foo' does not exist on type 'C<number>'.
+tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(10,3): error TS18007: Property '#foo' is not accessible outside class 'C<T>' because it has a private name.
+tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(11,1): error TS2322: Type 'C<string>' is not assignable to type 'C<number>'.
   Type 'string' is not assignable to type 'number'.
-tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(14,1): error TS2322: Type 'C<number>' is not assignable to type 'C<string>'.
+tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts(12,1): error TS2322: Type 'C<number>' is not assignable to type 'C<string>'.
   Type 'number' is not assignable to type 'string'.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNamesInGenericClasses.ts (4 errors) ====
-    // @target es6
-    
     class C<T> {
-      #foo: T;
-      bar(x: C<T>) { return x.#foo; }          // OK
-      baz(x: C<number>) { return x.#foo; }     // OK
-      quux(x: C<string>) { return x.#foo; }    // OK
+        #foo: T;
+        bar(x: C<T>) { return x.#foo; }          // OK
+        baz(x: C<number>) { return x.#foo; }     // OK
+        quux(x: C<string>) { return x.#foo; }    // OK
     }
     
     declare let a: C<number>;
     declare let b: C<string>;
-    a.#foo;                                   // OK
+    a.#foo;                                   // Error
       ~~~~
 !!! error TS2339: Property '#foo' does not exist on type 'C<number>'.
       ~~~~
