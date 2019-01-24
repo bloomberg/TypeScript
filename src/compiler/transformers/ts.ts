@@ -952,8 +952,8 @@ namespace ts {
                                     member.type,
                                     /*initializer*/ undefined
                                 );
-                                setCommentRange(updated, node);
-                                setSourceMapRange(updated, node);
+                                setCommentRange(updated, member);
+                                setSourceMapRange(updated, member);
                                 return updated;
                             }
                             return member;

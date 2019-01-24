@@ -1,0 +1,22 @@
+=== tests/cases/conformance/classes/constructorDeclarations/classConstructorParametersCommentPlacement.ts ===
+// some comment
+class A {
+>A : A
+
+    #a = "private hello";
+>#a : string
+>"private hello" : "private hello"
+
+    #b = "another private name";
+>#b : string
+>"another private name" : "another private name"
+
+    a = "public property";
+>a : string
+>"public property" : "public property"
+
+    constructor(private b = "something") { }
+>b : string
+>"something" : "something"
+}
+
