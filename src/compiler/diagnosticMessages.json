@@ -4299,13 +4299,33 @@
         "category": "Error",
         "code": 18003
     },
-    "Private names are not allowed in variable declarations.": {
+    "Accessibility modifiers cannot be used with private names.": {
         "category": "Error",
         "code": 18004
     },
-    "Private names cannot be used as parameters": {
+    "The operand of a delete operator cannot be a private name.": {
         "category": "Error",
         "code": 18005
+    },
+    "'#constructor' is a reserved word.": {
+        "category": "Error",
+        "code": 18006
+    },
+    "Property '{0}' is not accessible outside class '{1}' because it has a private name.": {
+        "category": "Error",
+        "code": 18007
+    },
+    "This usage of '{0}' refers to the private member declared in its enclosing class. While type '{1}' has a private member with the same spelling, its declaration and accessibility are distinct.": {
+        "category": "Error",
+        "code": 18008
+    },
+    "Property '{0}' is missing in type '{1}'. While type '{1}' has a private member with the same spelling, its declaration and accessibility are distinct.": {
+        "category": "Error",
+        "code": 18009
+    },
+    "Private names are not allowed outside class bodies.": {
+        "category": "Error",
+        "code": 18010
     },
 
     "File is a CommonJS module; it may be converted to an ES6 module.": {
