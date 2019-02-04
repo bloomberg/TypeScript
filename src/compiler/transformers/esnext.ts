@@ -888,9 +888,12 @@ namespace ts {
                         )],
                         createBlock(
                             [createExpressionStatement(
-                                createAssignment(
-                                    visitNode(node, visitor),
-                                    createIdentifier("x")
+                                visitNode(
+                                    createAssignment(
+                                        node,
+                                        createIdentifier("x")
+                                    ),
+                                    visitor
                                 )
                             )]
                         )

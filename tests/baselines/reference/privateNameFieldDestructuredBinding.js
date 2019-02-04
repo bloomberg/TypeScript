@@ -16,15 +16,15 @@ class A {
 
 
 //// [privateNameFieldDestructuredBinding.js]
-var _classPrivateFieldGet = function (receiver, privateMap) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return privateMap.get(receiver); };
+var _classPrivateFieldSet = function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
 var _field;
 var A = /** @class */ (function () {
     function A() {
         _field.set(this, 1);
         var _a, _b;
         var y;
-        (_a = this.testObject(), { set value(x) { _classPrivateFieldGet(this, _field) = x; } }.value = _a.x, y = _a.y);
-        (_b = this.testArray(), { set value(x) { _classPrivateFieldGet(this, _field) = x; } }.value = _b[0], y = _b[1]);
+        (_a = this.testObject(), { set value(x) { _classPrivateFieldSet(this, _field, x); } }.value = _a.x, y = _a.y);
+        (_b = this.testArray(), { set value(x) { _classPrivateFieldSet(this, _field, x); } }.value = _b[0], y = _b[1]);
     }
     A.prototype.testObject = function () {
         return { x: 10, y: 6 };
