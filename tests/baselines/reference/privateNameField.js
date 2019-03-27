@@ -9,11 +9,15 @@ class A {
 }
 
 //// [privateNameField.js]
-"use strict";
 // @target es6
+var _classPrivateFieldSet = function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
+var _name;
+"use strict";
 var A = /** @class */ (function () {
     function A(name) {
-        this.#name = name;
+        _name.set(this, void 0);
+        _classPrivateFieldSet(this, _name, name);
     }
     return A;
 }());
+_name = new WeakMap();

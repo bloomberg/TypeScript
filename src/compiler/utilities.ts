@@ -6337,6 +6337,16 @@ namespace ts {
             || kind === SyntaxKind.ArrayBindingPattern;
     }
 
+    /*@internal*/
+    export function isPrivateNamedPropertyDeclaration(node: Node): node is PrivateNamedPropertyDeclaration {
+        return isPropertyDeclaration(node) && isPrivateName(node.name);
+    }
+
+    /*@internal*/
+    export function isPrivateNamedPropertyAccessExpression(node: Node): node is PrivateNamedPropertyAccessExpression {
+        return isPropertyAccessExpression(node) && isPrivateName(node.name);
+    }
+
     // Functions
 
     export function isFunctionLike(node: Node): node is SignatureDeclaration {

@@ -28,22 +28,27 @@ b = a;                                    // Error
 
 
 //// [privateNamesAndGenericClasses-2.js]
+var _classPrivateFieldSet = function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
+var _classPrivateFieldGet = function (receiver, privateMap) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return privateMap.get(receiver); };
+var _foo;
 "use strict";
 class C {
     constructor(t) {
-        this.#foo = t;
-        t = this.#bar();
+        _foo.set(this, void 0);
+        _classPrivateFieldSet(this, _foo, t);
+        t = this.#bar.call(this);
     }
     #bar() {
-        return this.#foo;
+        return _classPrivateFieldGet(this, _foo);
     }
     set baz(t) {
-        this.#foo = t;
+        _classPrivateFieldSet(this, _foo, t);
     }
     get baz() {
-        return this.#foo;
+        return _classPrivateFieldGet(this, _foo);
     }
 }
+_foo = new WeakMap();
 let a = new C(3);
 let b = new C("hello");
 a.baz = 5; // OK

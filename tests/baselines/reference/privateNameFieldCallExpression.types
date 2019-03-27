@@ -1,0 +1,36 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameFieldCallExpression.ts ===
+class A {
+>A : A
+
+    #fieldFunc = () => this.x = 10;
+>#fieldFunc : () => number
+>() => this.x = 10 : () => number
+>this.x = 10 : 10
+>this.x : number
+>this : this
+>x : number
+>10 : 10
+
+    x = 1;
+>x : number
+>1 : 1
+
+    test() {
+>test : () => void
+
+        this.#fieldFunc();
+>this.#fieldFunc() : number
+>this.#fieldFunc : () => number
+>this : this
+
+        const func = this.#fieldFunc;
+>func : () => number
+>this.#fieldFunc : () => number
+>this : this
+
+        func();
+>func() : number
+>func : () => number
+    }
+}
+

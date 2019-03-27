@@ -1,0 +1,57 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameFieldDestructuredBinding.ts ===
+class A {
+>A : A
+
+    #field = 1;
+>#field : number
+>1 : 1
+
+    testObject() {
+>testObject : () => { x: number; y: number; }
+
+        return { x: 10, y: 6 };
+>{ x: 10, y: 6 } : { x: number; y: number; }
+>x : number
+>10 : 10
+>y : number
+>6 : 6
+    }
+    testArray() {
+>testArray : () => number[]
+
+        return [10, 11];
+>[10, 11] : number[]
+>10 : 10
+>11 : 11
+    }
+    constructor() {
+        let y: number;
+>y : number
+
+        ({ x: this.#field, y } = this.testObject());
+>({ x: this.#field, y } = this.testObject()) : { x: number; y: number; }
+>{ x: this.#field, y } = this.testObject() : { x: number; y: number; }
+>{ x: this.#field, y } : { x: number; y: number; }
+>x : number
+>this.#field : number
+>this : this
+>y : number
+>this.testObject() : { x: number; y: number; }
+>this.testObject : () => { x: number; y: number; }
+>this : this
+>testObject : () => { x: number; y: number; }
+
+        ([this.#field, y] = this.testArray());
+>([this.#field, y] = this.testArray()) : number[]
+>[this.#field, y] = this.testArray() : number[]
+>[this.#field, y] : [number, number]
+>this.#field : number
+>this : this
+>y : number
+>this.testArray() : number[]
+>this.testArray : () => number[]
+>this : this
+>testArray : () => number[]
+    }
+}
+

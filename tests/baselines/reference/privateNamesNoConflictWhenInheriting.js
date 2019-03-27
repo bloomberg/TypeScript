@@ -13,7 +13,6 @@ const b: A = new B() // OK
 
 
 //// [privateNamesNoConflictWhenInheriting.js]
-"use strict";
 // @target es6
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -28,16 +27,23 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var _foo, _foo_1;
+"use strict";
 var A = /** @class */ (function () {
     function A() {
+        _foo.set(this, void 0);
     }
     return A;
 }());
+_foo = new WeakMap();
 var B = /** @class */ (function (_super) {
     __extends(B, _super);
     function B() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _foo_1.set(_this, void 0); // OK: private names are unique to each class
+        return _this;
     }
     return B;
 }(A));
+_foo_1 = new WeakMap();
 var b = new B(); // OK

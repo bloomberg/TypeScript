@@ -1,0 +1,70 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameFieldUnaryMutation.ts ===
+class C {
+>C : C
+
+    #test: number = 24;
+>#test : number
+>24 : 24
+
+    constructor() {
+        this.#test++;
+>this.#test++ : number
+>this.#test : number
+>this : this
+
+        this.#test--;
+>this.#test-- : number
+>this.#test : number
+>this : this
+
+        ++this.#test;
+>++this.#test : number
+>this.#test : number
+>this : this
+
+        --this.#test;
+>--this.#test : number
+>this.#test : number
+>this : this
+    }
+    test() {
+>test : () => void
+
+        this.getInstance().#test++;
+>this.getInstance().#test++ : number
+>this.getInstance().#test : number
+>this.getInstance() : C
+>this.getInstance : () => C
+>this : this
+>getInstance : () => C
+
+        this.getInstance().#test--;
+>this.getInstance().#test-- : number
+>this.getInstance().#test : number
+>this.getInstance() : C
+>this.getInstance : () => C
+>this : this
+>getInstance : () => C
+
+        ++this.getInstance().#test;
+>++this.getInstance().#test : number
+>this.getInstance().#test : number
+>this.getInstance() : C
+>this.getInstance : () => C
+>this : this
+>getInstance : () => C
+
+        --this.getInstance().#test;
+>--this.getInstance().#test : number
+>this.getInstance().#test : number
+>this.getInstance() : C
+>this.getInstance : () => C
+>this : this
+>getInstance : () => C
+    }
+    getInstance() { return new C(); }
+>getInstance : () => C
+>new C() : C
+>C : typeof C
+}
+

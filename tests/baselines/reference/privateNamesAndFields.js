@@ -18,7 +18,6 @@ class B extends A {
 
 
 //// [privateNamesAndFields.js]
-"use strict";
 // @target es6
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33,18 +32,25 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var _classPrivateFieldSet = function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
+var _foo, _foo_1;
+"use strict";
 var A = /** @class */ (function () {
     function A() {
-        this.#foo = 3;
+        _foo.set(this, void 0);
+        _classPrivateFieldSet(this, _foo, 3);
     }
     return A;
 }());
+_foo = new WeakMap();
 var B = /** @class */ (function (_super) {
     __extends(B, _super);
     function B() {
         var _this = _super.call(this) || this;
-        _this.#foo = "some string";
+        _foo_1.set(_this, void 0);
+        _classPrivateFieldSet(_this, _foo_1, "some string");
         return _this;
     }
     return B;
 }(A));
+_foo_1 = new WeakMap();
