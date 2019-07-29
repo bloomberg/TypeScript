@@ -74,6 +74,7 @@
         "unittests/evaluation/asyncArrow.ts",
         "unittests/evaluation/asyncGenerator.ts",
         "unittests/evaluation/forAwaitOf.ts",
+        "unittests/evaluation/privateNameField.ts",
         "unittests/services/cancellableLanguageServiceOperations.ts",
         "unittests/services/colorization.ts",
         "unittests/services/convertToAsyncFunction.ts",
