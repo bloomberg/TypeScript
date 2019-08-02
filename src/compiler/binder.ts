@@ -2494,6 +2494,12 @@ namespace ts {
 
         function bindThisPropertyAssignment(node: BinaryExpression | PropertyAccessExpression) {
             Debug.assert(isInJSFile(node));
+            // private names *must* be declared (even in JS files)
+            const hasPrivateName = (isBinaryExpression(node) && isPropertyAccessExpression(node.left) && isPrivateIdentifier(node.left.name))
+                || (isPropertyAccessExpression(node) && isPrivateIdentifier(node.name));
+            if (hasPrivateName) {
+                return;
+            }
             const thisContainer = getThisContainer(node, /*includeArrowFunctions*/ false);
             switch (thisContainer.kind) {
                 case SyntaxKind.FunctionDeclaration:
@@ -2524,11 +2530,7 @@ namespace ts {
                     // Bind this property to the containing class
                     const containingClass = thisContainer.parent;
                     const symbolTable = hasModifier(thisContainer, ModifierFlags.Static) ? containingClass.symbol.exports! : containingClass.symbol.members!;
-                    // private names *must* be declared (even in JS files)
-                    const hasPrivateName = isBinaryExpression(node) && isPropertyAccessExpression(node.left) && isPrivateIdentifier(node.left.name);
-                    if (!hasPrivateName) {
-                        declareSymbol(symbolTable, containingClass.symbol, node, SymbolFlags.Property, SymbolFlags.None, /*isReplaceableByMethod*/ true);
-                    }
+                    declareSymbol(symbolTable, containingClass.symbol, node, SymbolFlags.Property, SymbolFlags.None, /*isReplaceableByMethod*/ true);
                     break;
                 case SyntaxKind.SourceFile:
                     // this.property = assignment in a source file -- declare symbol in exports for a module, in locals for a script
