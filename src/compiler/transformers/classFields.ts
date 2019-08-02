@@ -516,13 +516,13 @@ namespace ts {
             return setTextRange(createNodeArray(members), /*location*/ node.members);
         }
 
+        function doesClassElementRequireConstructorStatement(member: ClassElement) {
+            return isInitializedProperty(member) || (shouldTransformPrivateFields && isPrivateIdentifierPropertyDeclaration(member));
+        }
+
         function transformConstructor(node: ClassDeclaration | ClassExpression, isDerivedClass: boolean) {
             const constructor = visitNode(getFirstConstructorWithBody(node), visitor, isConstructorDeclaration);
-            const containsPropertyInitializerOrPrivateIdentifier = forEach(
-                node.members,
-                member => isInitializedProperty(member) || (shouldTransformPrivateFields && isPrivateIdentifierPropertyDeclaration(member))
-            );
-            if (!containsPropertyInitializerOrPrivateIdentifier) {
+            if (!forEach(node.members, doesClassElementRequireConstructorStatement)) {
                 return constructor;
             }
             const parameters = visitParameterList(constructor ? constructor.parameters : undefined, visitor, context);
@@ -546,10 +546,12 @@ namespace ts {
             );
         }
 
+        function isInstanceProperty(node: ClassElement): node is PropertyDeclaration {
+            return isPropertyDeclaration(node) && !hasStaticModifier(node);
+        }
+
         function transformConstructorBody(node: ClassDeclaration | ClassExpression, constructor: ConstructorDeclaration | undefined, isDerivedClass: boolean) {
-            const properties = node.members.filter(
-                (node): node is PropertyDeclaration => isPropertyDeclaration(node) && !hasStaticModifier(node)
-            );
+            const properties = node.members.filter(isInstanceProperty);
 
             // Only generate synthetic constructor when there are property initializers to move.
             if (!constructor && !some(properties)) {
