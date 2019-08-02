@@ -16,5 +16,6 @@ class C {
         console.log(this.#m);
         console.log(this.#x = "test");
     }
+    #something = () => 1234;
 }
 

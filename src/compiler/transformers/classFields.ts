@@ -188,6 +188,9 @@ namespace ts {
         function visitPropertyDeclaration(node: PropertyDeclaration) {
             Debug.assert(!some(node.decorators));
             if (!shouldTransformPrivateFields && isPrivateIdentifier(node.name)) {
+                const initializer = node.initializer && (isFunctionExpression(node.initializer) || isArrowFunction(node.initializer)) ?
+                    visitNode(node.initializer, visitor) :
+                    undefined;
                 return updateProperty(
                     node,
                     /*decorators*/ undefined,
@@ -195,7 +198,7 @@ namespace ts {
                     node.name,
                     /*questionOrExclamationToken*/ undefined,
                     /*type*/ undefined,
-                    /*initializer*/ undefined
+                    initializer
                 );
             }
             // Create a temporary variable to store a computed property name (if necessary).
@@ -702,10 +705,10 @@ namespace ts {
                     Debug.fail("Undeclared private name for property declaration.");
                 }
             }
-            // Preserve function names by keeping functions.
-            // if (!shouldTransformPrivateFields && initializer && (isFunctionExpression(initializer) || isArrowFunction(initializer))) {
-            //     return undefined;
-            // }
+            // Preserve private function names by keeping functions.
+            if (!shouldTransformPrivateFields && initializer && (isFunctionExpression(initializer) || isArrowFunction(initializer))) {
+                return undefined;
+            }
             if (!initializer) {
                 return undefined;
             }

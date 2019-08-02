@@ -58,6 +58,8 @@ class C {
 >this.#x : Symbol(C.#x, Decl(privateNameFieldsESNext.ts, 10, 23))
 >this : Symbol(C, Decl(privateNameFieldsESNext.ts, 0, 0))
     }
+    #something = () => 1234;
+>#something : Symbol(C.#something, Decl(privateNameFieldsESNext.ts, 15, 5))
 }
 
 

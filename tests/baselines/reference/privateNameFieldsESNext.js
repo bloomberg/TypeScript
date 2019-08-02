@@ -15,6 +15,7 @@ class C {
         console.log(this.#m);
         console.log(this.#x = "test");
     }
+    #something = () => 1234;
 }
 
 
@@ -39,5 +40,6 @@ class C {
         console.log(this.#m);
         console.log(this.#x = "test");
     }
+    #something = () => 1234;
 }
 C.#m = "test";

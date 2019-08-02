@@ -70,6 +70,10 @@ class C {
 >this : typeof C
 >"test" : "test"
     }
+    #something = () => 1234;
+>#something : () => number
+>() => 1234 : () => number
+>1234 : 1234
 }
 
 
