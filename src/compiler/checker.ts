@@ -27039,9 +27039,7 @@ namespace ts {
         function checkWeakMapCollision(node: Node) {
             const enclosingBlockScope = getEnclosingBlockScopeContainer(node);
             if (getNodeCheckFlags(enclosingBlockScope) & NodeCheckFlags.ContainsClassWithPrivateIdentifiers) {
-                // TODO: Create correct error message for this.
-                error(node, Diagnostics.Duplicate_identifier_0_Compiler_reserves_name_1_in_top_level_scope_of_a_module,
-                    "WeakMap", "WeakMap");
+                error(node, Diagnostics.Compiler_reserves_name_0_when_emitting_private_identifier_downlevel, "WeakMap");
             }
         }
 

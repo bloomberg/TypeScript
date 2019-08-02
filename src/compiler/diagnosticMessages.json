@@ -5085,5 +5085,9 @@
     "A hashbang ('!#') can only be used at the start of a file.": {
         "category": "Error",
         "code": 18026
+    },
+    "Compiler reserves name '{0}' when emitting private identifier downlevel.": {
+        "category": "Error",
+        "code": 18027
     }
 }
