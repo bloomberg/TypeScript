@@ -27301,7 +27301,7 @@ namespace ts {
                 }
                 checkCollisionWithRequireExportsInGeneratedCode(node, <Identifier>node.name);
                 checkCollisionWithGlobalPromiseInGeneratedCode(node, <Identifier>node.name);
-                if (languageVersion < ScriptTarget.ESNext && idText(node.name as Identifier) === "WeakMap") {
+                if (!compilerOptions.noEmit && languageVersion < ScriptTarget.ESNext && needCollisionCheckForIdentifier(node, node.name as Identifier, "WeakMap")) {
                     potentialWeakMapCollisions.push(node);
                 }
             }
