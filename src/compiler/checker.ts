@@ -25305,7 +25305,10 @@ namespace ts {
                 return;
             }
 
-            function isInstancePropertyWithInitializer(n: Node): boolean {
+            function isInstancePropertyWithInitializerOrDownlevelPrivateIdentifierProperty(n: Node): boolean {
+                if (languageVersion < ScriptTarget.ESNext && isPrivateIdentifierPropertyDeclaration(n)) {
+                    return true;
+                }
                 return n.kind === SyntaxKind.PropertyDeclaration &&
                     !hasModifier(n, ModifierFlags.Static) &&
                     !!(<PropertyDeclaration>n).initializer;
@@ -25330,7 +25333,7 @@ namespace ts {
                     // - The constructor declares parameter properties
                     //   or the containing class declares instance member variables with initializers.
                     const superCallShouldBeFirst =
-                        some((<ClassDeclaration>node.parent).members, isInstancePropertyWithInitializer) ||
+                        some((<ClassDeclaration>node.parent).members, isInstancePropertyWithInitializerOrDownlevelPrivateIdentifierProperty) ||
                         some(node.parameters, p => hasModifier(p, ModifierFlags.ParameterPropertyModifier));
 
                     // Skip past any prologue directives to find the first statement
@@ -25349,7 +25352,7 @@ namespace ts {
                             }
                         }
                         if (!superCallStatement) {
-                            error(node, Diagnostics.A_super_call_must_be_the_first_statement_in_the_constructor_when_a_class_contains_initialized_properties_or_has_parameter_properties);
+                            error(node, Diagnostics.A_super_call_must_be_the_first_statement_in_the_constructor_when_a_class_contains_initialized_properties_parameter_properties_or_downleveled_private_identifiers);
                         }
                     }
                 }

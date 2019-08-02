@@ -1,0 +1,23 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameWithCodeBeforeSuperCall.ts ===
+class A {}
+>A : A
+
+class B extends A {
+>B : B
+>A : A
+
+    #a;
+>#a : any
+
+    constructor() {
+        void 0;
+>void 0 : undefined
+>0 : 0
+
+        super();
+>super() : void
+>super : typeof A
+    }
+}
+
+

@@ -1344,7 +1344,7 @@
         "category": "Error",
         "code": 2375
     },
-    "A 'super' call must be the first statement in the constructor when a class contains initialized properties or has parameter properties.": {
+    "A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or downleveled private identifiers.": {
         "category": "Error",
         "code": 2376
     },
