@@ -1835,7 +1835,7 @@ namespace ts {
                         return token = SyntaxKind.Unknown;
                     case CharacterCodes.hash:
                         if (pos !== 0 && text[pos + 1] === "!") {
-                            error(Diagnostics.A_hashbang_can_only_be_used_at_the_start_of_a_file);
+                            error(Diagnostics.can_only_be_used_at_the_start_of_a_file);
                             pos++;
                             return token = SyntaxKind.Unknown;
                         }
