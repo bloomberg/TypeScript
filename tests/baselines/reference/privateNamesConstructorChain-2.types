@@ -14,7 +14,7 @@ class Parent<T> {
 >accessChildProps : () => void
 
         new Child<string>().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
->new Child<string>().#foo : number
+>new Child<string>().#foo : any
 >new Child<string>() : Child<string>
 >Child : typeof Child
 

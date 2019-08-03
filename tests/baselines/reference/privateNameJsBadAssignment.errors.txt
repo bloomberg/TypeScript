@@ -1,17 +1,13 @@
 tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(1,9): error TS2339: Property '#nope' does not exist on type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
-tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(1,9): error TS18020: A private identifier cannot be assigned to a value of type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
 tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(6,3): error TS2339: Property '#foo' does not exist on type 'typeof B'.
 tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(11,17): error TS2339: Property '#bar' does not exist on type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
-tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(11,17): error TS18020: A private identifier cannot be assigned to a value of type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
 tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js(12,14): error TS2339: Property '#foo' does not exist on type 'C'.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js (6 errors) ====
+==== tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment.js (4 errors) ====
     exports.#nope = 1;           // Error (outside class body)
             ~~~~~
 !!! error TS2339: Property '#nope' does not exist on type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
-            ~~~~~
-!!! error TS18020: A private identifier cannot be assigned to a value of type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
     function A() { }
     A.prototype.#no = 2;         // Error (outside class body)
     
@@ -26,8 +22,6 @@ tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment
             exports.#bar = 6;    // Error
                     ~~~~
 !!! error TS2339: Property '#bar' does not exist on type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
-                    ~~~~
-!!! error TS18020: A private identifier cannot be assigned to a value of type 'typeof import("tests/cases/conformance/classes/members/privateNames/privaateNameJsBadAssignment")'.
             this.#foo = 3;       // Error (undeclared)
                  ~~~~
 !!! error TS2339: Property '#foo' does not exist on type 'C'.

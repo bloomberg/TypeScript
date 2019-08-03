@@ -1,5 +1,4 @@
 tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(3,5): error TS18022: A method cannot have a private identifier. This feature may be supported in a future release.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(24,3): error TS2339: Property '#foo' does not exist on type 'C<number>'.
 tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(24,3): error TS18013: Property '#foo' is not accessible outside class 'C' because it is privately named.
 tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(25,1): error TS2322: Type 'C<string>' is not assignable to type 'C<number>'.
   Type 'string' is not assignable to type 'number'.
@@ -7,7 +6,7 @@ tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClass
   Type 'number' is not assignable to type 'string'.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts (5 errors) ====
+==== tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts (4 errors) ====
     class C<T> {
         #foo: T;
         #bar(): T {
@@ -34,8 +33,6 @@ tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClass
     a.baz = 5                                 // OK
     const x: number = a.baz                   // OK
     a.#foo;                                   // Error
-      ~~~~
-!!! error TS2339: Property '#foo' does not exist on type 'C<number>'.
       ~~~~
 !!! error TS18013: Property '#foo' is not accessible outside class 'C' because it is privately named.
     a = b;                                    // Error

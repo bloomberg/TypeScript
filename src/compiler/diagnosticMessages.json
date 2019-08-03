@@ -5062,10 +5062,6 @@
         "category": "Error",
         "code": 18019
     },
-    "A private identifier cannot be assigned to a value of type '{0}'.": {
-        "category": "Error",
-        "code": 18020
-    },
     "A method cannot have a private identifier. This feature may be supported in a future release.": {
         "category": "Error",
         "code": 18022

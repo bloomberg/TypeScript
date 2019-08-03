@@ -1,8 +1,7 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses-1.ts(13,18): error TS2339: Property '#foo' does not exist on type 'A'.
 tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses-1.ts(13,18): error TS18014: The property '#foo' cannot be accessed on type 'A' within this class because it is shadowed by another private identifier with the same spelling.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses-1.ts (2 errors) ====
+==== tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses-1.ts (1 errors) ====
     // @target es6
     
     class A {
@@ -16,8 +15,6 @@ tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses
                }
                baz (a: A) {
                    a.#foo; // compile-time error, shadowed
-                     ~~~~
-!!! error TS2339: Property '#foo' does not exist on type 'A'.
                      ~~~~
 !!! error TS18014: The property '#foo' cannot be accessed on type 'A' within this class because it is shadowed by another private identifier with the same spelling.
 !!! related TS18017 tests/cases/conformance/classes/members/privateNames/privateNamesInNestedClasses-1.ts:8:12: The shadowing declaration of '#foo' is defined here
