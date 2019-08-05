@@ -1,9 +1,10 @@
 tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts(3,5): error TS18019: 'static' modifier cannot be used with a private-named field.
 tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts(3,12): error TS2300: Duplicate identifier '#foo'.
 tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts(9,5): error TS18019: 'static' modifier cannot be used with a private-named field.
+tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts(11,11): error TS2339: Property '#foo' does not exist on type 'B'.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts (3 errors) ====
+==== tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts (4 errors) ====
     class A {
         #foo = 1;
         static #foo = true; // error (duplicate)
@@ -21,6 +22,8 @@ tests/cases/conformance/classes/members/privateNames/privateNamesUnique-4.ts(9,5
 !!! error TS18019: 'static' modifier cannot be used with a private-named field.
         test(x: B) {
             x.#foo; // error (#foo is a static property on B, not an instance property)
+              ~~~~
+!!! error TS2339: Property '#foo' does not exist on type 'B'.
         }
     }
     

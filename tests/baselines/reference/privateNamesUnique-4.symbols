@@ -24,7 +24,6 @@ class B {
 >B : Symbol(B, Decl(privateNamesUnique-4.ts, 6, 1))
 
         x.#foo; // error (#foo is a static property on B, not an instance property)
->x.#foo : Symbol(B.#foo, Decl(privateNamesUnique-4.ts, 7, 9))
 >x : Symbol(x, Decl(privateNamesUnique-4.ts, 9, 9))
     }
 }

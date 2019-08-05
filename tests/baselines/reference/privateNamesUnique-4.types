@@ -26,7 +26,7 @@ class B {
 >x : B
 
         x.#foo; // error (#foo is a static property on B, not an instance property)
->x.#foo : boolean
+>x.#foo : any
 >x : B
     }
 }

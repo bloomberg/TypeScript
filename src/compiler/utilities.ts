@@ -2793,7 +2793,7 @@ namespace ts {
         return "__@" + symbolName as __String;
     }
 
-    export function getPropertyNameForPrivateNameDescription(containingClassSymbol: Symbol, description: __String): __String {
+    export function getSymbolNameForPrivateIdentifier(containingClassSymbol: Symbol, description: __String): __String {
         return `__#${getSymbolId(containingClassSymbol)}@${description}` as __String;
     }
 

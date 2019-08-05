@@ -1,9 +1,8 @@
 tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChain-2.ts(3,5): error TS18019: 'static' modifier cannot be used with a private-named field.
-tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChain-2.ts(5,29): error TS18013: Property '#foo' is not accessible outside class 'Child' because it is privately named.
 tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChain-2.ts(6,15): error TS2339: Property '#bar' does not exist on type 'typeof Child'.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChain-2.ts (3 errors) ====
+==== tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChain-2.ts (2 errors) ====
     class Parent<T> {
         #foo = 3;
         static #bar = 5;
@@ -11,8 +10,6 @@ tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChai
 !!! error TS18019: 'static' modifier cannot be used with a private-named field.
         accessChildProps() {
             new Child<string>().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
-                                ~~~~
-!!! error TS18013: Property '#foo' is not accessible outside class 'Child' because it is privately named.
             Child.#bar;       // Error: not found
                   ~~~~
 !!! error TS2339: Property '#bar' does not exist on type 'typeof Child'.

@@ -285,7 +285,7 @@ namespace ts {
                         return undefined;
                     }
                     const containingClassSymbol = containingClass.symbol;
-                    return getPropertyNameForPrivateNameDescription(containingClassSymbol, name.escapedText);
+                    return getSymbolNameForPrivateIdentifier(containingClassSymbol, name.escapedText);
                 }
                 return isPropertyNameLiteral(name) ? getEscapedTextOfIdentifierOrLiteral(name) : undefined;
             }
@@ -2494,10 +2494,10 @@ namespace ts {
 
         function bindThisPropertyAssignment(node: BinaryExpression | PropertyAccessExpression) {
             Debug.assert(isInJSFile(node));
-            // private names *must* be declared (even in JS files)
-            const hasPrivateName = (isBinaryExpression(node) && isPropertyAccessExpression(node.left) && isPrivateIdentifier(node.left.name))
+            // private identifiers *must* be declared (even in JS files)
+            const hasPrivateIdentifier = (isBinaryExpression(node) && isPropertyAccessExpression(node.left) && isPrivateIdentifier(node.left.name))
                 || (isPropertyAccessExpression(node) && isPrivateIdentifier(node.name));
-            if (hasPrivateName) {
+            if (hasPrivateIdentifier) {
                 return;
             }
             const thisContainer = getThisContainer(node, /*includeArrowFunctions*/ false);

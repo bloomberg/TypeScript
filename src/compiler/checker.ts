@@ -13692,14 +13692,14 @@ namespace ts {
                     && isPrivateIdentifier(unmatchedProperty.valueDeclaration.name)
                     && isClassDeclaration(source.symbol.valueDeclaration)
                 ) {
-                    const privateNameDescription = unmatchedProperty.valueDeclaration.name.escapedText;
-                    const symbolTableKey = getPropertyNameForPrivateNameDescription(source.symbol, privateNameDescription);
+                    const privateIdentifierDescription = unmatchedProperty.valueDeclaration.name.escapedText;
+                    const symbolTableKey = getSymbolNameForPrivateIdentifier(source.symbol, privateIdentifierDescription);
                     if (symbolTableKey && !!getPropertyOfType(source, symbolTableKey)) {
                         const sourceName = source.symbol.valueDeclaration.name;
                         const targetName = isClassDeclaration(target.symbol.valueDeclaration) ? target.symbol.valueDeclaration.name : undefined;
                         reportError(
                             Diagnostics.Property_0_in_type_1_refers_to_a_different_member_that_cannot_be_accessed_from_within_type_2,
-                            diagnosticName(privateNameDescription),
+                            diagnosticName(privateIdentifierDescription),
                             diagnosticName(sourceName || anon),
                             diagnosticName(targetName || anon),
                         );
@@ -20311,7 +20311,7 @@ namespace ts {
         function lookupSymbolForPrivateIdentifierDeclaration(right: PrivateIdentifier): Symbol | undefined {
             for (let containingClass = getContainingClass(right); !!containingClass; containingClass = getContainingClass(containingClass)) {
                 const { symbol } = containingClass;
-                const name = getPropertyNameForPrivateNameDescription(symbol, right.escapedText);
+                const name = getSymbolNameForPrivateIdentifier(symbol, right.escapedText);
                 const prop = (symbol.members && symbol.members.get(name)) || (symbol.exports && symbol.exports.get(name));
                 if (prop) {
                     return prop;
@@ -20319,21 +20319,30 @@ namespace ts {
             }
         }
 
-        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier): Symbol | undefined {
-            const lexicallyScopedIdentifier = lookupSymbolForPrivateIdentifierDeclaration(right);
-            const propertySymbols = isConstructorType(leftType) ? leftType.symbol.exports : leftType.symbol.members;
-            if (lexicallyScopedIdentifier && propertySymbols && propertySymbols.has(lexicallyScopedIdentifier.escapedName)) {
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier): Symbol | undefined;
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): Symbol | undefined;
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier = lookupSymbolForPrivateIdentifierDeclaration(right)): Symbol | undefined {
+            leftType = getApparentType(leftType);
+            if (!(leftType.flags & TypeFlags.Object)) {
+                return undefined;
+            }
+            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
+            if (lexicallyScopedIdentifier && properties && properties.has(lexicallyScopedIdentifier.escapedName)) {
                 return lexicallyScopedIdentifier;
             }
         }
 
         function checkPrivateIdentifierPropertyAccess(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): boolean {
+            leftType = getApparentType(leftType);
+            if (!(leftType.flags & TypeFlags.Object)) {
+                return false;
+            }
             // Either the identifier could not be looked up in the lexical scope OR the lexically scoped identifier did not exist on the type.
             // Find a private identifier with the same description on the type.
             let propertyOnType: Symbol | undefined;
-            const propertySymbols = isConstructorType(leftType) ? leftType.symbol.exports : leftType.symbol.members;
-            if (propertySymbols) {
-                forEachEntry(propertySymbols, (symbol: Symbol) => {
+            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
+            if (properties) {
+                forEachEntry(properties, (symbol: Symbol) => {
                     const decl = symbol.valueDeclaration;
                     if (decl && isNamedDeclaration(decl) && isPrivateIdentifier(decl.name) && decl.name.escapedText === right.escapedText) {
                         propertyOnType = symbol;
@@ -20407,17 +20416,9 @@ namespace ts {
             let prop: Symbol | undefined;
             if (isPrivateIdentifier(right)) {
                 const lexicallyScopedSymbol = lookupSymbolForPrivateIdentifierDeclaration(right);
-                // Property lookup is successful if the specific private identifier that is in scope exists on the type.
-                if (lexicallyScopedSymbol &&
-                    // Check members for private identifier.
-                    ((leftType.symbol.members && leftType.symbol.members.has(lexicallyScopedSymbol.escapedName)) ||
-                    // Check statics for private identifier.
-                    (leftType.symbol.exports && leftType.symbol.exports.has(lexicallyScopedSymbol.escapedName)))) {
-
-                    prop = lexicallyScopedSymbol;
-                }
+                prop = getPropertyForPrivateIdentifier(leftType, right, lexicallyScopedSymbol);
                 // Check for private-identifier-specific shadowing and lexical-scoping errors.
-                else if (checkPrivateIdentifierPropertyAccess(leftType, right, lexicallyScopedSymbol)) {
+                if (!prop && checkPrivateIdentifierPropertyAccess(leftType, right, lexicallyScopedSymbol)) {
                     return errorType;
                 }
             }
@@ -20587,7 +20588,7 @@ namespace ts {
         function reportNonexistentProperty(propNode: Identifier | PrivateIdentifier, containingType: Type) {
             let errorInfo: DiagnosticMessageChain | undefined;
             let relatedInfo: Diagnostic | undefined;
-            if (containingType.flags & TypeFlags.Union && !(containingType.flags & TypeFlags.Primitive)) {
+            if (!isPrivateIdentifier(propNode) && containingType.flags & TypeFlags.Union && !(containingType.flags & TypeFlags.Primitive)) {
                 for (const subtype of (containingType as UnionType).types) {
                     if (!getPropertyOfType(subtype, propNode.escapedText)) {
                         errorInfo = chainDiagnosticMessages(errorInfo, Diagnostics.Property_0_does_not_exist_on_type_1, declarationNameToString(propNode), typeToString(subtype));

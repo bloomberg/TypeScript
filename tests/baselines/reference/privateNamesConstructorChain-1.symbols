@@ -12,6 +12,7 @@ class Parent {
 >accessChildProps : Symbol(Parent.accessChildProps, Decl(privateNamesConstructorChain-1.ts, 2, 20))
 
         new Child().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
+>new Child().#foo : Symbol(Parent.#foo, Decl(privateNamesConstructorChain-1.ts, 0, 14))
 >Child : Symbol(Child, Decl(privateNamesConstructorChain-1.ts, 7, 1))
 
         Child.#bar;       // Error: not found
