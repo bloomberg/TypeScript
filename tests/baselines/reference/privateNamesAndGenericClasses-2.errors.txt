@@ -1,4 +1,4 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(3,5): error TS18022: A method cannot have a private identifier. This feature may be supported in a future release.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(3,5): error TS18022: A method cannot have a private identifier.
 tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(24,3): error TS18013: Property '#foo' is not accessible outside class 'C' because it is privately named.
 tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClasses-2.ts(25,1): error TS2322: Type 'C<string>' is not assignable to type 'C<number>'.
   Type 'string' is not assignable to type 'number'.
@@ -11,7 +11,7 @@ tests/cases/conformance/classes/members/privateNames/privateNamesAndGenericClass
         #foo: T;
         #bar(): T {
         ~~~~
-!!! error TS18022: A method cannot have a private identifier. This feature may be supported in a future release.
+!!! error TS18022: A method cannot have a private identifier.
           return this.#foo;
         }
         constructor(t: T) {

@@ -5058,15 +5058,15 @@
         "category": "Error",
         "code": 18018
     },
-    "'{0}' modifier cannot be used with a private-named field. This feature may be supported in a future release": {
+    "'{0}' modifier cannot be used with a private-named field.": {
         "category": "Error",
         "code": 18019
     },
-    "A method cannot have a private identifier. This feature may be supported in a future release.": {
+    "A method cannot have a private identifier.": {
         "category": "Error",
         "code": 18022
     },
-    "An accessor cannot have a private identifier. This feature may be supported in a future release.": {
+    "An accessor cannot have a private identifier.": {
         "category": "Error",
         "code": 18023
     },
