@@ -12,6 +12,7 @@ namespace ts {
     let NodeConstructor: new (kind: SyntaxKind, pos?: number, end?: number) => Node;
     let TokenConstructor: new (kind: SyntaxKind, pos?: number, end?: number) => Node;
     let IdentifierConstructor: new (kind: SyntaxKind, pos?: number, end?: number) => Node;
+    let PrivateIdentifierConstructor: new (kind: SyntaxKind, pos?: number, end?: number) => Node;
     let SourceFileConstructor: new (kind: SyntaxKind, pos?: number, end?: number) => Node;
     // tslint:enable variable-name
 
@@ -21,6 +22,9 @@ namespace ts {
         }
         else if (kind === SyntaxKind.Identifier) {
             return new (IdentifierConstructor || (IdentifierConstructor = objectAllocator.getIdentifierConstructor()))(kind, pos, end);
+        }
+        else if (kind === SyntaxKind.PrivateIdentifier) {
+            return new (PrivateIdentifierConstructor || (PrivateIdentifierConstructor = objectAllocator.getPrivateIdentifierConstructor()))(kind, pos, end);
         }
         else if (!isNodeKind(kind)) {
             return new (TokenConstructor || (TokenConstructor = objectAllocator.getTokenConstructor()))(kind, pos, end);
@@ -588,6 +592,7 @@ namespace ts {
         let NodeConstructor: new (kind: SyntaxKind, pos: number, end: number) => Node;
         let TokenConstructor: new (kind: SyntaxKind, pos: number, end: number) => Node;
         let IdentifierConstructor: new (kind: SyntaxKind, pos: number, end: number) => Node;
+        let PrivateIdentifierConstructor: new (kind: SyntaxKind, pos: number, end: number) => Node;
         let SourceFileConstructor: new (kind: SyntaxKind, pos: number, end: number) => Node;
         // tslint:enable variable-name
 
@@ -782,6 +787,7 @@ namespace ts {
             NodeConstructor = objectAllocator.getNodeConstructor();
             TokenConstructor = objectAllocator.getTokenConstructor();
             IdentifierConstructor = objectAllocator.getIdentifierConstructor();
+            PrivateIdentifierConstructor = objectAllocator.getPrivateIdentifierConstructor();
             SourceFileConstructor = objectAllocator.getSourceFileConstructor();
 
             sourceText = _sourceText;
@@ -1290,6 +1296,7 @@ namespace ts {
             const p = pos! >= 0 ? pos! : scanner.getStartPos();
             return isNodeKind(kind) || kind === SyntaxKind.Unknown ? new NodeConstructor(kind, p, p) :
                 kind === SyntaxKind.Identifier ? new IdentifierConstructor(kind, p, p) :
+                kind === SyntaxKind.PrivateIdentifier ? new PrivateIdentifierConstructor(kind, p, p) :
                 new TokenConstructor(kind, p, p);
         }
 

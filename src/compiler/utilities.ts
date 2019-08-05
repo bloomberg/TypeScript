@@ -7015,6 +7015,7 @@ namespace ts {
         getNodeConstructor(): new (kind: SyntaxKind, pos?: number, end?: number) => Node;
         getTokenConstructor(): new <TKind extends SyntaxKind>(kind: TKind, pos?: number, end?: number) => Token<TKind>;
         getIdentifierConstructor(): new (kind: SyntaxKind.Identifier, pos?: number, end?: number) => Identifier;
+        getPrivateIdentifierConstructor(): new (kind: SyntaxKind.PrivateIdentifier, pos?: number, end?: number) => PrivateIdentifier;
         getSourceFileConstructor(): new (kind: SyntaxKind.SourceFile, pos?: number, end?: number) => SourceFile;
         getSymbolConstructor(): new (flags: SymbolFlags, name: __String) => Symbol;
         getTypeConstructor(): new (checker: TypeChecker, flags: TypeFlags) => Type;
@@ -7063,6 +7064,7 @@ namespace ts {
         getNodeConstructor: () => <any>Node,
         getTokenConstructor: () => <any>Node,
         getIdentifierConstructor: () => <any>Node,
+        getPrivateIdentifierConstructor: () => <any>Node,
         getSourceFileConstructor: () => <any>Node,
         getSymbolConstructor: () => <any>Symbol,
         getTypeConstructor: () => <any>Type,
