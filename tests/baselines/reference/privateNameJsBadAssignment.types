@@ -28,10 +28,6 @@ B.#foo = 3;                  // Error (outside class body)
 class C {
 >C : C
 
-    #foo = 4;
->#foo : number
->4 : 4
-
     #bar = 6;
 >#bar : number
 >6 : 6
@@ -45,7 +41,7 @@ class C {
 
         this.#foo = 3;       // Error (undeclared)
 >this.#foo = 3 : 3
->this.#foo : number
+>this.#foo : any
 >this : this
 >3 : 3
     }

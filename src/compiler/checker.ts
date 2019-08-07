@@ -573,6 +573,7 @@ namespace ts {
         const sharedFlowTypes: FlowType[] = [];
         const potentialThisCollisions: Node[] = [];
         const potentialNewTargetCollisions: Node[] = [];
+        const potentialWeakMapCollisions: Node[] = [];
         const awaitedTypeStack: number[] = [];
 
         const diagnostics = createDiagnosticCollection();
@@ -1746,7 +1747,7 @@ namespace ts {
         }
 
         function diagnosticName(nameArg: __String | Identifier | PrivateIdentifier) {
-            return isString(nameArg) ? unescapeLeadingUnderscores(nameArg as __String) : declarationNameToString(nameArg as Identifier | PrivateIdentifier);
+            return isString(nameArg) ? unescapeLeadingUnderscores(nameArg as __String) : declarationNameToString(nameArg as Identifier);
         }
 
         function isTypeParameterSymbolDeclaredInContainer(symbol: Symbol, container: Node) {
@@ -13691,14 +13692,14 @@ namespace ts {
                     && isPrivateIdentifier(unmatchedProperty.valueDeclaration.name)
                     && isClassDeclaration(source.symbol.valueDeclaration)
                 ) {
-                    const privateNameDescription = unmatchedProperty.valueDeclaration.name.escapedText;
-                    const symbolTableKey = getPropertyNameForPrivateNameDescription(source.symbol, privateNameDescription);
+                    const privateIdentifierDescription = unmatchedProperty.valueDeclaration.name.escapedText;
+                    const symbolTableKey = getSymbolNameForPrivateIdentifier(source.symbol, privateIdentifierDescription);
                     if (symbolTableKey && !!getPropertyOfType(source, symbolTableKey)) {
                         const sourceName = source.symbol.valueDeclaration.name;
                         const targetName = isClassDeclaration(target.symbol.valueDeclaration) ? target.symbol.valueDeclaration.name : undefined;
                         reportError(
                             Diagnostics.Property_0_in_type_1_refers_to_a_different_member_that_cannot_be_accessed_from_within_type_2,
-                            diagnosticName(privateNameDescription),
+                            diagnosticName(privateIdentifierDescription),
                             diagnosticName(sourceName || anon),
                             diagnosticName(targetName || anon),
                         );
@@ -20306,118 +20307,95 @@ namespace ts {
             return isCallOrNewExpression(node.parent) && node.parent.expression === node;
         }
 
-        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, errorNode: Node | undefined): Symbol | undefined {
-            const privateNameDescription = right.escapedText;
-            const diagName = diagnosticName(right);
+        // Lookup the private identifier lexically.
+        function lookupSymbolForPrivateIdentifierDeclaration(right: PrivateIdentifier): Symbol | undefined {
+            for (let containingClass = getContainingClass(right); !!containingClass; containingClass = getContainingClass(containingClass)) {
+                const { symbol } = containingClass;
+                const name = getSymbolNameForPrivateIdentifier(symbol, right.escapedText);
+                const prop = (symbol.members && symbol.members.get(name)) || (symbol.exports && symbol.exports.get(name));
+                if (prop) {
+                    return prop;
+                }
+            }
+        }
 
-            if (!(leftType.symbol.flags & SymbolFlags.Class)) {
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier): Symbol | undefined;
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): Symbol | undefined;
+        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier = lookupSymbolForPrivateIdentifierDeclaration(right)): Symbol | undefined {
+            leftType = getApparentType(leftType);
+            if (!(leftType.flags & TypeFlags.Object)) {
+                return undefined;
+            }
+            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
+            if (lexicallyScopedIdentifier && properties && properties.has(lexicallyScopedIdentifier.escapedName)) {
+                return lexicallyScopedIdentifier;
+            }
+        }
+
+        function checkPrivateIdentifierPropertyAccess(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): boolean {
+            leftType = getApparentType(leftType);
+            if (!(leftType.flags & TypeFlags.Object)) {
+                return false;
+            }
+            // Either the identifier could not be looked up in the lexical scope OR the lexically scoped identifier did not exist on the type.
+            // Find a private identifier with the same description on the type.
+            let propertyOnType: Symbol | undefined;
+            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
+            if (properties) {
+                forEachEntry(properties, (symbol: Symbol) => {
+                    const decl = symbol.valueDeclaration;
+                    if (decl && isNamedDeclaration(decl) && isPrivateIdentifier(decl.name) && decl.name.escapedText === right.escapedText) {
+                        propertyOnType = symbol;
+                        return true;
+                    }
+                });
+            }
+            const diagName = diagnosticName(right);
+            if (propertyOnType) {
+                const typeValueDecl = propertyOnType.valueDeclaration;
+                const typeClass = getContainingClass(typeValueDecl);
+                Debug.assert(!!typeClass);
+                // We found a private identifier property with the same description.
+                // Either:
+                // - There is a lexically scoped private identifier AND it shadows the one we found on the type.
+                // - It is an attempt to access the private identifier outside of the class.
+                if (lexicallyScopedIdentifier) {
+                    const lexicalValueDecl = lexicallyScopedIdentifier.valueDeclaration;
+                    const lexicalClass = getContainingClass(lexicalValueDecl);
+                    Debug.assert(!!lexicalClass);
+                    if (findAncestor(lexicalClass, n => typeClass === n)) {
+                        const diagnostic = error(
+                            right,
+                            Diagnostics.The_property_0_cannot_be_accessed_on_type_1_within_this_class_because_it_is_shadowed_by_another_private_identifier_with_the_same_spelling,
+                            diagName,
+                            typeToString(leftType)
+                        );
+
+                        addRelatedInfo(
+                            diagnostic,
+                            createDiagnosticForNode(
+                                lexicalValueDecl,
+                                Diagnostics.The_shadowing_declaration_of_0_is_defined_here,
+                                diagName
+                            ),
+                            createDiagnosticForNode(
+                                typeValueDecl,
+                                Diagnostics.The_declaration_of_0_that_you_probably_intended_to_use_is_defined_here,
+                                diagName
+                            )
+                        );
+                        return true;
+                    }
+                }
                 error(
                     right,
-                    Diagnostics.A_private_identifier_cannot_be_assigned_to_a_value_of_type_0,
-                    typeToString(leftType)
+                    Diagnostics.Property_0_is_not_accessible_outside_class_1_because_it_is_privately_named,
+                    diagName,
+                    diagnosticName(typeClass!.name || anon)
                 );
-                return undefined;
+                return true;
             }
-            const baseTypes = getBaseTypes(leftType as InterfaceType);
-
-            // The 'nearest' private-named prop is the one in the closest lexical scope as we search up the AST
-            let nearest: { prop: Symbol, classNode: ClassLikeDeclaration } | undefined;
-            // the 'intended' private-named prop is any private name on the object's class or the class of an ancestor
-            // with the given description. We use this to report a fine-grained error
-            let intended: { prop: Symbol, classNode: ClassLikeDeclaration } | undefined;
-
-            // Either the private-named property is found, or it is not found for one of three reasons:
-            // - There's no private identifier with the given description either in scope or on the object
-            // - attempt to access from outside the class that defines the private name ('intended' exists but 'nearest' does not)
-            // - shadowed private name ('intended' and 'nearest' both exist, but are distinct)
-
-            // find 'intended' and 'nearest'
-            findAncestor(right, node => {
-                const { symbol } = node;
-                if (!symbol || !isClassLike(node)) {
-                    return false;
-                }
-                const privateName = getPropertyNameForPrivateNameDescription(symbol, privateNameDescription);
-
-                if (!nearest) {
-                    // static and instance PrivateIdentifiers can conflict
-                    const instanceProp = symbol.members && symbol.members.get(privateName);
-                    const staticProp = symbol.exports && symbol.exports.get(privateName);
-                    const matchingProp = instanceProp || staticProp;
-                    if (matchingProp) {
-                        nearest = { prop: matchingProp, classNode: node };
-                    }
-                }
-                if (nearest && intended === undefined) {
-                    if (isConstructorType(leftType) && leftType.symbol === symbol) {
-                        const prop = symbol.exports && symbol.exports.get(privateName);
-                        if (prop) {
-                            intended = { prop, classNode: node };
-                        }
-                    }
-                    else {
-                        // special baseTypes handling here.
-                        // private fields of the parent class are added to the child when superclass' constructor is called on the child instance
-                        // (private fields do not participate in inheritance)
-                        const isInstance = leftType.symbol === symbol || baseTypes.some(type => type.symbol === symbol);
-                        if (isInstance) {
-                            const prop = symbol.members && symbol.members.get(privateName);
-                            if (prop) {
-                                intended = { prop, classNode: node };
-                            }
-                        }
-                    }
-                }
-
-                return !!intended;
-            });
-
-            if (!intended) {
-                const privateName = getPropertyNameForPrivateNameDescription(leftType.symbol, privateNameDescription);
-                const hasMatchingDescription = !!(leftType.symbol.members && leftType.symbol.members.get(privateName));
-                if (hasMatchingDescription) {
-                    // leftType does have a prive name matching the description, but it's not in scope
-                    const { valueDeclaration } = leftType.symbol;
-                    Debug.assert(isClassDeclaration(valueDeclaration));
-                    error(
-                        right,
-                        Diagnostics.Property_0_is_not_accessible_outside_class_1_because_it_is_privately_named,
-                        diagnosticName(right),
-                        diagnosticName((valueDeclaration as ClassLikeDeclaration).name || anon)
-                    );
-
-                }
-                return undefined;
-            }
-
-            if (!nearest) {
-                return undefined;
-            }
-
-            if (intended.classNode !== nearest.classNode) {
-                const diagnostic = error(
-                    errorNode,
-                    Diagnostics.The_property_0_cannot_be_accessed_on_type_1_within_this_class_because_it_is_shadowed_by_another_private_identifier_with_the_same_spelling,
-                    diagnosticName(right),
-                    typeToString(leftType)
-                );
-
-                addRelatedInfo(
-                    diagnostic,
-                    createDiagnosticForNode(
-                        nearest.prop.valueDeclaration,
-                        Diagnostics.The_shadowing_declaration_of_0_is_defined_here,
-                        diagName
-                    ),
-                    createDiagnosticForNode(
-                        intended.prop.valueDeclaration,
-                        Diagnostics.The_declaration_of_0_that_you_probably_intended_to_use_is_defined_here,
-                        diagName
-                    )
-                );
-                return undefined;
-            }
-            return intended.prop;
+            return false;
         }
 
         function checkPropertyAccessExpressionOrQualifiedName(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, right: Identifier | PrivateIdentifier) {
@@ -20435,13 +20413,24 @@ namespace ts {
                 }
                 return apparentType;
             }
-            const prop = isPrivateIdentifier(right) ? getPropertyForPrivateIdentifier(leftType, right, /* errorNode */ right) : getPropertyOfType(apparentType, right.escapedText);
+            let prop: Symbol | undefined;
+            if (isPrivateIdentifier(right)) {
+                const lexicallyScopedSymbol = lookupSymbolForPrivateIdentifierDeclaration(right);
+                prop = getPropertyForPrivateIdentifier(leftType, right, lexicallyScopedSymbol);
+                // Check for private-identifier-specific shadowing and lexical-scoping errors.
+                if (!prop && checkPrivateIdentifierPropertyAccess(leftType, right, lexicallyScopedSymbol)) {
+                    return errorType;
+                }
+            }
+            else {
+                prop = getPropertyOfType(apparentType, right.escapedText);
+            }
             if (isIdentifier(left) && parentSymbol && !(prop && isConstEnumOrConstEnumOnlyModule(prop))) {
                 markAliasReferenced(parentSymbol, node);
             }
             if (!prop) {
-                const indexInfo = assignmentKind === AssignmentKind.None || !isGenericObjectType(leftType) || isThisTypeParameter(leftType) ? getIndexInfoOfType(apparentType, IndexKind.String) : undefined;
-                if (!(indexInfo && indexInfo.type) || isPrivateIdentifier(right)) {
+                const indexInfo = !isPrivateIdentifier(right) && (assignmentKind === AssignmentKind.None || !isGenericObjectType(leftType) || isThisTypeParameter(leftType)) ? getIndexInfoOfType(apparentType, IndexKind.String) : undefined;
+                if (!(indexInfo && indexInfo.type)) {
                     if (isJSLiteralType(leftType)) {
                         return anyType;
                     }
@@ -20599,7 +20588,7 @@ namespace ts {
         function reportNonexistentProperty(propNode: Identifier | PrivateIdentifier, containingType: Type) {
             let errorInfo: DiagnosticMessageChain | undefined;
             let relatedInfo: Diagnostic | undefined;
-            if (containingType.flags & TypeFlags.Union && !(containingType.flags & TypeFlags.Primitive)) {
+            if (!isPrivateIdentifier(propNode) && containingType.flags & TypeFlags.Union && !(containingType.flags & TypeFlags.Primitive)) {
                 for (const subtype of (containingType as UnionType).types) {
                     if (!getPropertyOfType(subtype, propNode.escapedText)) {
                         errorInfo = chainDiagnosticMessages(errorInfo, Diagnostics.Property_0_does_not_exist_on_type_1, declarationNameToString(propNode), typeToString(subtype));
@@ -25245,6 +25234,20 @@ namespace ts {
             // Grammar checking
             if (!checkGrammarDecoratorsAndModifiers(node) && !checkGrammarProperty(node)) checkGrammarComputedPropertyName(node.name);
             checkVariableLikeDeclaration(node);
+
+            // Private class fields transformation relies on WeakMaps.
+            if (isPrivateIdentifier(node.name) && languageVersion < ScriptTarget.ESNext) {
+                for (let lexicalScope = getEnclosingBlockScopeContainer(node); !!lexicalScope; lexicalScope = getEnclosingBlockScopeContainer(lexicalScope)) {
+                    getNodeLinks(lexicalScope).flags |= NodeCheckFlags.ContainsClassWithPrivateIdentifiers;
+                }
+            }
+        }
+
+        function checkPropertySignature(node: PropertySignature) {
+            if (isPrivateIdentifier(node.name)) {
+                error(node, Diagnostics.A_property_signature_cannot_have_a_private_identifier);
+            }
+            return checkPropertyDeclaration(node);
         }
 
         function checkMethodDeclaration(node: MethodDeclaration | MethodSignature) {
@@ -25252,7 +25255,7 @@ namespace ts {
             if (!checkGrammarMethod(node)) checkGrammarComputedPropertyName(node.name);
 
             if (isPrivateIdentifier(node.name)) {
-                error(node, Diagnostics.A_method_cannot_have_a_private_identifier_This_feature_may_be_supported_in_a_future_release);
+                error(node, Diagnostics.A_method_cannot_have_a_private_identifier);
             }
 
             // Grammar checking for modifiers is done inside the function checkGrammarFunctionLikeDeclaration
@@ -25290,7 +25293,10 @@ namespace ts {
                 return;
             }
 
-            function isInstancePropertyWithInitializer(n: Node): boolean {
+            function isInstancePropertyWithInitializerOrDownlevelPrivateIdentifierProperty(n: Node): boolean {
+                if (languageVersion < ScriptTarget.ESNext && isPrivateIdentifierPropertyDeclaration(n)) {
+                    return true;
+                }
                 return n.kind === SyntaxKind.PropertyDeclaration &&
                     !hasModifier(n, ModifierFlags.Static) &&
                     !!(<PropertyDeclaration>n).initializer;
@@ -25315,7 +25321,7 @@ namespace ts {
                     // - The constructor declares parameter properties
                     //   or the containing class declares instance member variables with initializers.
                     const superCallShouldBeFirst =
-                        some((<ClassDeclaration>node.parent).members, isInstancePropertyWithInitializer) ||
+                        some((<ClassDeclaration>node.parent).members, isInstancePropertyWithInitializerOrDownlevelPrivateIdentifierProperty) ||
                         some(node.parameters, p => hasModifier(p, ModifierFlags.ParameterPropertyModifier));
 
                     // Skip past any prologue directives to find the first statement
@@ -25334,7 +25340,7 @@ namespace ts {
                             }
                         }
                         if (!superCallStatement) {
-                            error(node, Diagnostics.A_super_call_must_be_the_first_statement_in_the_constructor_when_a_class_contains_initialized_properties_or_has_parameter_properties);
+                            error(node, Diagnostics.A_super_call_must_be_the_first_statement_in_the_constructor_when_a_class_contains_initialized_properties_parameter_properties_or_downleveled_private_identifiers);
                         }
                     }
                 }
@@ -25365,7 +25371,7 @@ namespace ts {
                     checkComputedPropertyName(node.name);
                 }
                 if (isPrivateIdentifier(node.name)) {
-                    error(node.name, Diagnostics.An_accessor_cannot_have_a_private_identifier_This_feature_may_be_supported_in_a_future_release);
+                    error(node.name, Diagnostics.An_accessor_cannot_have_a_private_identifier);
                 }
                 if (!hasNonBindableDynamicName(node)) {
                     // TypeScript 1.0 spec (April 2014): 8.4.3
@@ -27021,6 +27027,13 @@ namespace ts {
             });
         }
 
+        function checkWeakMapCollision(node: Node) {
+            const enclosingBlockScope = getEnclosingBlockScopeContainer(node);
+            if (getNodeCheckFlags(enclosingBlockScope) & NodeCheckFlags.ContainsClassWithPrivateIdentifiers) {
+                error(node, Diagnostics.Compiler_reserves_name_0_when_emitting_private_identifier_downlevel, "WeakMap");
+            }
+        }
+
         function checkCollisionWithRequireExportsInGeneratedCode(node: Node, name: Identifier) {
             // No need to check for require or exports for ES6 modules and later
             if (moduleKind >= ModuleKind.ES2015 || compilerOptions.noEmit) {
@@ -27277,6 +27290,9 @@ namespace ts {
                 }
                 checkCollisionWithRequireExportsInGeneratedCode(node, <Identifier>node.name);
                 checkCollisionWithGlobalPromiseInGeneratedCode(node, <Identifier>node.name);
+                if (!compilerOptions.noEmit && languageVersion < ScriptTarget.ESNext && needCollisionCheckForIdentifier(node, node.name as Identifier, "WeakMap")) {
+                    potentialWeakMapCollisions.push(node);
+                }
             }
         }
 
@@ -28875,7 +28891,7 @@ namespace ts {
             checkCollisionWithRequireExportsInGeneratedCode(node, node.name);
             checkCollisionWithGlobalPromiseInGeneratedCode(node, node.name);
             checkExportsOnMergedDeclarations(node);
-            node.members.forEach(checkEnumMemberName);
+            node.members.forEach(checkEnumMember);
 
             computeEnumMemberValues(node);
 
@@ -28923,7 +28939,7 @@ namespace ts {
             }
         }
 
-        function checkEnumMemberName(node: EnumMember) {
+        function checkEnumMember(node: EnumMember) {
             if (isPrivateIdentifier(node.name)) {
                 error(node, Diagnostics.An_enum_member_cannot_have_a_private_identifier);
             }
@@ -29460,8 +29476,9 @@ namespace ts {
                 case SyntaxKind.Parameter:
                     return checkParameter(<ParameterDeclaration>node);
                 case SyntaxKind.PropertyDeclaration:
+                    return checkPropertyDeclaration(<PropertyDeclaration>node);
                 case SyntaxKind.PropertySignature:
-                    return checkPropertyDeclaration(<PropertyDeclaration | PropertySignature>node);
+                    return checkPropertySignature(<PropertySignature>node);
                 case SyntaxKind.FunctionType:
                 case SyntaxKind.ConstructorType:
                 case SyntaxKind.CallSignature:
@@ -29761,6 +29778,7 @@ namespace ts {
 
                 clear(potentialThisCollisions);
                 clear(potentialNewTargetCollisions);
+                clear(potentialWeakMapCollisions);
 
                 forEach(node.statements, checkSourceElement);
                 checkSourceElement(node.endOfFileToken);
@@ -29791,6 +29809,11 @@ namespace ts {
                 if (potentialNewTargetCollisions.length) {
                     forEach(potentialNewTargetCollisions, checkIfNewTargetIsCapturedInEnclosingScope);
                     clear(potentialNewTargetCollisions);
+                }
+
+                if (potentialWeakMapCollisions.length) {
+                    forEach(potentialWeakMapCollisions, checkWeakMapCollision);
+                    clear(potentialWeakMapCollisions);
                 }
 
                 links.flags |= NodeCheckFlags.TypeChecked;
@@ -31495,7 +31518,7 @@ namespace ts {
                             return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_1_modifier, "static", "abstract");
                         }
                         else if (isPrivateIdentifierPropertyDeclaration(node)) {
-                            return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_a_private_named_field_This_feature_may_be_supported_in_a_future_release, "static");
+                            return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_a_private_named_field, "static");
                         }
                         flags |= ModifierFlags.Static;
                         lastStatic = modifier;

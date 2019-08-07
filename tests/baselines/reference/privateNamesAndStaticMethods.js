@@ -31,36 +31,32 @@ class B extends A {
 
 
 //// [privateNamesAndStaticMethods.js]
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to get private field on non-instance"); } return privateMap.get(receiver); };
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
-var __quux;
 "use strict";
 class A {
     constructor() {
-        var _a, _b;
-        A..call(A, 30);
-        A..call(A, 30);
-        A..call(A, 30);
-        A. = A. + 1;
-        _a = A, _b = _a., _a. = _b + 1, _b;
+        A.#foo(30);
+        A.#bar(30);
+        A.#bar(30);
+        A.#quux = A.#quux + 1;
+        A.#quux++;
     }
-    static (a) { }
-    static async (a) { }
-    static async *(a) {
+    static #foo(a) { }
+    static async #bar(a) { }
+    static async *#baz(a) {
         return 3;
     }
-    static get () {
-        return __classPrivateFieldGet(this, __quux);
+    static #_quux;
+    static get #quux() {
+        return this.#_quux;
     }
-    static set (val) {
-        __classPrivateFieldSet(this, __quux, val);
+    static set #quux(val) {
+        this.#_quux = val;
     }
 }
-__quux = new WeakMap();
 class B extends A {
+    static #foo(a) { }
     constructor() {
         super();
-        B..call(B, "str");
+        B.#foo("str");
     }
-    static (a) { }
 }

@@ -27,4 +27,14 @@ B.prototype = {
 >#y : number
 >2 : 2
 }
+class C {
+>C : C
 
+  constructor() {
+    this.#z = 3;
+>this.#z = 3 : 3
+>this.#z : any
+>this : this
+>3 : 3
+  }
+}

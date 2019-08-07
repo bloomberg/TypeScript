@@ -12,4 +12,19 @@ class A {
                         // share the same lexical scope
                         // https://tc39.es/proposal-class-fields/#prod-ClassBody
 }
+class B {
+>B : Symbol(B, Decl(privateNamesUnique-4.ts, 6, 1))
+
+    static #foo = true;
+>#foo : Symbol(B.#foo, Decl(privateNamesUnique-4.ts, 7, 9))
+
+    test(x: B) {
+>test : Symbol(B.test, Decl(privateNamesUnique-4.ts, 8, 23))
+>x : Symbol(x, Decl(privateNamesUnique-4.ts, 9, 9))
+>B : Symbol(B, Decl(privateNamesUnique-4.ts, 6, 1))
+
+        x.#foo; // error (#foo is a static property on B, not an instance property)
+>x : Symbol(x, Decl(privateNamesUnique-4.ts, 9, 9))
+    }
+}
 

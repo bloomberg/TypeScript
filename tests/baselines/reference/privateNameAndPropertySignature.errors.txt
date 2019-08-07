@@ -1,0 +1,35 @@
+tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts(2,5): error TS18025: A property signature cannot have a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts(6,5): error TS18025: A property signature cannot have a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts(10,5): error TS18025: A property signature cannot have a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts(12,9): error TS18025: A property signature cannot have a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts(16,28): error TS18025: A property signature cannot have a private identifier.
+
+
+==== tests/cases/conformance/classes/members/privateNames/privateNameAndPropertySignature.ts (5 errors) ====
+    type A = {
+        #foo: string
+        ~~~~
+!!! error TS18025: A property signature cannot have a private identifier.
+    }
+    
+    interface B {
+        #foo: string;
+        ~~~~
+!!! error TS18025: A property signature cannot have a private identifier.
+    }
+    
+    declare const x: {
+        #foo: number;
+        ~~~~
+!!! error TS18025: A property signature cannot have a private identifier.
+        bar: {
+            #baz: string;
+            ~~~~
+!!! error TS18025: A property signature cannot have a private identifier.
+        }
+    };
+    
+    declare const y: [{ qux: { #quux: 3 } }];
+                               ~~~~~
+!!! error TS18025: A property signature cannot have a private identifier.
+    

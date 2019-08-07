@@ -726,7 +726,7 @@ namespace ts {
                             setTextRange(
                                 createBinary(
                                     cacheExpression(target),
-                                    getOperatorForCompoundAssignment(operator),
+                                    getNonAssignmentOperatorForCompoundAssignment(operator),
                                     visitNode(right, visitor, isExpression)
                                 ),
                                 node

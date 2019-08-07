@@ -255,7 +255,7 @@ namespace ts {
             && kind <= SyntaxKind.LastCompoundAssignment;
     }
 
-    export function getOperatorForCompoundAssignment(kind: CompoundAssignmentOperator): BitwiseOperatorOrHigher {
+    export function getNonAssignmentOperatorForCompoundAssignment(kind: CompoundAssignmentOperator): BitwiseOperatorOrHigher {
         switch (kind) {
             case SyntaxKind.PlusEqualsToken: return SyntaxKind.PlusToken;
             case SyntaxKind.MinusEqualsToken: return SyntaxKind.MinusToken;

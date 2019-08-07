@@ -19,18 +19,14 @@ B.#foo = 3;                  // Error (outside class body)
 class C {
 >C : Symbol(C, Decl(privaateNameJsBadAssignment.js, 5, 11))
 
-    #foo = 4;
->#foo : Symbol(C.#foo, Decl(privaateNameJsBadAssignment.js, 7, 9))
-
     #bar = 6;
->#bar : Symbol(C.#bar, Decl(privaateNameJsBadAssignment.js, 8, 13))
+>#bar : Symbol(C.#bar, Decl(privaateNameJsBadAssignment.js, 7, 9))
 
     constructor () {
         exports.#bar = 6;    // Error
->exports : Symbol(#bar, Decl(privaateNameJsBadAssignment.js, 10, 20))
+>exports : Symbol(#bar, Decl(privaateNameJsBadAssignment.js, 9, 20))
 
         this.#foo = 3;       // Error (undeclared)
->this.#foo : Symbol(C.#foo, Decl(privaateNameJsBadAssignment.js, 7, 9))
 >this : Symbol(C, Decl(privaateNameJsBadAssignment.js, 5, 11))
     }
 }

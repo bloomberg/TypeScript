@@ -2793,7 +2793,7 @@ namespace ts {
         return "__@" + symbolName as __String;
     }
 
-    export function getPropertyNameForPrivateNameDescription(containingClassSymbol: Symbol, description: __String): __String {
+    export function getSymbolNameForPrivateIdentifier(containingClassSymbol: Symbol, description: __String): __String {
         return `__#${getSymbolId(containingClassSymbol)}@${description}` as __String;
     }
 
@@ -6294,11 +6294,6 @@ namespace ts {
         return isPropertyAccessExpression(node) && isPrivateIdentifier(node.name);
     }
 
-    /*@internal*/
-    export function isPrivateIdentifierAssignmentExpression(node: Node): node is PrivateIdentifierAssignmentExpression {
-        return isAssignmentExpression(node) && isPrivateIdentifierPropertyAccessExpression(node.left);
-    }
-
     // Functions
 
     export function isFunctionLike(node: Node): node is SignatureDeclaration {
@@ -7020,6 +7015,7 @@ namespace ts {
         getNodeConstructor(): new (kind: SyntaxKind, pos?: number, end?: number) => Node;
         getTokenConstructor(): new <TKind extends SyntaxKind>(kind: TKind, pos?: number, end?: number) => Token<TKind>;
         getIdentifierConstructor(): new (kind: SyntaxKind.Identifier, pos?: number, end?: number) => Identifier;
+        getPrivateIdentifierConstructor(): new (kind: SyntaxKind.PrivateIdentifier, pos?: number, end?: number) => PrivateIdentifier;
         getSourceFileConstructor(): new (kind: SyntaxKind.SourceFile, pos?: number, end?: number) => SourceFile;
         getSymbolConstructor(): new (flags: SymbolFlags, name: __String) => Symbol;
         getTypeConstructor(): new (checker: TypeChecker, flags: TypeFlags) => Type;
@@ -7068,6 +7064,7 @@ namespace ts {
         getNodeConstructor: () => <any>Node,
         getTokenConstructor: () => <any>Node,
         getIdentifierConstructor: () => <any>Node,
+        getPrivateIdentifierConstructor: () => <any>Node,
         getSourceFileConstructor: () => <any>Node,
         getSymbolConstructor: () => <any>Symbol,
         getTypeConstructor: () => <any>Type,

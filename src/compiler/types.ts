@@ -1787,11 +1787,6 @@ namespace ts {
         name: PrivateIdentifier;
     }
 
-    /*@internal*/
-    export interface PrivateIdentifierAssignmentExpression extends AssignmentExpression<AssignmentOperatorToken> {
-        left: PrivateIdentifierPropertyAccessExpression;
-    }
-
     export interface SuperPropertyAccessExpression extends PropertyAccessExpression {
         expression: SuperExpression;
     }
@@ -3908,6 +3903,7 @@ namespace ts {
         AssignmentsMarked                   = 0x00800000,  // Parameter assignments have been marked
         ClassWithConstructorReference       = 0x01000000,  // Class that contains a binding to its constructor inside of the class body.
         ConstructorReferenceInClass         = 0x02000000,  // Binding to a class constructor inside of the class's body.
+        ContainsClassWithPrivateIdentifiers = 0x04000000,  // Marked on all block-scoped containers containing a class with private identifiers.
     }
 
     /* @internal */

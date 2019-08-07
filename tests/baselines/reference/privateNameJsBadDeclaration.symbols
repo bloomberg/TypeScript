@@ -21,4 +21,11 @@ B.prototype = {
   #y: 2         // Error
 >#y : Symbol(#y, Decl(privateNameJsPrototype.js, 5, 15))
 }
+class C {
+>C : Symbol(C, Decl(privateNameJsPrototype.js, 7, 1))
 
+  constructor() {
+    this.#z = 3;
+>this : Symbol(C, Decl(privateNameJsPrototype.js, 7, 1))
+  }
+}

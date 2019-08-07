@@ -1344,7 +1344,7 @@
         "category": "Error",
         "code": 2375
     },
-    "A 'super' call must be the first statement in the constructor when a class contains initialized properties or has parameter properties.": {
+    "A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or downleveled private identifiers.": {
         "category": "Error",
         "code": 2376
     },
@@ -5058,24 +5058,32 @@
         "category": "Error",
         "code": 18018
     },
-    "'{0}' modifier cannot be used with a private-named field. This feature may be supported in a future release": {
+    "'{0}' modifier cannot be used with a private-named field.": {
         "category": "Error",
         "code": 18019
     },
-    "A private identifier cannot be assigned to a value of type '{0}'.": {
-        "category": "Error",
-        "code": 18020
-    },
-    "A method cannot have a private identifier. This feature may be supported in a future release.": {
+    "A method cannot have a private identifier.": {
         "category": "Error",
         "code": 18022
     },
-    "An accessor cannot have a private identifier. This feature may be supported in a future release.": {
+    "An accessor cannot have a private identifier.": {
         "category": "Error",
         "code": 18023
     },
     "An enum member cannot have a private identifier.": {
         "category": "Error",
         "code": 18024
+    },
+    "A property signature cannot have a private identifier.": {
+        "category": "Error",
+        "code": 18025
+    },
+    "'#!' can only be used at the start of a file.": {
+        "category": "Error",
+        "code": 18026
+    },
+    "Compiler reserves name '{0}' when emitting private identifier downlevel.": {
+        "category": "Error",
+        "code": 18027
     }
 }

@@ -14,4 +14,20 @@ class A {
                         // share the same lexical scope
                         // https://tc39.es/proposal-class-fields/#prod-ClassBody
 }
+class B {
+>B : B
+
+    static #foo = true;
+>#foo : boolean
+>true : true
+
+    test(x: B) {
+>test : (x: B) => void
+>x : B
+
+        x.#foo; // error (#foo is a static property on B, not an instance property)
+>x.#foo : any
+>x : B
+    }
+}
 
