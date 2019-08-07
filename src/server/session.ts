@@ -1906,7 +1906,6 @@ namespace ts.server {
 
         private getCodeFixes(args: protocol.CodeFixRequestArgs, simplifiedResult: boolean): ReadonlyArray<protocol.CodeFixAction> | ReadonlyArray<CodeFixAction> | undefined {
             const { file, project } = this.getFileAndProject(args);
-            this.logger.info("got codefix requests,.dmakslndmlsakmdlsa");
 
             const scriptInfo = project.getScriptInfoForNormalizedPath(file)!;
             const { startPosition, endPosition } = this.getStartAndEndPosition(args, scriptInfo);
