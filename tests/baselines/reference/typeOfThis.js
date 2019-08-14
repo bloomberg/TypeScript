@@ -180,6 +180,11 @@ this.spaaaaace = 4;
 //// [typeOfThis.js]
 class MyTestClass {
     constructor() {
+        this.someFunc = () => {
+            //type of 'this' in member variable initializer is the class instance type
+            var t = this;
+            var t;
+        };
         //type of 'this' in constructor body is the class instance type
         var p = this.canary;
         var p;
@@ -233,6 +238,11 @@ class MyTestClass {
 }
 class MyGenericTestClass {
     constructor() {
+        this.someFunc = () => {
+            //type of 'this' in member variable initializer is the class instance type
+            var t = this;
+            var t;
+        };
         //type of 'this' in constructor body is the class instance type
         var p = this.canary;
         var p;

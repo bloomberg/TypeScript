@@ -188,9 +188,6 @@ namespace ts {
         function visitPropertyDeclaration(node: PropertyDeclaration) {
             Debug.assert(!some(node.decorators));
             if (!shouldTransformPrivateFields && isPrivateIdentifier(node.name)) {
-                const initializer = node.initializer && (isFunctionExpression(node.initializer) || isArrowFunction(node.initializer)) ?
-                    visitNode(node.initializer, visitor) :
-                    undefined;
                 return updateProperty(
                     node,
                     /*decorators*/ undefined,
@@ -198,7 +195,7 @@ namespace ts {
                     node.name,
                     /*questionOrExclamationToken*/ undefined,
                     /*type*/ undefined,
-                    initializer
+                    /*initializer*/ undefined
                 );
             }
             // Create a temporary variable to store a computed property name (if necessary).
@@ -683,14 +680,9 @@ namespace ts {
             const propertyName = isComputedPropertyName(property.name) && !isSimpleInlineableExpression(property.name.expression)
                 ? updateComputedPropertyName(property.name, getGeneratedNameForNode(property.name))
                 : property.name;
-            let initializer = visitNode(property.initializer, visitor, isExpression);
+            const initializer = visitNode(property.initializer, visitor, isExpression);
 
             if (shouldTransformPrivateFields && isPrivateIdentifier(propertyName)) {
-                // Assign function name for private identifier property.
-                if (initializer && (isFunctionExpression(initializer) || isArrowFunction(initializer))) {
-                    initializer = createPrivateNamedFunction(propertyName, initializer);
-                }
-
                 const privateIdentifierInfo = accessPrivateIdentifier(propertyName);
                 if (privateIdentifierInfo) {
                     switch (privateIdentifierInfo.placement) {
@@ -706,10 +698,6 @@ namespace ts {
                 else {
                     Debug.fail("Undeclared private name for property declaration.");
                 }
-            }
-            // Preserve private function names by keeping functions.
-            if (!shouldTransformPrivateFields && initializer && (isFunctionExpression(initializer) || isArrowFunction(initializer))) {
-                return undefined;
             }
             if (!initializer) {
                 return undefined;
@@ -1003,16 +991,5 @@ namespace ts {
     function createClassPrivateFieldSetHelper(context: TransformationContext, receiver: Expression, privateField: Identifier, value: Expression) {
         context.requestEmitHelper(classPrivateFieldSetHelper);
         return createCall(getHelperName("__classPrivateFieldSet"), /* typeArguments */ undefined, [receiver, privateField, value]);
-    }
-
-    function createPrivateNamedFunction(name: PrivateIdentifier, func: FunctionExpression | ArrowFunction) {
-        const nameStr = createLiteral(idText(name));
-        return createElementAccess(
-            createObjectLiteral(
-                [createPropertyAssignment(nameStr, func)],
-                /*multiline*/ false
-            ),
-            nameStr
-        );
     }
 }

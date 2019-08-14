@@ -15,7 +15,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _fieldFunc;
 var A = /** @class */ (function () {
     function A() {
-        _fieldFunc.set(this, { "#fieldFunc": function () { this.x = 10; } }["#fieldFunc"]);
+        _fieldFunc.set(this, function () { this.x = 10; });
         this.x = 1;
     }
     A.prototype.test = function () {

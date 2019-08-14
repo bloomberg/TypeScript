@@ -26,6 +26,7 @@ class C {
         this.a = 123;
         this.#a = 10;
         this.c = "hello";
+        this.#something = () => 1234;
     }
     #a;
     #b;
@@ -40,6 +41,6 @@ class C {
         console.log(this.#m);
         console.log(this.#x = "test");
     }
-    #something = () => 1234;
+    #something;
 }
 C.#m = "test";
