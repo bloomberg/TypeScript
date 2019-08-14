@@ -1,5 +1,5 @@
 describe("unittests:: evaluation:: privateNameField", () => {
-    it("should be accessible", async () => {
+    it("should be accessible (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 5;
@@ -11,12 +11,12 @@ describe("unittests:: evaluation:: privateNameField", () => {
         export function main() {
             let a = new A();
             output.push(a.getPrivateField());
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 5);
     });
 
-    it("scope is correct", async () => {
+    it("scope is correct (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #fieldFunc = function() { output.push(this); };
@@ -28,13 +28,14 @@ describe("unittests:: evaluation:: privateNameField", () => {
         export const instance_a: A = new A();
         export function main() {
             instance_a.runPrivateFieldFunc();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.instance_a, result.output[0]);
     });
 });
+
 describe("unittests:: evaluation:: privateNameFieldCallFunction", () => {
-    it("call directly", async () => {
+    it("call directly (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #fieldFunc = function() { this.x = 10; };
@@ -48,12 +49,12 @@ describe("unittests:: evaluation:: privateNameFieldCallFunction", () => {
             let a = new A();
             a.runPrivateFieldFunc();
             output.push(a.x);
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
 
-    it("call via reference", async () => {
+    it("call via reference (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #fieldFunc = function() { this.x = 10; };
@@ -68,14 +69,14 @@ describe("unittests:: evaluation:: privateNameFieldCallFunction", () => {
             let a = new A();
             a.runPrivateFieldFunc();
             output.push(a.x);
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
 });
 
 describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
-    it("should destructure object property into privatefield", async () => {
+    it("should destructure object property into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -91,12 +92,12 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
 
-    it("should destructure array element into privatefield", async () => {
+    it("should destructure array element into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -112,11 +113,11 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
-    it("should destructure element from array object property into privatefield", async () => {
+    it("should destructure element from array object property into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -132,13 +133,12 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
 
-    // This works when directly inlining the nested array - syntax error when using this.testArray() on RHS.
-    it("should destructure nested array element into privatefield", async () => {
+    it("should destructure nested array element into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -147,7 +147,7 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
             }
             constructor() {
                 let x: number;
-                [x, [this.#field]] = this.testArray();
+                [x, [this.#field]] = this.testArray() as any;
                 output.push(this.#field);
                 [this.#field, [this.#field]] = [10, [2]];
                 output.push(this.#field);
@@ -156,14 +156,14 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 4, "Failed to destructure from array returned by function call");
         assert.deepEqual(result.output[1], 2, "Failed to destructure from inline array");
     });
 
-    // This works when directly inlining the object - syntax error when using this.testObject() on RHS.
-    it("should destructure default value into privatefield", async () => {
+    // This show cases a bug
+    it("should destructure default value into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -181,13 +181,13 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10, "Failed to destructure from object returned by function call");
         assert.deepEqual(result.output[1], 20, "Failed to destructure from inline object");
     });
 
-    it("should destructure default array value into privatefield", async () => {
+    it("should destructure default array value into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
@@ -203,7 +203,7 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         export const output: any[] = [];
         export function main() {
             let a = new A();
-        }`, { target: ts.ScriptTarget.ESNext });
+        }`, { target: ts.ScriptTarget.ES2019 });
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
