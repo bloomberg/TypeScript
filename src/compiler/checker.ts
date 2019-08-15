@@ -136,7 +136,7 @@ namespace ts {
             getDeclaredTypeOfSymbol,
             getPropertiesOfType,
             getPropertyOfType: (type, name) => getPropertyOfType(type, escapeLeadingUnderscores(name)),
-            getPropertyForPrivateIdentifier,
+            getPrivateIdentifierPropertyOfType,
             getTypeOfPropertyOfType: (type, name) => getTypeOfPropertyOfType(type, escapeLeadingUnderscores(name)),
             getIndexInfoOfType,
             getSignaturesOfType,
@@ -20319,9 +20319,9 @@ namespace ts {
             }
         }
 
-        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier): Symbol | undefined;
-        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): Symbol | undefined;
-        function getPropertyForPrivateIdentifier(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier = lookupSymbolForPrivateIdentifierDeclaration(right)): Symbol | undefined {
+        function getPrivateIdentifierPropertyOfType(leftType: Type, right: PrivateIdentifier): Symbol | undefined;
+        function getPrivateIdentifierPropertyOfType(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): Symbol | undefined;
+        function getPrivateIdentifierPropertyOfType(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier = lookupSymbolForPrivateIdentifierDeclaration(right)): Symbol | undefined {
             leftType = getApparentType(leftType);
             if (!(leftType.flags & TypeFlags.Object)) {
                 return undefined;
@@ -20416,7 +20416,7 @@ namespace ts {
             let prop: Symbol | undefined;
             if (isPrivateIdentifier(right)) {
                 const lexicallyScopedSymbol = lookupSymbolForPrivateIdentifierDeclaration(right);
-                prop = getPropertyForPrivateIdentifier(leftType, right, lexicallyScopedSymbol);
+                prop = getPrivateIdentifierPropertyOfType(leftType, right, lexicallyScopedSymbol);
                 // Check for private-identifier-specific shadowing and lexical-scoping errors.
                 if (!prop && checkPrivateIdentifierPropertyAccess(leftType, right, lexicallyScopedSymbol)) {
                     return errorType;
