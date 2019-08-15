@@ -1,5 +1,5 @@
 // @strict: true
-// @target es6
+// @target: es6
 
 class A {
     public #foo = 3;         // Error

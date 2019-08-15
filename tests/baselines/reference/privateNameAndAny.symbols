@@ -1,21 +1,19 @@
 === tests/cases/conformance/classes/members/privateNames/privateNameAndAny.ts ===
-// @target es6
-
 class A {
 >A : Symbol(A, Decl(privateNameAndAny.ts, 0, 0))
 
     #foo = true; 
->#foo : Symbol(A.#foo, Decl(privateNameAndAny.ts, 2, 9))
+>#foo : Symbol(A.#foo, Decl(privateNameAndAny.ts, 0, 9))
 
     method(thing: any) {
->method : Symbol(A.method, Decl(privateNameAndAny.ts, 3, 16))
->thing : Symbol(thing, Decl(privateNameAndAny.ts, 4, 11))
+>method : Symbol(A.method, Decl(privateNameAndAny.ts, 1, 16))
+>thing : Symbol(thing, Decl(privateNameAndAny.ts, 2, 11))
 
         thing.#foo; // OK
->thing : Symbol(thing, Decl(privateNameAndAny.ts, 4, 11))
+>thing : Symbol(thing, Decl(privateNameAndAny.ts, 2, 11))
 
         thing.#bar; // OK: we do not (yet) check that #foo is in an ancestor class (but we could)
->thing : Symbol(thing, Decl(privateNameAndAny.ts, 4, 11))
+>thing : Symbol(thing, Decl(privateNameAndAny.ts, 2, 11))
     }
 };
 

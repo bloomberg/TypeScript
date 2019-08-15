@@ -1,11 +1,9 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(4,12): error TS18010: Accessibility modifiers cannot be used with private identifiers.
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(5,13): error TS18010: Accessibility modifiers cannot be used with private identifiers.
-tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(6,15): error TS18010: Accessibility modifiers cannot be used with private identifiers.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(2,12): error TS18010: Accessibility modifiers cannot be used with private identifiers.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(3,13): error TS18010: Accessibility modifiers cannot be used with private identifiers.
+tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts(4,15): error TS18010: Accessibility modifiers cannot be used with private identifiers.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNamesNoAccessibilityModifiers.ts (3 errors) ====
-    // @target es6
-    
     class A {
         public #foo = 3;         // Error
                ~~~~
