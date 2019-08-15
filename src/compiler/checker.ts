@@ -25245,7 +25245,7 @@ namespace ts {
 
         function checkPropertySignature(node: PropertySignature) {
             if (isPrivateIdentifier(node.name)) {
-                error(node, Diagnostics.A_property_signature_cannot_have_a_private_identifier);
+                error(node, Diagnostics.Private_identifiers_are_not_allowed_outside_class_bodies);
             }
             return checkPropertyDeclaration(node);
         }
@@ -25255,7 +25255,7 @@ namespace ts {
             if (!checkGrammarMethod(node)) checkGrammarComputedPropertyName(node.name);
 
             if (isPrivateIdentifier(node.name)) {
-                error(node, Diagnostics.A_method_cannot_have_a_private_identifier);
+                error(node, Diagnostics.A_method_cannot_be_named_with_a_private_identifier);
             }
 
             // Grammar checking for modifiers is done inside the function checkGrammarFunctionLikeDeclaration
@@ -25371,7 +25371,7 @@ namespace ts {
                     checkComputedPropertyName(node.name);
                 }
                 if (isPrivateIdentifier(node.name)) {
-                    error(node.name, Diagnostics.An_accessor_cannot_have_a_private_identifier);
+                    error(node.name, Diagnostics.An_accessor_cannot_be_named_with_a_private_identifier);
                 }
                 if (!hasNonBindableDynamicName(node)) {
                     // TypeScript 1.0 spec (April 2014): 8.4.3
@@ -28941,7 +28941,7 @@ namespace ts {
 
         function checkEnumMember(node: EnumMember) {
             if (isPrivateIdentifier(node.name)) {
-                error(node, Diagnostics.An_enum_member_cannot_have_a_private_identifier);
+                error(node, Diagnostics.An_enum_member_cannot_be_named_with_a_private_identifier);
             }
         }
 
@@ -31518,7 +31518,7 @@ namespace ts {
                             return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_1_modifier, "static", "abstract");
                         }
                         else if (isPrivateIdentifierPropertyDeclaration(node)) {
-                            return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_a_private_named_field, "static");
+                            return grammarErrorOnNode(modifier, Diagnostics._0_modifier_cannot_be_used_with_a_private_named_property, "static");
                         }
                         flags |= ModifierFlags.Static;
                         lastStatic = modifier;

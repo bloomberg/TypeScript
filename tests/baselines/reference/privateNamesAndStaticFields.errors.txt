@@ -1,12 +1,12 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts(2,5): error TS18019: 'static' modifier cannot be used with a private-named field.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts(9,5): error TS18019: 'static' modifier cannot be used with a private-named field.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts(2,5): error TS18019: 'static' modifier cannot be used with a private-named property.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts(9,5): error TS18019: 'static' modifier cannot be used with a private-named property.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields.ts (2 errors) ====
     class A {
         static #foo: number;
         ~~~~~~
-!!! error TS18019: 'static' modifier cannot be used with a private-named field.
+!!! error TS18019: 'static' modifier cannot be used with a private-named property.
         constructor () {
             A.#foo = 3;
         }
@@ -15,7 +15,7 @@ tests/cases/conformance/classes/members/privateNames/privateNamesAndStaticFields
     class B extends A {
         static #foo: string;
         ~~~~~~
-!!! error TS18019: 'static' modifier cannot be used with a private-named field.
+!!! error TS18019: 'static' modifier cannot be used with a private-named property.
         constructor () {
             super();
             B.#foo = "some string";

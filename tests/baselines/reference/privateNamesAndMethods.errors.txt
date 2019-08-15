@@ -1,33 +1,33 @@
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(2,5): error TS18022: A method cannot have a private identifier.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(3,11): error TS18022: A method cannot have a private identifier.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(4,12): error TS18022: A method cannot have a private identifier.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(8,9): error TS18023: An accessor cannot have a private identifier.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(11,9): error TS18023: An accessor cannot have a private identifier.
-tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(24,5): error TS18022: A method cannot have a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(2,5): error TS18022: A method cannot be named with a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(3,11): error TS18022: A method cannot be named with a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(4,12): error TS18022: A method cannot be named with a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(8,9): error TS18023: An accessor cannot be named with a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(11,9): error TS18023: An accessor cannot be named with a private identifier.
+tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(24,5): error TS18022: A method cannot be named with a private identifier.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts (6 errors) ====
     class A {
         #foo(a: number) {}
         ~~~~
-!!! error TS18022: A method cannot have a private identifier.
+!!! error TS18022: A method cannot be named with a private identifier.
         async #bar(a: number) {}
               ~~~~
-!!! error TS18022: A method cannot have a private identifier.
+!!! error TS18022: A method cannot be named with a private identifier.
         async *#baz(a: number) {
                ~~~~
-!!! error TS18022: A method cannot have a private identifier.
+!!! error TS18022: A method cannot be named with a private identifier.
             return 3;
         }
         #_quux: number;
         get #quux (): number {
             ~~~~~
-!!! error TS18023: An accessor cannot have a private identifier.
+!!! error TS18023: An accessor cannot be named with a private identifier.
             return this.#_quux;
         }
         set #quux (val: number) {
             ~~~~~
-!!! error TS18023: An accessor cannot have a private identifier.
+!!! error TS18023: An accessor cannot be named with a private identifier.
             this.#_quux = val; 
         }
         constructor () {
@@ -42,7 +42,7 @@ tests/cases/conformance/classes/members/privateNames/privateNamesAndMethods.ts(2
     class B extends A {
         #foo(a: string) {}
         ~~~~
-!!! error TS18022: A method cannot have a private identifier.
+!!! error TS18022: A method cannot be named with a private identifier.
         constructor () {
             super();
             this.#foo("str");
