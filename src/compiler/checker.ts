@@ -20411,6 +20411,9 @@ namespace ts {
                 if (isIdentifier(left) && parentSymbol) {
                     markAliasReferenced(parentSymbol, node);
                 }
+                if (isPrivateIdentifier(right) && !getContainingClass(right)) {
+                    grammarErrorOnNode(right, Diagnostics.Private_identifiers_are_not_allowed_outside_class_bodies);
+                }
                 return apparentType;
             }
             let prop: Symbol | undefined;
