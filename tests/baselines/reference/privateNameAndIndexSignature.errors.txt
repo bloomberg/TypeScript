@@ -15,7 +15,7 @@ tests/cases/conformance/classes/members/privateNames/privateNameAndIndexSignatur
             this.#f = 3           // Error (index signatures do not implicitly declare private names)
                  ~~
 !!! error TS2339: Property '#f' does not exist on type 'A'.
-            this["#foo"] = 3;     // Error: property not declared (cannot use index signature to access private name)
+            this["#foo"] = 3;     // Okay (type has index signature and "#foo" does not collide with private identifier #foo)
     
         }
     }

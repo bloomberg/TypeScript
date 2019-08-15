@@ -22,7 +22,7 @@ class A {
         this.#f = 3           // Error (index signatures do not implicitly declare private names)
 >this : Symbol(A, Decl(privateNameAndIndexSignature.ts, 0, 0))
 
-        this["#foo"] = 3;     // Error: property not declared (cannot use index signature to access private name)
+        this["#foo"] = 3;     // Okay (type has index signature and "#foo" does not collide with private identifier #foo)
 >this : Symbol(A, Decl(privateNameAndIndexSignature.ts, 0, 0))
 
     }
