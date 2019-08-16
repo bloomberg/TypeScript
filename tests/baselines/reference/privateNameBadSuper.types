@@ -1,0 +1,18 @@
+=== tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts ===
+class A extends B {
+>A : A
+>B : any
+
+    #x;
+>#x : any
+
+    constructor() {
+        void 0; // Error: 'super' call must  come first
+>void 0 : undefined
+>0 : 0
+
+        super();
+>super() : void
+>super : any
+    }
+}
