@@ -32,6 +32,26 @@ describe("unittests:: evaluation:: privateNameField", () => {
         result.main();
         assert.deepEqual(result.instance_a, result.output[0]);
     });
+
+    it("inherited class shadows private field (es2019)", async () => {
+        const result = evaluator.evaluateTypeScript(`
+        export class A {
+            #field = 9;
+        }
+        export class B extends A {
+            #field = 2;
+            runFunc() {
+                output.push(this.#field);
+            }
+        }
+        export const output: any[] = [];
+        export function main() {
+            let b = new B();
+            b.runFunc();
+        }`, { target: ts.ScriptTarget.ES2019 });
+        result.main();
+        assert.deepEqual(result.output[0], 2);
+    });
 });
 
 describe("unittests:: evaluation:: privateNameFieldCallFunction", () => {
@@ -117,6 +137,7 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         result.main();
         assert.deepEqual(result.output[0], 10);
     });
+
     it("should destructure element from array object property into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
@@ -162,7 +183,7 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         assert.deepEqual(result.output[1], 2, "Failed to destructure from inline array");
     });
 
-    // This show cases a bug
+    // Failing
     it("should destructure default value into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
