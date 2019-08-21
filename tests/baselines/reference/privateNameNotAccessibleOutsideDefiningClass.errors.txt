@@ -1,9 +1,7 @@
-tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts(7,9): error TS18013: Property '#foo' is not accessible outside class 'A' because it is privately named.
+tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts(5,9): error TS18013: Property '#foo' is not accessible outside class 'A' because it is privately named.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNameNotAccessibleOutsideDefiningClass.ts (1 errors) ====
-    // @target es6
-    
     class A {
         #foo: number = 3;
     }

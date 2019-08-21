@@ -1,6 +1,4 @@
 //// [privateNameField.ts]
-// @target es6
-
 class A {
     #name: string;
     constructor(name: string) {
@@ -8,16 +6,15 @@ class A {
     }
 }
 
+
 //// [privateNameField.js]
-// @target es6
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) { if (!privateMap.has(receiver)) { throw new TypeError("attempted to set private field on non-instance"); } privateMap.set(receiver, value); return value; };
 var _name;
 "use strict";
-var A = /** @class */ (function () {
-    function A(name) {
+class A {
+    constructor(name) {
         _name.set(this, void 0);
         __classPrivateFieldSet(this, _name, name);
     }
-    return A;
-}());
+}
 _name = new WeakMap();

@@ -5058,25 +5058,21 @@
         "category": "Error",
         "code": 18018
     },
-    "'{0}' modifier cannot be used with a private-named field.": {
+    "'{0}' modifier cannot be used with a private-named property.": {
         "category": "Error",
         "code": 18019
     },
-    "A method cannot have a private identifier.": {
+    "A method cannot be named with a private identifier.": {
         "category": "Error",
         "code": 18022
     },
-    "An accessor cannot have a private identifier.": {
+    "An accessor cannot be named with a private identifier.": {
         "category": "Error",
         "code": 18023
     },
-    "An enum member cannot have a private identifier.": {
+    "An enum member cannot be named with a private identifier.": {
         "category": "Error",
         "code": 18024
-    },
-    "A property signature cannot have a private identifier.": {
-        "category": "Error",
-        "code": 18025
     },
     "'#!' can only be used at the start of a file.": {
         "category": "Error",
