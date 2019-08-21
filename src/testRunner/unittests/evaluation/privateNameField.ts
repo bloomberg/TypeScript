@@ -183,12 +183,11 @@ describe("unittests:: evaluation:: privateNameFieldDestructuring", () => {
         assert.deepEqual(result.output[1], 2, "Failed to destructure from inline array");
     });
 
-    // Failing
     it("should destructure default value into privatefield (es2019)", async () => {
         const result = evaluator.evaluateTypeScript(`
         export class A {
             #field = 1;
-            testObject() {
+            testObject() : { x: number, y?: number} {
                 return { x: 5 };
             }
             constructor() {
