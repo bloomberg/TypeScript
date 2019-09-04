@@ -209,24 +209,25 @@ namespace ts {
             return undefined;
         }
 
+        function createPrivateIdentifierAccess(info: PrivateIdentifierInfo, receiver: Expression): Expression {
+            receiver = visitNode(receiver, visitor, isExpression);
+            switch (info.placement) {
+                case PrivateIdentifierPlacement.InstanceField:
+                    return createClassPrivateFieldGetHelper(
+                        context,
+                        receiver,
+                        info.weakMapName
+                    );
+                default:
+                    return Debug.fail("Invalid PrivateIdentifierInfo placement");
+            }
+        }
+
         function visitPropertyAccessExpression(node: PropertyAccessExpression) {
             if (shouldTransformPrivateFields && isPrivateIdentifier(node.name)) {
                 const privateIdentifierInfo = accessPrivateIdentifier(node.name);
                 if (privateIdentifierInfo) {
-                    switch (privateIdentifierInfo.placement) {
-                        case PrivateIdentifierPlacement.InstanceField:
-                            return setOriginalNode(
-                                setTextRange(
-                                    createClassPrivateFieldGetHelper(
-                                        context,
-                                        visitNode(node.expression, visitor, isExpression),
-                                        privateIdentifierInfo.weakMapName
-                                    ),
-                                    node
-                                ),
-                                node
-                            );
-                    }
+                    return createPrivateIdentifierAccess(privateIdentifierInfo, node.expression);
                 }
             }
             return visitEachChild(node, visitor, context);
@@ -235,18 +236,24 @@ namespace ts {
         function visitPrefixUnaryExpression(node: PrefixUnaryExpression) {
             if (shouldTransformPrivateFields && isPrivateIdentifierPropertyAccessExpression(node.operand)) {
                 const operator = node.operator === SyntaxKind.PlusPlusToken ?
-                    SyntaxKind.PlusEqualsToken : node.operator === SyntaxKind.MinusMinusToken ?
-                        SyntaxKind.MinusEqualsToken : undefined;
-                if (operator) {
-                    const transformedExpr = setOriginalNode(
-                        createBinary(
-                            node.operand,
-                            operator,
-                            createLiteral(1)
+                    SyntaxKind.PlusToken : node.operator === SyntaxKind.MinusMinusToken ?
+                        SyntaxKind.MinusToken : undefined;
+                let info: PrivateIdentifierInfo | undefined;
+                if (operator && (info = accessPrivateIdentifier(node.operand.name))) {
+                    const receiver = visitNode(node.operand.expression, visitor, isExpression);
+                    const { readExpression, initializeExpression } = createCopiableReceiverExpr(receiver);
+
+                    const existingValue = createPrefix(SyntaxKind.PlusToken, createPrivateIdentifierAccess(info, readExpression));
+
+                    return setOriginalNode(
+                        createPrivateIdentifierAssignment(
+                            info,
+                            initializeExpression || readExpression,
+                            createBinary(existingValue, operator, createLiteral(1)),
+                            SyntaxKind.EqualsToken
                         ),
                         node
                     );
-                    return visitNode(transformedExpr, visitor);
                 }
             }
             return visitEachChild(node, visitor, context);
@@ -257,35 +264,47 @@ namespace ts {
                 const operator = node.operator === SyntaxKind.PlusPlusToken ?
                     SyntaxKind.PlusToken : node.operator === SyntaxKind.MinusMinusToken ?
                         SyntaxKind.MinusToken : undefined;
-                if (operator) {
-                    // Create a temporary variable if the receiver is not inlinable, since we
-                    // will need to access it multiple times.
-                    const receiver = isSimpleInlineableExpression(node.operand.expression) ?
-                        undefined :
-                        createTempVariable(hoistVariableDeclaration);
-                    // Create a temporary variable to store the value returned by the expression.
-                    const returnValue = createTempVariable(hoistVariableDeclaration);
+                let info: PrivateIdentifierInfo | undefined;
+                if (operator && (info = accessPrivateIdentifier(node.operand.name))) {
+                    const receiver = visitNode(node.operand.expression, visitor, isExpression);
+                    const { readExpression, initializeExpression } = createCopiableReceiverExpr(receiver);
 
-                    const transformedExpr = inlineExpressions(compact<Expression>([
-                        receiver && createAssignment(receiver, node.operand.expression),
-                        // Store the existing value of the private name in the temporary.
-                        createAssignment(returnValue, receiver ? createPropertyAccess(receiver, node.operand.name) : node.operand),
-                        // Assign to private name.
-                        createAssignment(
-                            receiver ? createPropertyAccess(receiver, node.operand.name) : node.operand,
-                            createBinary(
-                                returnValue, operator, createLiteral(1)
-                            )
-                        ),
-                        // Return the cached value.
-                        returnValue
-                    ]));
-                    return visitNode(transformedExpr, visitor);
+                    const isValueDiscarded = isExpressionStatement(node.parent) ||
+                        (isForStatement(node.parent) && node.parent.incrementor === node);
+                    const existingValue = createPrefix(SyntaxKind.PlusToken, createPrivateIdentifierAccess(info, readExpression));
+
+                    // Create a temporary variable to store the value returned by the expression.
+                    const returnValue = isValueDiscarded ? undefined : createTempVariable(hoistVariableDeclaration);
+
+                    return setOriginalNode(
+                        inlineExpressions(compact<Expression>([
+                            createPrivateIdentifierAssignment(
+                                info,
+                                initializeExpression || readExpression,
+                                createBinary(
+                                    returnValue ? createAssignment(returnValue, existingValue) : existingValue,
+                                    operator,
+                                    createLiteral(1)
+                                ),
+                                SyntaxKind.EqualsToken
+                            ),
+                            returnValue
+                        ])),
+                        node
+                    );
                 }
             }
             return visitEachChild(node, visitor, context);
         }
 
+        function createCopiableReceiverExpr(receiver: Expression): { readExpression: Expression; initializeExpression: Expression | undefined } {
+            if (isSimpleInlineableExpression(receiver)) {
+                return { readExpression: receiver, initializeExpression: undefined };
+            }
+            const readExpression = createTempVariable(hoistVariableDeclaration);
+            const initializeExpression = createAssignment(readExpression, receiver);
+            return { readExpression, initializeExpression };
+        }
 
         function visitCallExpression(node: CallExpression) {
             if (shouldTransformPrivateFields && isPrivateIdentifierPropertyAccessExpression(node.expression)) {
@@ -344,15 +363,13 @@ namespace ts {
             receiver = visitNode(receiver, visitor, isExpression);
             right = visitNode(right, visitor, isExpression);
             if (isCompoundAssignment(operator)) {
-                const isReceiverInlineable = isSimpleInlineableExpression(receiver);
-                const getReceiver = isReceiverInlineable ? receiver : createTempVariable(hoistVariableDeclaration);
-                const setReceiver = isReceiverInlineable ? receiver : createAssignment(getReceiver, receiver);
+                const { readExpression, initializeExpression } = createCopiableReceiverExpr(receiver);
                 return createClassPrivateFieldSetHelper(
                     context,
-                    setReceiver,
+                    initializeExpression || readExpression,
                     info.weakMapName,
                     createBinary(
-                        createClassPrivateFieldGetHelper(context, getReceiver, info.weakMapName),
+                        createClassPrivateFieldGetHelper(context, readExpression, info.weakMapName),
                         getNonAssignmentOperatorForCompoundAssignment(operator),
                         right
                     )
