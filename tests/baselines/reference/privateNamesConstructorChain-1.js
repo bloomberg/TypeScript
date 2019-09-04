@@ -4,6 +4,7 @@ class Parent {
     static #bar = 5;
     accessChildProps() {
         new Child().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
+        Child.#bar;       // Error: not found
     }
 }
 
@@ -40,6 +41,7 @@ var Parent = /** @class */ (function () {
     }
     Parent.prototype.accessChildProps = function () {
         __classPrivateFieldGet(new Child(), _foo_1); // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
+        __classPrivateFieldGet(Child, _bar_1); // Error: not found
     };
     var _foo_1, _bar_1;
     _foo_1 = new WeakMap(), _bar_1 = new WeakMap();

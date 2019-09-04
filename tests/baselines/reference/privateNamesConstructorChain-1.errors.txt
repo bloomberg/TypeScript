@@ -9,6 +9,7 @@ tests/cases/conformance/classes/members/privateNames/privateNamesConstructorChai
 !!! error TS18019: 'static' modifier cannot be used with a private-named property.
         accessChildProps() {
             new Child().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
+            Child.#bar;       // Error: not found
         }
     }
     

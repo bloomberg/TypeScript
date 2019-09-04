@@ -215,11 +215,10 @@ namespace ts {
                 case PrivateIdentifierPlacement.InstanceField:
                     return createClassPrivateFieldGetHelper(
                         context,
-                        receiver,
+                        nodeIsSynthesized(receiver) ? receiver : getSynthesizedClone(receiver),
                         info.weakMapName
                     );
-                default:
-                    return Debug.fail("Invalid PrivateIdentifierInfo placement");
+                default: return Debug.fail("Unexpected private identifier placement");
             }
         }
 
@@ -227,7 +226,10 @@ namespace ts {
             if (shouldTransformPrivateFields && isPrivateIdentifier(node.name)) {
                 const privateIdentifierInfo = accessPrivateIdentifier(node.name);
                 if (privateIdentifierInfo) {
-                    return createPrivateIdentifierAccess(privateIdentifierInfo, node.expression);
+                    return setOriginalNode(
+                        createPrivateIdentifierAccess(privateIdentifierInfo, node.expression),
+                        node
+                    );
                 }
             }
             return visitEachChild(node, visitor, context);
@@ -298,11 +300,12 @@ namespace ts {
         }
 
         function createCopiableReceiverExpr(receiver: Expression): { readExpression: Expression; initializeExpression: Expression | undefined } {
+            const clone = nodeIsSynthesized(receiver) ? receiver : getSynthesizedClone(receiver);
             if (isSimpleInlineableExpression(receiver)) {
-                return { readExpression: receiver, initializeExpression: undefined };
+                return { readExpression: clone, initializeExpression: undefined };
             }
             const readExpression = createTempVariable(hoistVariableDeclaration);
-            const initializeExpression = createAssignment(readExpression, receiver);
+            const initializeExpression = createAssignment(readExpression, clone);
             return { readExpression, initializeExpression };
         }
 
