@@ -1,5 +1,5 @@
 tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts(1,17): error TS2304: Cannot find name 'B'.
-tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts(3,5): error TS2376: A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or downleveled private identifiers.
+tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts(3,5): error TS2376: A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or private identifiers.
 
 
 ==== tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts (2 errors) ====
@@ -15,5 +15,5 @@ tests/cases/conformance/classes/members/privateNames/privateNameBadSuper.ts(3,5)
     ~~~~~~~~~~~~~~~~
         }
     ~~~~~
-!!! error TS2376: A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or downleveled private identifiers.
+!!! error TS2376: A 'super' call must be the first statement in the constructor when a class contains initialized properties, parameter properties, or private identifiers.
     }
