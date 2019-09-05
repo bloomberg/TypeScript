@@ -1,3 +1,5 @@
+// @target: es2015, es5
+
 class A {
     #field = 1;
     otherObject = new A();
