@@ -534,17 +534,18 @@ namespace ts {
             return setTextRange(createNodeArray(members), /*location*/ node.members);
         }
 
-        function doesClassElementRequireConstructorStatement(member: ClassElement) {
-            return isInitializedProperty(member) || (shouldTransformPrivateFields && isPrivateIdentifierPropertyDeclaration(member));
+        function isPropertyDeclarationThatRequiresConstructorStatement(member: ClassElement): member is PropertyDeclaration {
+            return !hasStaticModifier(member) && (isInitializedProperty(member) || (shouldTransformPrivateFields && isPrivateIdentifierPropertyDeclaration(member)));
         }
 
         function transformConstructor(node: ClassDeclaration | ClassExpression, isDerivedClass: boolean) {
             const constructor = visitNode(getFirstConstructorWithBody(node), visitor, isConstructorDeclaration);
-            if (!forEach(node.members, doesClassElementRequireConstructorStatement)) {
+            const properties = node.members.filter(isPropertyDeclarationThatRequiresConstructorStatement);
+            if (!some(properties)) {
                 return constructor;
             }
             const parameters = visitParameterList(constructor ? constructor.parameters : undefined, visitor, context);
-            const body = transformConstructorBody(node, constructor, isDerivedClass);
+            const body = transformConstructorBody(node, constructor, properties, isDerivedClass);
             if (!body) {
                 return undefined;
             }
@@ -564,13 +565,7 @@ namespace ts {
             );
         }
 
-        function isInstanceProperty(node: ClassElement): node is PropertyDeclaration {
-            return isPropertyDeclaration(node) && !hasStaticModifier(node);
-        }
-
-        function transformConstructorBody(node: ClassDeclaration | ClassExpression, constructor: ConstructorDeclaration | undefined, isDerivedClass: boolean) {
-            const properties = node.members.filter(isInstanceProperty);
-
+        function transformConstructorBody(node: ClassDeclaration | ClassExpression, constructor: ConstructorDeclaration | undefined, properties: PropertyDeclaration[], isDerivedClass: boolean) {
             // Only generate synthetic constructor when there are property initializers to move.
             if (!constructor && !some(properties)) {
                 return visitFunctionBody(/*node*/ undefined, visitor, context);
