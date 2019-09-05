@@ -1,83 +1,16 @@
-=== tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx ===
-class A {
->A : Symbol(A, Decl(privateNameJsx.tsx, 0, 0))
+=== tests/cases/compiler/privateNameJsx.tsx ===
+class Test {
+>Test : Symbol(Test, Decl(privateNameJsx.tsx, 0, 0))
 
-    #Foo = () => null;
->#Foo : Symbol(A.#Foo, Decl(privateNameJsx.tsx, 0, 9))
+    #prop = () => <div />;
+>#prop : Symbol(Test.#prop, Decl(privateNameJsx.tsx, 0, 12))
 
-    method () {
->method : Symbol(A.method, Decl(privateNameJsx.tsx, 1, 22))
+    render() {
+>render : Symbol(Test.render, Decl(privateNameJsx.tsx, 1, 26))
 
-        const e1 = <this.#Foo />;
->e1 : Symbol(e1, Decl(privateNameJsx.tsx, 3, 13))
->this.#Foo : Symbol(A.#Foo, Decl(privateNameJsx.tsx, 0, 9))
->this : Symbol(A, Decl(privateNameJsx.tsx, 0, 0))
-
-        const e2 = <this.#Nonexistent />; // Error
->e2 : Symbol(e2, Decl(privateNameJsx.tsx, 4, 13))
->this : Symbol(A, Decl(privateNameJsx.tsx, 0, 0))
-
-        class B extends A {
->B : Symbol(B, Decl(privateNameJsx.tsx, 4, 41))
->A : Symbol(A, Decl(privateNameJsx.tsx, 0, 0))
-
-            #Foo = 3;
->#Foo : Symbol(B.#Foo, Decl(privateNameJsx.tsx, 6, 27))
-
-            #Bar = () => null;
->#Bar : Symbol(B.#Bar, Decl(privateNameJsx.tsx, 7, 21))
-
-            #baz = () => null;
->#baz : Symbol(B.#baz, Decl(privateNameJsx.tsx, 8, 30))
-
-            method () {
->method : Symbol(B.method, Decl(privateNameJsx.tsx, 9, 30))
-
-                const a = new A();
->a : Symbol(a, Decl(privateNameJsx.tsx, 12, 21))
->A : Symbol(A, Decl(privateNameJsx.tsx, 0, 0))
-
-                const e3 = <a.#Foo />;    // Error: shadowed
->e3 : Symbol(e3, Decl(privateNameJsx.tsx, 13, 21))
->a : Symbol(a, Decl(privateNameJsx.tsx, 12, 21))
-
-                const b = new B();
->b : Symbol(b, Decl(privateNameJsx.tsx, 14, 21))
->B : Symbol(B, Decl(privateNameJsx.tsx, 4, 41))
-
-                const e4 = <b.#Foo />     // Error: not a constructor
->e4 : Symbol(e4, Decl(privateNameJsx.tsx, 15, 21))
->b.#Foo : Symbol(B.#Foo, Decl(privateNameJsx.tsx, 6, 27))
->b : Symbol(b, Decl(privateNameJsx.tsx, 14, 21))
-
-                const e5 = <b.#Bar />
->e5 : Symbol(e5, Decl(privateNameJsx.tsx, 16, 21))
->b.#Bar : Symbol(B.#Bar, Decl(privateNameJsx.tsx, 7, 21))
->b : Symbol(b, Decl(privateNameJsx.tsx, 14, 21))
-
-                const e6 = <this.#Bar />
->e6 : Symbol(e6, Decl(privateNameJsx.tsx, 17, 21))
->this.#Bar : Symbol(B.#Bar, Decl(privateNameJsx.tsx, 7, 21))
->this : Symbol(B, Decl(privateNameJsx.tsx, 4, 41))
-
-                const e7 = <b.#baz />
->e7 : Symbol(e7, Decl(privateNameJsx.tsx, 18, 21))
->b.#baz : Symbol(B.#baz, Decl(privateNameJsx.tsx, 8, 30))
->b : Symbol(b, Decl(privateNameJsx.tsx, 14, 21))
-            }
-        }
-        const b = new B()
->b : Symbol(b, Decl(privateNameJsx.tsx, 21, 13))
->B : Symbol(B, Decl(privateNameJsx.tsx, 4, 41))
-
-        const e8 = <b.#Foo />             // OK, is A's #foo
->e8 : Symbol(e8, Decl(privateNameJsx.tsx, 22, 13))
->b.#Foo : Symbol(A.#Foo, Decl(privateNameJsx.tsx, 0, 9))
->b : Symbol(b, Decl(privateNameJsx.tsx, 21, 13))
-
-        const e9 = <b.#Bar />             // Error: not accessible
->e9 : Symbol(e9, Decl(privateNameJsx.tsx, 23, 13))
->b : Symbol(b, Decl(privateNameJsx.tsx, 21, 13))
+        return <this.#prop />;
+>this : Symbol(Test, Decl(privateNameJsx.tsx, 0, 0))
     }
 }
+
 

@@ -1,44 +1,14 @@
-tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx(5,26): error TS2339: Property '#Nonexistent' does not exist on type 'A'.
-tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx(14,31): error TS18014: The property '#Foo' cannot be accessed on type 'A' within this class because it is shadowed by another private identifier with the same spelling.
-tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx(16,29): error TS2604: JSX element type 'b.#Foo' does not have any construct or call signatures.
-tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx(24,23): error TS18013: Property '#Bar' is not accessible outside class 'B' because it is privately named.
+tests/cases/compiler/privateNameJsx.tsx(4,27): error TS1003: Identifier expected.
 
 
-==== tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx (4 errors) ====
-    class A {
-        #Foo = () => null;
-        method () {
-            const e1 = <this.#Foo />;
-            const e2 = <this.#Nonexistent />; // Error
-                             ~~~~~~~~~~~~
-!!! error TS2339: Property '#Nonexistent' does not exist on type 'A'.
-    
-            class B extends A {
-                #Foo = 3;
-                #Bar = () => null;
-                #baz = () => null;
-    
-                method () {
-                    const a = new A();
-                    const e3 = <a.#Foo />;    // Error: shadowed
-                                  ~~~~
-!!! error TS18014: The property '#Foo' cannot be accessed on type 'A' within this class because it is shadowed by another private identifier with the same spelling.
-!!! related TS18017 tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx:8:13: The shadowing declaration of '#Foo' is defined here
-!!! related TS18018 tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx:2:5: The declaration of '#Foo' that you probably intended to use is defined here
-                    const b = new B();
-                    const e4 = <b.#Foo />     // Error: not a constructor
-                                ~~~~~~
-!!! error TS2604: JSX element type 'b.#Foo' does not have any construct or call signatures.
-                    const e5 = <b.#Bar />
-                    const e6 = <this.#Bar />
-                    const e7 = <b.#baz />
-                }
-            }
-            const b = new B()
-            const e8 = <b.#Foo />             // OK, is A's #foo
-            const e9 = <b.#Bar />             // Error: not accessible
-                          ~~~~
-!!! error TS18013: Property '#Bar' is not accessible outside class 'B' because it is privately named.
+==== tests/cases/compiler/privateNameJsx.tsx (1 errors) ====
+    class Test {
+        #prop = () => <div />;
+        render() {
+            return <this.#prop />;
+                              
+!!! error TS1003: Identifier expected.
         }
     }
+    
     

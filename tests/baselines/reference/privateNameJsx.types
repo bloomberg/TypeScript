@@ -1,105 +1,22 @@
-=== tests/cases/conformance/classes/members/privateNames/privateNameJsx.tsx ===
-class A {
->A : A
+=== tests/cases/compiler/privateNameJsx.tsx ===
+class Test {
+>Test : Test
 
-    #Foo = () => null;
->#Foo : () => null
->() => null : () => null
->null : null
+    #prop = () => <div />;
+>#prop : () => any
+>() => <div /> : () => any
+><div /> : any
+>div : any
 
-    method () {
->method : () => void
+    render() {
+>render : () => any
 
-        const e1 = <this.#Foo />;
->e1 : any
-><this.#Foo /> : any
->this.#Foo : () => null
+        return <this.#prop />;
+><this.#prop /> : any
+>this.#prop : any
 >this : this
-
-        const e2 = <this.#Nonexistent />; // Error
->e2 : any
-><this.#Nonexistent /> : any
->this.#Nonexistent : any
->this : this
-
-        class B extends A {
->B : B
->A : A
-
-            #Foo = 3;
->#Foo : number
->3 : 3
-
-            #Bar = () => null;
->#Bar : () => null
->() => null : () => null
->null : null
-
-            #baz = () => null;
->#baz : () => null
->() => null : () => null
->null : null
-
-            method () {
->method : () => void
-
-                const a = new A();
->a : A
->new A() : A
->A : typeof A
-
-                const e3 = <a.#Foo />;    // Error: shadowed
->e3 : any
-><a.#Foo /> : any
->a.#Foo : any
->a : A
-
-                const b = new B();
->b : B
->new B() : B
->B : typeof B
-
-                const e4 = <b.#Foo />     // Error: not a constructor
->e4 : any
-><b.#Foo /> : any
->b.#Foo : number
->b : B
-
-                const e5 = <b.#Bar />
->e5 : any
-><b.#Bar /> : any
->b.#Bar : () => null
->b : B
-
-                const e6 = <this.#Bar />
->e6 : any
-><this.#Bar /> : any
->this.#Bar : () => null
->this : this
-
-                const e7 = <b.#baz />
->e7 : any
-><b.#baz /> : any
->b.#baz : () => null
->b : B
-            }
-        }
-        const b = new B()
->b : B
->new B() : B
->B : typeof B
-
-        const e8 = <b.#Foo />             // OK, is A's #foo
->e8 : any
-><b.#Foo /> : any
->b.#Foo : () => null
->b : B
-
-        const e9 = <b.#Bar />             // Error: not accessible
->e9 : any
-><b.#Bar /> : any
->b.#Bar : any
->b : B
+> : any
     }
 }
+
 

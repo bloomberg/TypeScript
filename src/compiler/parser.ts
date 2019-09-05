@@ -2272,8 +2272,9 @@ namespace ts {
                 }
             }
 
-            if (allowPrivateIdentifiers && token() === SyntaxKind.PrivateIdentifier) {
-                return parsePrivateIdentifier();
+            if (token() === SyntaxKind.PrivateIdentifier) {
+                const node = parsePrivateIdentifier();
+                return allowPrivateIdentifiers ? node : createMissingNode<Identifier>(SyntaxKind.Identifier, /*reportAtCurrentPosition*/ true, Diagnostics.Identifier_expected);
             }
 
             return allowIdentifierNames ? parseIdentifierName() : parseIdentifier();
@@ -4504,7 +4505,7 @@ namespace ts {
             while (parseOptional(SyntaxKind.DotToken)) {
                 const propertyAccess: JsxTagNamePropertyAccess = <JsxTagNamePropertyAccess>createNode(SyntaxKind.PropertyAccessExpression, expression.pos);
                 propertyAccess.expression = expression;
-                propertyAccess.name = parseRightSideOfDot(/*allowIdentifierNames*/ true, /*allowPrivateIdentifiers*/ true);
+                propertyAccess.name = parseRightSideOfDot(/*allowIdentifierNames*/ true, /*allowPrivateIdentifiers*/ false);
                 expression = finishNode(propertyAccess);
             }
             return expression;
