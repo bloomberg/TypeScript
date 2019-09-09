@@ -20768,9 +20768,9 @@ namespace ts {
             // Either the identifier could not be looked up in the lexical scope OR the lexically scoped identifier did not exist on the type.
             // Find a private identifier with the same description on the type.
             let propertyOnType: Symbol | undefined;
-            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
+            const properties = getPropertiesOfType(leftType);
             if (properties) {
-                forEachEntry(properties, (symbol: Symbol) => {
+                forEach(properties, (symbol: Symbol) => {
                     const decl = symbol.valueDeclaration;
                     if (decl && isNamedDeclaration(decl) && isPrivateIdentifier(decl.name) && decl.name.escapedText === right.escapedText) {
                         propertyOnType = symbol;
