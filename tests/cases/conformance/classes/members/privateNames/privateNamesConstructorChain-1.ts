@@ -3,7 +3,6 @@ class Parent {
     static #bar = 5;
     accessChildProps() {
         new Child().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
-        Child.#bar;       // Error: not found
     }
 }
 

@@ -20754,14 +20754,7 @@ namespace ts {
         }
 
         function getPrivateIdentifierPropertyOfType(leftType: Type, lexicallyScopedIdentifier: Symbol): Symbol | undefined {
-            leftType = getApparentType(leftType);
-            if (!(leftType.flags & TypeFlags.Object)) {
-                return undefined;
-            }
-            const properties = isConstructorType(leftType) ? leftType.symbol.exports : resolveStructuredTypeMembers(leftType as ObjectType).members;
-            if (properties && properties.has(lexicallyScopedIdentifier.escapedName)) {
-                return lexicallyScopedIdentifier;
-            }
+            return getPropertyOfType(leftType, lexicallyScopedIdentifier.escapedName);
         }
 
         function checkPrivateIdentifierPropertyAccess(leftType: Type, right: PrivateIdentifier, lexicallyScopedIdentifier: Symbol | undefined): boolean {

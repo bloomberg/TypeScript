@@ -17,10 +17,6 @@ class Parent {
 >new Child().#foo : number
 >new Child() : Child
 >Child : typeof Child
-
-        Child.#bar;       // Error: not found
->Child.#bar : any
->Child : typeof Child
     }
 }
 

@@ -17,10 +17,6 @@ class Parent<T> {
 >new Child<string>().#foo : number
 >new Child<string>() : Child<string>
 >Child : typeof Child
-
-        Child.#bar;       // Error: not found
->Child.#bar : any
->Child : typeof Child
     }
 }
 

@@ -14,24 +14,21 @@ class Parent<T> {
 
         new Child<string>().#foo; // OK (`#foo` was added when `Parent`'s constructor was called on `child`)
 >new Child<string>().#foo : Symbol(Parent.#foo, Decl(privateNamesConstructorChain-2.ts, 0, 17))
->Child : Symbol(Child, Decl(privateNamesConstructorChain-2.ts, 7, 1))
-
-        Child.#bar;       // Error: not found
->Child : Symbol(Child, Decl(privateNamesConstructorChain-2.ts, 7, 1))
+>Child : Symbol(Child, Decl(privateNamesConstructorChain-2.ts, 6, 1))
     }
 }
 
 class Child<T> extends Parent<T> {
->Child : Symbol(Child, Decl(privateNamesConstructorChain-2.ts, 7, 1))
->T : Symbol(T, Decl(privateNamesConstructorChain-2.ts, 9, 12))
+>Child : Symbol(Child, Decl(privateNamesConstructorChain-2.ts, 6, 1))
+>T : Symbol(T, Decl(privateNamesConstructorChain-2.ts, 8, 12))
 >Parent : Symbol(Parent, Decl(privateNamesConstructorChain-2.ts, 0, 0))
->T : Symbol(T, Decl(privateNamesConstructorChain-2.ts, 9, 12))
+>T : Symbol(T, Decl(privateNamesConstructorChain-2.ts, 8, 12))
 
     #foo = "foo";       // OK (Child's #foo does not conflict, as `Parent`'s `#foo` is not accessible)
->#foo : Symbol(Child.#foo, Decl(privateNamesConstructorChain-2.ts, 9, 34))
+>#foo : Symbol(Child.#foo, Decl(privateNamesConstructorChain-2.ts, 8, 34))
 
     #bar = "bar";       // OK
->#bar : Symbol(Child.#bar, Decl(privateNamesConstructorChain-2.ts, 10, 17))
+>#bar : Symbol(Child.#bar, Decl(privateNamesConstructorChain-2.ts, 9, 17))
 }
 
 new Parent<number>().accessChildProps();
