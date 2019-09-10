@@ -35,7 +35,7 @@ class C {
     constructor () {
         exports.#bar = 6;    // Error
 >exports.#bar = 6 : 6
->exports.#bar : number
+>exports.#bar : any
 >exports : typeof import("tests/cases/conformance/classes/members/privateNames/privateNameJsBadAssignment")
 >6 : 6
 
