@@ -26350,6 +26350,31 @@ namespace ts {
             let prop: Symbol | undefined;
             if (isPrivateIdentifier(right)) {
                 const lexicallyScopedSymbol = lookupSymbolForPrivateIdentifierDeclaration(right.escapedText, right);
+
+                if(lexicallyScopedSymbol && (compilerOptions.target === ScriptTarget.ESNext && compilerOptions.useDefineForClassFields === false)) {
+                    const lexicalValueDecl = lexicallyScopedSymbol.valueDeclaration;
+                    const lexicalClass = getContainingClass(lexicalValueDecl);
+                    const parentStaticFieldInitializer = findAncestor(node, (n) => {
+                        if(n == lexicalClass) return "quit";
+                        if(isPropertyDeclaration(n.parent) && n.parent.initializer == n && n.parent.parent === lexicalClass) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if(parentStaticFieldInitializer) {
+                        const parentStaticFieldInitializerSymbol = getSymbolOfNode(parentStaticFieldInitializer.parent);
+                        Debug.assert(parentStaticFieldInitializerSymbol, "Initializer without declaration symbol");
+                        const diagnostic = error(node,
+                            Diagnostics.Property_0_has_a_private_name_but_is_used_in_a_static_initializer_in_its_declaring_class_This_is_only_supported_for_an_ESNext_target_if_useDefineForClassFields_is_set_to_true,
+                            symbolName(lexicallyScopedSymbol));
+                        addRelatedInfo(diagnostic,
+                            createDiagnosticForNode(parentStaticFieldInitializer.parent,
+                                Diagnostics.Initializer_for_property_0,
+                                symbolName(parentStaticFieldInitializerSymbol))
+                        );
+                    }
+                }
+
                 if (isAnyLike) {
                     if (lexicallyScopedSymbol) {
                         return apparentType;
