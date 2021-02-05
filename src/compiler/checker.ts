@@ -26351,17 +26351,17 @@ namespace ts {
             if (isPrivateIdentifier(right)) {
                 const lexicallyScopedSymbol = lookupSymbolForPrivateIdentifierDeclaration(right.escapedText, right);
 
-                if(lexicallyScopedSymbol && (compilerOptions.target === ScriptTarget.ESNext && compilerOptions.useDefineForClassFields === false)) {
+                if (lexicallyScopedSymbol && (compilerOptions.target === ScriptTarget.ESNext && !useDefineForClassFields)) {
                     const lexicalValueDecl = lexicallyScopedSymbol.valueDeclaration;
                     const lexicalClass = getContainingClass(lexicalValueDecl);
                     const parentStaticFieldInitializer = findAncestor(node, (n) => {
-                        if(n === lexicalClass) return "quit";
-                        if(isPropertyDeclaration(n.parent) && n.parent.initializer === n && n.parent.parent === lexicalClass) {
+                        if (n === lexicalClass) return "quit";
+                        if (isPropertyDeclaration(n.parent) && n.parent.initializer === n && n.parent.parent === lexicalClass) {
                             return true;
                         }
                         return false;
                     });
-                    if(parentStaticFieldInitializer) {
+                    if (parentStaticFieldInitializer) {
                         const parentStaticFieldInitializerSymbol = getSymbolOfNode(parentStaticFieldInitializer.parent);
                         Debug.assert(parentStaticFieldInitializerSymbol, "Initializer without declaration symbol");
                         const diagnostic = error(node,
