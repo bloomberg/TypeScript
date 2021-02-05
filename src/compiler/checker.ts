@@ -26355,8 +26355,8 @@ namespace ts {
                     const lexicalValueDecl = lexicallyScopedSymbol.valueDeclaration;
                     const lexicalClass = getContainingClass(lexicalValueDecl);
                     const parentStaticFieldInitializer = findAncestor(node, (n) => {
-                        if(n == lexicalClass) return "quit";
-                        if(isPropertyDeclaration(n.parent) && n.parent.initializer == n && n.parent.parent === lexicalClass) {
+                        if(n === lexicalClass) return "quit";
+                        if(isPropertyDeclaration(n.parent) && n.parent.initializer === n && n.parent.parent === lexicalClass) {
                             return true;
                         }
                         return false;
