@@ -503,7 +503,7 @@
         "category": "Error",
         "code": 1165
     },
-    "A computed property name in a class property declaration must refer to an expression whose type is a literal type or a 'unique symbol' type.": {
+    "A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.": {
         "category": "Error",
         "code": 1166
     },
@@ -3256,13 +3256,21 @@
         "category": "Error",
         "code": 2800
     },
-    "Property '{0}' has a private name but is used in a static initializer in its declaring class. This is only supported for an ESNext target if 'useDefineForClassFields' is set to 'true'": {
+    "This condition will always return true since the Promise is always truthy.": {
         "category": "Error",
         "code": 2801
     },
-    "Initializer for property '{0}'": {
+    "Type '{0}' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.": {
         "category": "Error",
         "code": 2802
+    },
+    "Property '{0}' has a private name but is used in a static initializer in its declaring class. This is only supported for an ESNext target if 'useDefineForClassFields' is set to 'true'": {
+        "category": "Error",
+        "code": 2803
+    },
+    "Initializer for property '{0}'": {
+        "category": "Error",
+        "code": 2804
     },
 
     "Import declaration '{0}' is using private name '{1}'.": {
@@ -3849,6 +3857,10 @@
     "Option 'preserveConstEnums' cannot be disabled when 'isolatedModules' is enabled.": {
         "category": "Error",
         "code": 5091
+    },
+    "The root value of a '{0}' file must be an object.": {
+        "category": "Error",
+        "code": 5092
     },
 
     "Generates a sourcemap for each corresponding '.d.ts' file.": {
