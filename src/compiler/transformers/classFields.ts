@@ -555,7 +555,7 @@ namespace ts {
             return visitEachChild(node, visitor, context);
         }
 
-        function createPrivateIdentifierAssignment(info: PrivateIdentifierInfo, receiver: Expression, right: Expression, operator: AssignmentOperator) {
+        function createPrivateIdentifierAssignment(info: PrivateIdentifierInfo, receiver: Expression, right: Expression, operator: AssignmentOperator): Expression {
             receiver = visitNode(receiver, visitor, isExpression);
             right = visitNode(right, visitor, isExpression);
 
@@ -569,34 +569,42 @@ namespace ts {
                 );
             }
 
+            let setExpression: Expression;
+
             switch(info.kind) {
                 case PrivateIdentifierKind.Accessor:
-                    return context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
+                    setExpression = context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         right,
                         info.kind,
                         info.setterName
                     );
+                    break;
                 case PrivateIdentifierKind.Method:
-                    return context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
+                    setExpression = context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         right,
                         info.kind,
                         /* f */ undefined
                     );
+                    break;
                 case PrivateIdentifierKind.Field:
-                    return context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
+                    setExpression = context.getEmitHelperFactory().createClassPrivateFieldSetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         right,
                         info.kind,
                         info.variableName
                     );
+                    break;
                 default:
                     Debug.assertNever(info, "Unknown private element type");
             }
+
+            setCommentRange(receiver, setExpression);
+            return setExpression;
         }
 
         /**
