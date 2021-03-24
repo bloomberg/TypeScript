@@ -68,8 +68,7 @@ class Test {
         console.log(__classPrivateFieldGet(this, _Test_instances, "a")); // error
         __classPrivateFieldSet(this, _Test_instances, { foo }, "a", _Test_value_set); // ok
         __classPrivateFieldSet(this, _Test_instances, { foo }, "a", _Test_value_set); // ok
-        __classPrivateFieldGet(// ok
-        this, _Test_instances, "a").foo = foo; // error
+        __classPrivateFieldGet(this, _Test_instances, "a").foo = foo; // error
         (_a = this, { o: ({ set value(_d) { __classPrivateFieldSet(_a, _Test_instances, _d, "a", _Test_value_set); } }).value } = { o: { foo } }); //ok
         (__classPrivateFieldGet(this, _Test_instances, "a") = __rest({ foo }, [])); //ok
         ({ foo: __classPrivateFieldGet(this, _Test_instances, "a").foo } = { foo }); //error

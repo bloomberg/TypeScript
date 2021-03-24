@@ -352,31 +352,39 @@ namespace ts {
         }
 
         function createPrivateIdentifierAccessHelper(info: PrivateIdentifierInfo, receiver: Expression): Expression {
+            let getExpression: Expression;
+
             switch(info.kind) {
                 case PrivateIdentifierKind.Accessor:
-                    return context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
+                    getExpression = context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         info.kind,
                         info.getterName
                     );
+                    break;
                 case PrivateIdentifierKind.Method:
-                    return context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
+                    getExpression = context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         info.kind,
                         info.methodName
                     );
+                    break;
                 case PrivateIdentifierKind.Field:
-                    return context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
+                    getExpression = context.getEmitHelperFactory().createClassPrivateFieldGetHelper(
                         receiver,
                         info.brandCheckIdentifier,
                         info.kind,
                         info.variableName
                     );
+                    break;
                 default:
                     Debug.assertNever(info, "Unknown private element type");
             }
+
+            setCommentRange(receiver, getExpression);
+            return getExpression;
         }
 
         function visitPropertyAccessExpression(node: PropertyAccessExpression) {
