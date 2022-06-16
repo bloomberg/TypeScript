@@ -25289,6 +25289,7 @@ namespace ts {
             }
 
             function narrowTypeByCallExpression(type: Type, callExpression: CallExpression, assumeTrue: boolean): Type {
+                debugger;
                 if (hasMatchingArgument(callExpression, reference)) {
                     const signature = assumeTrue || !isCallChain(callExpression) ? getEffectsSignature(callExpression) : undefined;
                     const predicate = signature && getTypePredicateOfSignature(signature);
@@ -25304,6 +25305,13 @@ namespace ts {
                         if (isStringLiteralLike(argument) && getAccessedPropertyName(reference) === escapeLeadingUnderscores(argument.text)) {
                             return getTypeWithFacts(type, assumeTrue ? TypeFacts.NEUndefined : TypeFacts.EQUndefined);
                         }
+                    }
+                }
+
+                if (isPropertyAccessExpression(callExpression.expression)) {
+                    const callAccess = callExpression.expression;
+                    if (isIdentifier(callAccess.name) && callAccess.name.escapedText === "hasOwn" && callExpression.arguments.length === 2 && isStringLiteralLike(callExpression.arguments[1])) {
+                        return narrowByInKeyword(type, callExpression.arguments[1].text as __String, assumeTrue);
                     }
                 }
                 return type;
