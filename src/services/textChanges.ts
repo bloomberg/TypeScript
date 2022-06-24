@@ -780,8 +780,20 @@ namespace ts.textChanges {
             }
         }
 
-        public insertExportModifier(sourceFile: SourceFile, node: DeclarationStatement | VariableStatement): void {
-            this.insertText(sourceFile, node.getStart(sourceFile), "export ");
+        public insertExportModifier(
+            sourceFile: SourceFile,
+            node: DeclarationStatement | VariableStatement | VariableDeclarationList
+        ): void {
+            Debug.assert(
+                /*expression*/ !(isVariableDeclarationList(node) && node.declarations.length !== 1),
+                /*message*/ "Only allow adding export modifier to variable lists with 1 element"
+            );
+
+            this.insertText(
+                sourceFile,
+                node.getStart(sourceFile, /*includeJsDocComment*/ false),
+                "export "
+            );
         }
 
         public insertImportSpecifierAtIndex(sourceFile: SourceFile, importSpecifier: ImportSpecifier, namedImports: NamedImports, index: number) {
