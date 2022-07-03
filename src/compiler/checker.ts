@@ -383,6 +383,7 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
         const noImplicitAny = getStrictOptionValue(compilerOptions, "noImplicitAny");
         const noImplicitThis = getStrictOptionValue(compilerOptions, "noImplicitThis");
         const useUnknownInCatchVariables = getStrictOptionValue(compilerOptions, "useUnknownInCatchVariables");
+        const inferInstanceTypeArgumentsAsConstraint = getStrictOptionValue(compilerOptions, "inferInstanceTypeArgumentsAsConstraint");
         const keyofStringsOnly = !!compilerOptions.keyofStringsOnly;
         const freshObjectLiteralFlag = compilerOptions.suppressExcessPropertyErrors ? 0 : ObjectFlags.FreshLiteral;
         const exactOptionalPropertyTypes = compilerOptions.exactOptionalPropertyTypes;
@@ -8657,13 +8658,25 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
             })!.parent;
         }
 
+        function getInstanceTypeOfClassSymbol(classSymbol: Symbol): Type {
+            const classType = getDeclaredTypeOfSymbol(classSymbol) as InterfaceType;
+            if (!classType.typeParameters) {
+                return classType;
+            }
+            const typeArguments = map(classType.typeParameters, typeParameter => {
+                return (inferInstanceTypeArgumentsAsConstraint) ? getBaseConstraintOfType(typeParameter) || unknownType : anyType;
+            });
+            return createTypeReference(classType as GenericType, typeArguments);
+        }
+
         function getTypeOfPrototypeProperty(prototype: Symbol): Type {
             // TypeScript 1.0 spec (April 2014): 8.4
             // Every class automatically contains a static property member named 'prototype',
             // the type of which is an instantiation of the class type with type Any supplied as a type argument for each type parameter.
+            // FIXME: this needs to be updated to address new behavior with inferInstanceTypeArgumentsAsConstraint
             // It is an error to explicitly declare a static property member with the name 'prototype'.
-            const classType = getDeclaredTypeOfSymbol(getParentOfSymbol(prototype)!) as InterfaceType;
-            return classType.typeParameters ? createTypeReference(classType as GenericType, map(classType.typeParameters, _ => anyType)) : classType;
+            const classSymbol = getParentOfSymbol(prototype)!;
+            return getInstanceTypeOfClassSymbol(classSymbol);
         }
 
         // Return the type of the given property in the given type, or undefined if no such property exists
@@ -25080,10 +25093,10 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
                 if (symbol === undefined) {
                     return type;
                 }
-                const classSymbol = symbol.parent!;
+                const classSymbol = getParentOfSymbol(symbol)!;
                 const targetType = hasStaticModifier(Debug.checkDefined(symbol.valueDeclaration, "should always have a declaration"))
                     ? getTypeOfSymbol(classSymbol) as InterfaceType
-                    : getDeclaredTypeOfSymbol(classSymbol);
+                    : getInstanceTypeOfClassSymbol(classSymbol);
                 return getNarrowedType(type, targetType, assumeTrue, isTypeDerivedFrom);
             }
 

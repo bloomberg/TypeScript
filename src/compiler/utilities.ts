@@ -6461,6 +6461,7 @@ namespace ts {
         | "strictPropertyInitialization"
         | "alwaysStrict"
         | "useUnknownInCatchVariables"
+        | "inferInstanceTypeArgumentsAsConstraint"
         ;
 
     export function getStrictOptionValue(compilerOptions: CompilerOptions, flag: StrictOptionName): boolean {

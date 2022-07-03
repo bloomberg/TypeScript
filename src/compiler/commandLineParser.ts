@@ -740,6 +740,16 @@ namespace ts {
             defaultValueDescription: false,
         },
         {
+            name: "inferInstanceTypeArgumentsAsConstraint",
+            type: "boolean",
+            affectsSemanticDiagnostics: true,
+            affectsMultiFileEmitBuildInfo: true,
+            strictFlag: true,
+            category: Diagnostics.Type_Checking,
+            description: Diagnostics.Default_type_arguments_to_parameter_constraint_or_unknown_instead_of_any,
+            defaultValueDescription: false,
+        },
+        {
             name: "alwaysStrict",
             type: "boolean",
             affectsSourceFile: true,

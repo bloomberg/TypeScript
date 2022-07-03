@@ -5839,6 +5839,10 @@
         "category": "Message",
         "code": 6803
     },
+    "Default type arguments to parameter constraint or 'unknown' instead of 'any'.": {
+        "category": "Message",
+        "code": 6804
+    },
 
     "one of:": {
         "category": "Message",

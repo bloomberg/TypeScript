@@ -6334,6 +6334,7 @@ namespace ts {
         /*@internal*/help?: boolean;
         importHelpers?: boolean;
         importsNotUsedAsValues?: ImportsNotUsedAsValues;
+        inferInstanceTypeArgumentsAsConstraint?: boolean;
         /*@internal*/init?: boolean;
         inlineSourceMap?: boolean;
         inlineSources?: boolean;

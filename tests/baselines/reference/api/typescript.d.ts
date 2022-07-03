@@ -2994,6 +2994,7 @@ declare namespace ts {
         forceConsistentCasingInFileNames?: boolean;
         importHelpers?: boolean;
         importsNotUsedAsValues?: ImportsNotUsedAsValues;
+        inferInstanceTypeArgumentsAsConstraint?: boolean;
         inlineSourceMap?: boolean;
         inlineSources?: boolean;
         isolatedModules?: boolean;
