@@ -158,6 +158,8 @@ namespace ts {
         symbol: TypeFacts.TypeofNESymbol,
         undefined: TypeFacts.NEUndefined,
         object: TypeFacts.TypeofNEObject,
+        record: TypeFacts.TypeofNEObject,
+        tuple: TypeFacts.TypeofNEObject,
         function: TypeFacts.TypeofNEFunction
     }));
 
@@ -834,6 +836,14 @@ namespace ts {
         const numberOrBigIntType = getUnionType([numberType, bigintType]);
         const templateConstraintType = getUnionType([stringType, numberType, booleanType, bigintType, nullType, undefinedType]) as UnionType;
         const numericStringType = getTemplateLiteralType(["", ""], [numberType]);  // The `${number}` type
+
+        const esRecordIndexInfo = createIndexInfo(
+            /*keyType*/ stringOrNumberType, /*valueType - replacedBelow*/ anyType, /*isReadonly*/ true
+        );
+        const esRecordType = createAnonymousType(undefined, emptySymbols, emptyArray, emptyArray, [esRecordIndexInfo]);
+        // TODO: what about esTuples?
+        const primitiveType = getUnionType([undefinedType, nullType, booleanType, numberType, bigintType, stringType, esSymbolType, esRecordType]);
+        esRecordIndexInfo.type = primitiveType; // note: this makes esRecordType recursive
 
         const restrictiveMapper: TypeMapper = makeFunctionTypeMapper(t => t.flags & TypeFlags.TypeParameter ? getRestrictiveTypeParameter(t as TypeParameter) : t);
         const permissiveMapper: TypeMapper = makeFunctionTypeMapper(t => t.flags & TypeFlags.TypeParameter ? wildcardType : t);
@@ -23396,6 +23406,18 @@ namespace ts {
                 resolved.members.get("bind" as __String) && isTypeSubtypeOf(type, globalFunctionType));
         }
 
+        function isPossiblyARecordPrimitive(type: Type): boolean {
+            return isTypeAssignableTo(type, esRecordType) || isTypeAssignableTo(esRecordType, type);
+        }
+
+        function getObjectTypeFacts(type: Type): TypeFacts {
+            const f = strictNullChecks ? TypeFacts.ObjectStrictFacts : TypeFacts.ObjectFacts;
+            if (isPossiblyARecordPrimitive(type)) {
+                return f | TypeFacts.TypeofNEObject;
+            }
+            return f;
+        }
+
         function getTypeFacts(type: Type, ignoreObjects = false): TypeFacts {
             const flags = type.flags;
             if (flags & TypeFlags.String) {
@@ -23441,7 +23463,7 @@ namespace ts {
                     strictNullChecks ? TypeFacts.EmptyObjectStrictFacts : TypeFacts.EmptyObjectFacts :
                     isFunctionObjectType(type as ObjectType) ?
                         strictNullChecks ? TypeFacts.FunctionStrictFacts : TypeFacts.FunctionFacts :
-                        strictNullChecks ? TypeFacts.ObjectStrictFacts : TypeFacts.ObjectFacts;
+                        getObjectTypeFacts(type);
             }
             if (flags & (TypeFlags.Void | TypeFlags.Undefined)) {
                 return TypeFacts.UndefinedFacts;
