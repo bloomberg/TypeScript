@@ -125,7 +125,7 @@ namespace ts {
         TrueFacts = BaseBooleanFacts | Truthy,
         SymbolStrictFacts = TypeofEQSymbol | TypeofNEString | TypeofNENumber | TypeofNEBigInt | TypeofNEBoolean | TypeofNEObject | TypeofNEFunction | TypeofNEHostObject | NEUndefined | NENull | NEUndefinedOrNull | Truthy,
         SymbolFacts = SymbolStrictFacts | EQUndefined | EQNull | EQUndefinedOrNull | Falsy,
-        ObjectStrictFacts = TypeofEQObject | TypeofEQHostObject | TypeofNEString | TypeofNENumber | TypeofNEBigInt | TypeofNEBoolean | TypeofNESymbol | TypeofNEFunction | NEUndefined | NENull | NEUndefinedOrNull | Truthy,
+        ObjectStrictFacts = TypeofEQObject | TypeofNEObject | TypeofEQHostObject | TypeofNEString | TypeofNENumber | TypeofNEBigInt | TypeofNEBoolean | TypeofNESymbol | TypeofNEFunction | NEUndefined | NENull | NEUndefinedOrNull | Truthy,
         ObjectFacts = ObjectStrictFacts | EQUndefined | EQNull | EQUndefinedOrNull | Falsy,
         FunctionStrictFacts = TypeofEQFunction | TypeofEQHostObject | TypeofNEString | TypeofNENumber | TypeofNEBigInt | TypeofNEBoolean | TypeofNESymbol | TypeofNEObject | NEUndefined | NENull | NEUndefinedOrNull | Truthy,
         FunctionFacts = FunctionStrictFacts | EQUndefined | EQNull | EQUndefinedOrNull | Falsy,
@@ -158,6 +158,8 @@ namespace ts {
         symbol: TypeFacts.TypeofNESymbol,
         undefined: TypeFacts.NEUndefined,
         object: TypeFacts.TypeofNEObject,
+        record: TypeFacts.TypeofNEObject,
+        tuple: TypeFacts.TypeofNEObject,
         function: TypeFacts.TypeofNEFunction
     }));
 
@@ -23453,7 +23455,7 @@ namespace ts {
                 return strictNullChecks ? TypeFacts.SymbolStrictFacts : TypeFacts.SymbolFacts;
             }
             if (flags & TypeFlags.NonPrimitive) {
-                return strictNullChecks ? TypeFacts.ObjectStrictFacts : TypeFacts.ObjectFacts;
+                return (strictNullChecks ? TypeFacts.ObjectStrictFacts : TypeFacts.ObjectFacts) & ~TypeFacts.TypeofNEObject;
             }
             if (flags & TypeFlags.Never) {
                 return TypeFacts.None;
