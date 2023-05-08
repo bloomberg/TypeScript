@@ -1,4 +1,5 @@
-import { SourceFile, SyntaxKind, Node, TextSpan, DiagnosticWithLocation, DeclarationName, isPropertySignature, isBindingElement, isCallSignatureDeclaration, isConstructorDeclaration, isConstructSignatureDeclaration, isExpressionWithTypeArguments, isFunctionDeclaration, isGetAccessor, isImportEqualsDeclaration, isIndexSignatureDeclaration, isMethodDeclaration, isMethodSignature, isParameter, isPropertyAccessExpression, isPropertyDeclaration, isSetAccessor, isTypeAliasDeclaration, isTypeParameterDeclaration, isVariableDeclaration, QualifiedName, BindingElement, CallSignatureDeclaration, ConstructorDeclaration, ConstructSignatureDeclaration, ExpressionWithTypeArguments, FunctionDeclaration, GetAccessorDeclaration, ImportEqualsDeclaration, IndexSignatureDeclaration, JSDocCallbackTag, JSDocEnumTag, JSDocTypedefTag, MethodDeclaration, MethodSignature, ParameterDeclaration, PropertyAccessExpression, PropertyDeclaration, PropertySignature, SetAccessorDeclaration, TypeAliasDeclaration, TypeParameterDeclaration, VariableDeclaration, NamedDeclaration, NodeFlags, ClassLikeDeclaration, FunctionBody, ModifierFlags, getModifiers, ClassDeclaration, EnumDeclaration, InterfaceDeclaration, ModuleDeclaration, VariableStatement, ImportDeclaration, Visitor, AccessorDeclaration, SignatureDeclaration, Identifier, JSDocSignature, isJSDocSignature, getLeadingCommentRanges, Diagnostic, DiagnosticRelatedInformation, JsonSourceFile, ScriptKind, NodeFactory, Path, isModuleDeclaration, isSourceFile, Declaration, getNameOfDeclaration, isElementAccessExpression, BindingPattern, ImportTypeNode, isLiteralTypeNode, isStringLiteral, OuterExpressionKinds, Expression, isStringLiteralLike, isNumericLiteral, NumericLiteral, StringLiteralLike, getJSDocTypeTag, isParenthesizedExpression, EmitFlags, Statement, isExportAssignment, isExportDeclaration, JSDocContainer, HasJSDoc, JSDoc, Bundle, CompilerOptions, Extension, getTsBuildInfoEmitOutputFilePath, ImportCall, ExternalModuleReference, AssertClause, ModuleKind, EntityNameExpression, isIdentifier, PropertyAccessEntityNameExpression, ExportDeclaration, getJSDocAugmentsTag, HeritageClause, NodeArray, isClassElement, isClassStaticBlockDeclaration, isParseTreeNode, ModuleResolutionKind, JsxEmit, isPrefixUnaryExpression, PrefixUnaryExpression, canHaveModifiers, ModifierLike, getJSDocPublicTag, getJSDocPrivateTag, getJSDocProtectedTag, getJSDocOverrideTagNoCache, getJSDocReadonlyTag, getJSDocDeprecatedTag, ScriptTarget, FileExtensionInfo, EntityNameOrEntityNameExpression, isHeritageClause, CallExpression, FunctionLikeDeclaration, HasType, JSDocTemplateTag, TypeAssertion, TsConfigSourceFile, PrinterOptions, NewLineKind, sys, isVariableStatement, isLineBreak, isWhiteSpaceLike, identifierToKeywordKind } from "typescript";
+import { AccessorDeclaration, AssertClause, BindingElement, BindingPattern, Bundle, CallExpression, CallSignatureDeclaration, canHaveModifiers, ClassDeclaration, ClassLikeDeclaration, CompilerOptions, ConstructorDeclaration, ConstructSignatureDeclaration, Declaration, DeclarationName, Diagnostic, DiagnosticRelatedInformation, DiagnosticWithLocation, EmitFlags, EntityNameExpression, EntityNameOrEntityNameExpression, EnumDeclaration, ExportDeclaration, Expression, ExpressionWithTypeArguments, Extension, ExternalModuleReference, FileExtensionInfo, FunctionBody, FunctionDeclaration, FunctionLikeDeclaration, GetAccessorDeclaration, getJSDocAugmentsTag, getJSDocDeprecatedTag, getJSDocOverrideTagNoCache, getJSDocPrivateTag, getJSDocProtectedTag, getJSDocPublicTag, getJSDocReadonlyTag, getJSDocTypeTag, getLeadingCommentRanges, getModifiers, getNameOfDeclaration, getTsBuildInfoEmitOutputFilePath, HasJSDoc, HasType, HeritageClause, Identifier, identifierToKeywordKind,ImportCall, ImportDeclaration, ImportEqualsDeclaration, ImportTypeNode, IndexSignatureDeclaration, InterfaceDeclaration, isBindingElement, isCallSignatureDeclaration, isClassElement, isClassStaticBlockDeclaration, isConstructorDeclaration, isConstructSignatureDeclaration, isElementAccessExpression, isExportAssignment, isExportDeclaration, isExpressionWithTypeArguments, isFunctionDeclaration, isGetAccessor, isHeritageClause, isIdentifier, isImportEqualsDeclaration, isIndexSignatureDeclaration, isJSDocSignature, isLineBreak, isLiteralTypeNode, isMethodDeclaration, isMethodSignature, isModuleDeclaration, isNumericLiteral, isParameter, isParenthesizedExpression, isParseTreeNode, isPrefixUnaryExpression, isPropertyAccessExpression, isPropertyDeclaration, isPropertySignature, isSetAccessor, isSourceFile, isStringLiteral, isStringLiteralLike, isTypeAliasDeclaration, isTypeParameterDeclaration, isVariableDeclaration, isVariableStatement, isWhiteSpaceLike, JSDoc, JSDocCallbackTag, JSDocContainer, JSDocEnumTag, JSDocSignature, JSDocTemplateTag, JSDocTypedefTag, JsonSourceFile, JsxEmit, MethodDeclaration, MethodSignature, ModifierFlags, ModifierLike, ModuleDeclaration, ModuleKind, ModuleResolutionKind, NamedDeclaration, NewLineKind, Node, NodeArray, NodeFactory, NodeFlags, NumericLiteral, OuterExpressionKinds, ParameterDeclaration, Path, PrefixUnaryExpression, PrinterOptions, PropertyAccessEntityNameExpression, PropertyAccessExpression, PropertyDeclaration, PropertySignature, QualifiedName, ScriptKind, ScriptTarget, SetAccessorDeclaration, SignatureDeclaration, SourceFile, Statement, StringLiteralLike, SyntaxKind, sys, TextSpan, TsConfigSourceFile, TypeAliasDeclaration, TypeAssertion, TypeParameterDeclaration, VariableDeclaration, VariableStatement, Visitor } from "typescript";
+
 import { Debug } from "./debug";
 import { Diagnostics } from "./diagnosticInformationMap.generated";
 import { clone, Comparison, contains, emptyArray, find, flatten, identity, isArray, length, mapDefined, Mutable, some, startsWith, stringContains } from "./lang-utils";
@@ -10,7 +11,7 @@ export function getErrorSpanForNode(sourceFile: SourceFile, node: Node): TextSpa
     return {
         start: node.pos,
         length: node.end - node.pos
-    }
+    };
 }
 
 export function createDiagnosticForNode(node: Node, message: DiagnosticMessage, arg0?: string | number, arg1?: string | number, arg2?: string | number, arg3?: string | number): DiagnosticWithLocation {
@@ -146,7 +147,7 @@ export function getSourceFileOfNode(node: Node): SourceFile;
 /** @internal */
 export function getSourceFileOfNode(node: Node | undefined): SourceFile | undefined;
 /** @internal */
-export function getSourceFileOfNode(node: Node | undefined ): SourceFile | undefined {
+export function getSourceFileOfNode(node: Node | undefined): SourceFile | undefined {
     while (node && node.kind !== SyntaxKind.SourceFile) {
         node = node.parent;
     }
@@ -158,7 +159,7 @@ export function getSourceFileOfNode(node: Node | undefined ): SourceFile | undef
 export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage, ...args: (string | number | undefined)[]): DiagnosticWithLocation;
 /** @internal */
 export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): DiagnosticWithLocation {
-    
+
     let text= message.message;
     if (arguments.length > 4) {
         text = formatStringFromArgs(text, arguments, 4);
@@ -200,7 +201,7 @@ export function getSourceTextOfNodeFromSourceFile(sourceFile: SourceFile, node: 
 
 /** @internal */
 export function getTextOfNodeFromSourceText(sourceText: string, node: Node, includeTrivia = false): string {
-    let text = sourceText.substring(node.pos, node.end);
+    const text = sourceText.substring(node.pos, node.end);
     return text;
 }
 /** @internal */
@@ -332,7 +333,7 @@ function isDeclarationKind(kind: SyntaxKind) {
 export function isInJSFile(node: Node | undefined): boolean {
     return !!node && !!(node.flags & NodeFlags.JavaScriptFile);
 }
- 
+
 
 /** @internal */
 export function getFirstConstructorWithBody(node: ClassLikeDeclaration): ConstructorDeclaration & { body: FunctionBody } | undefined {
@@ -816,7 +817,7 @@ export function getOriginalNode(node: Node | undefined, nodeTest?: (node: Node |
 
 let nextNodeId = 0;
 /** @internal */
-export function getNodeId(node: Node): number
+export function getNodeId(node: Node): number;
 export function getNodeId(node: any): number {
     if (!node.id) {
         nextNodeId++;
@@ -1130,7 +1131,7 @@ export function isJSDocTypeAssertion(node: Node): node is JSDocTypeAssertion {
      if (node === undefined || isParseTreeNode(node)) {
          return node;
      }
- 
+
      node = node.original;
      while (node) {
          if (isParseTreeNode(node)) {
@@ -1816,7 +1817,7 @@ export function getNewLineCharacter(options: CompilerOptions | PrinterOptions, g
 
 export function isAmbientDeclaration(node: Node) {
     // @ts-expect-error NodeFlags.Ambient is not exposed
-    return node.flags & NodeFlags.Ambient
+    return node.flags & NodeFlags.Ambient;
 }
 
 export function isEnumConst(node: EnumDeclaration): boolean {

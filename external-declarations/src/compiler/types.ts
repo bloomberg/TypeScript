@@ -1,4 +1,5 @@
-import { Symbol, ClassDeclaration, CompilerOptions, DeclarationName, DiagnosticWithLocation, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, ModuleDeclaration, ModuleKind, Node, PackageJsonInfoCache, Path, QualifiedName, SourceFile, SymbolFlags, TransformationContext as _TransformationContext, TypeAliasDeclaration, VariableStatement, NodeBuilderFlags, Statement, AccessorDeclaration, BindingElement, Declaration, ElementAccessExpression, EntityName, EntityNameOrEntityNameExpression, EnumMember, ExportDeclaration, Expression, Identifier, ImportCall, ImportDeclaration, ImportEqualsDeclaration, ImportTypeNode, ParameterDeclaration, PropertyAccessExpression, PropertyDeclaration, PropertySignature, SignatureDeclaration, StringLiteralLike, TypeNode, VariableDeclaration, VariableLikeDeclaration, ModuleBlock, LiteralTypeNode, BinaryExpression, ComputedPropertyName, NamedDeclaration, StringLiteral, ParenthesizedExpression, AsExpression, NonNullExpression, PartiallyEmittedExpression, SatisfiesExpression, TypeAssertion, EntityNameExpression, HasModifiers, Modifier, ModifierFlags, Program, UnparsedSource, FileReference, EmitFlags, EmitHelper, SourceMapRange, SynthesizedComment, TextRange, NoSubstitutionTemplateLiteral, MapLike } from "typescript";
+import { AccessorDeclaration, AsExpression, BinaryExpression, BindingElement, ClassDeclaration, CompilerOptions, ComputedPropertyName, Declaration, DeclarationName, DiagnosticWithLocation, ElementAccessExpression, EmitFlags, EmitHelper, EntityName, EntityNameExpression, EntityNameOrEntityNameExpression, EnumDeclaration, EnumMember, ExportDeclaration, Expression, FileReference, FunctionDeclaration, HasModifiers, Identifier, ImportCall, ImportDeclaration, ImportEqualsDeclaration, ImportTypeNode, InterfaceDeclaration, LiteralTypeNode, MapLike,Modifier, ModifierFlags, ModuleBlock, ModuleDeclaration, ModuleKind, NamedDeclaration, Node, NodeBuilderFlags, NonNullExpression, NoSubstitutionTemplateLiteral, PackageJsonInfoCache, ParameterDeclaration, ParenthesizedExpression, PartiallyEmittedExpression, Path, Program, PropertyAccessExpression, PropertyDeclaration, PropertySignature, QualifiedName, SatisfiesExpression, SignatureDeclaration, SourceFile, SourceMapRange, Statement, StringLiteral, StringLiteralLike, Symbol, SymbolFlags, SynthesizedComment, TextRange, TransformationContext as _TransformationContext, TypeAliasDeclaration, TypeAssertion, TypeNode, UnparsedSource, VariableDeclaration, VariableLikeDeclaration, VariableStatement } from "typescript";
+
 import { AllAccessorDeclarations, AnyImportSyntax, DiagnosticMessage } from "./utils";
 
 
@@ -15,13 +16,13 @@ export interface TransformationContext extends _TransformationContext {
     /** @internal */ getEmitResolver(): EmitResolver;
     /** @internal */ getEmitHost(): EmitHost;
     /** @internal */ getEmitHelperFactory(): EmitHelperFactory;
-    factory: _TransformationContext['factory'] & {
+    factory: _TransformationContext["factory"] & {
         updateModifiers<T extends HasModifiers>(node: T, modifiers: readonly Modifier[] | ModifierFlags | undefined): T;
     }
 }
 
 export interface EmitHost extends ModuleSpecifierResolutionHost, ResolveModuleNameResolutionHost {
-    getCommonSourceDirectory(): string 
+    getCommonSourceDirectory(): string
     getCompilerOptions(): CompilerOptions
     getSourceFiles(): SourceFile[]
     /** @internal */ getSourceFileFromReference(referencingFile: SourceFile | UnparsedSource, ref: FileReference): SourceFile | undefined;
@@ -124,7 +125,7 @@ export interface ModuleSpecifierResolutionHost {
 
     getProjectReferenceRedirect(fileName: string): string | undefined;
     isSourceOfProjectReferenceRedirect(fileName: string): boolean;
-    
+
     getSymlinkCache?(): {
         getSymlinkedDirectoriesByRealpath(): MultiMap<Path, string> | undefined;
     };
@@ -406,18 +407,18 @@ export interface EmitFileNames {
     buildInfoPath?: string | undefined;
 }
 
-export type _FileReference = FileReference
+export type _FileReference = FileReference;
 
 
 /** @internal */
 export type ExportedModulesFromDeclarationEmit = readonly Symbol[];
-export type _StringLiteralLike = StringLiteralLike
+export type _StringLiteralLike = StringLiteralLike;
 
 
-export type _Symbol = Symbol
-export type _Path = Path
-export type _ModifierFlags = ModifierFlags
-declare module 'typescript' {
+export type _Symbol = Symbol;
+export type _Path = Path;
+export type _ModifierFlags = ModifierFlags;
+declare module "typescript" {
     interface Node {
         symbol: _Symbol;
         emitNode?: EmitNode;

@@ -1,9 +1,10 @@
 
-import * as ts from 'typescript'
-import { changeExtension } from '../test-runner/tsc-infrastructure/vpath';
-import { getDeclarationExtension, getDirectoryPath, getRelativePathFromDirectory, hasExtension, isDeclarationFile, isJavaScriptFile, resolvePath } from './path-utils';
-import { EmitHost } from './types';
-import { getNodeId } from './utils';
+import * as ts from "typescript";
+
+import { changeExtension } from "../test-runner/tsc-infrastructure/vpath";
+import { getDeclarationExtension, getDirectoryPath, getRelativePathFromDirectory, hasExtension, isDeclarationFile, isJavaScriptFile, resolvePath } from "./path-utils";
+import { EmitHost } from "./types";
+import { getNodeId } from "./utils";
 
 
 export function createEmitHost(allProjectFiles: string[], tsLibFiles: string[],  options: ts.CompilerOptions) {
@@ -14,7 +15,7 @@ export function createEmitHost(allProjectFiles: string[], tsLibFiles: string[], 
     const projectFileMap = new Map(allProjectFiles
         .map((f) => ({ kind: ts.SyntaxKind.SourceFile, fileName: f  } as ts.SourceFile))
         .map(f => [f.fileName, getNodeId(f)])
-    )
+    );
     const tsLibFileSet = new Set(tsLibFiles);
 
     return {
@@ -35,7 +36,7 @@ export function createEmitHost(allProjectFiles: string[], tsLibFiles: string[], 
             }
             return {
                 fileName: ref.fileName,
-            }
+            };
         },
         getSourceFileFromReference(referencingFile, ref) {
             if(ref.fileName.startsWith("node_modules/") || ref.fileName.indexOf("/node_modules/") !== -1) {
@@ -45,7 +46,7 @@ export function createEmitHost(allProjectFiles: string[], tsLibFiles: string[], 
                 return;
             }
             let resolvedFile: string | undefined = resolvePath(getDirectoryPath(referencingFile.fileName), ref.fileName);
-            let resolvedFileId = projectFileMap.get(resolvedFile)
+            let resolvedFileId = projectFileMap.get(resolvedFile);
             if(!hasExtension(resolvedFile) && resolvedFileId == undefined) {
                 [resolvedFile, resolvedFileId] = Object.values(ts.Extension)
                     .map(e => resolvedFile + e)
@@ -54,16 +55,16 @@ export function createEmitHost(allProjectFiles: string[], tsLibFiles: string[], 
 
                 if(!resolvedFile) return undefined;
             }
-            if(!projectFileMap.has(resolvedFile)) {                        
+            if(!projectFileMap.has(resolvedFile)) {
                 return undefined;
             }
-            const resolvedDeclarationFile = 
+            const resolvedDeclarationFile =
                 isDeclarationFile(resolvedFile) ? resolvedFile :
-                changeExtension(resolvedFile, getDeclarationExtension(resolvedFile))
-            return { 
+                changeExtension(resolvedFile, getDeclarationExtension(resolvedFile));
+            return {
                 fileName: getRelativePathFromDirectory(getDirectoryPath(referencingFile.fileName), resolvedDeclarationFile, false),
                 id: resolvedFileId,
             };
         },
-    } as Partial<EmitHost> as EmitHost
+    } as Partial<EmitHost> as EmitHost;
 }

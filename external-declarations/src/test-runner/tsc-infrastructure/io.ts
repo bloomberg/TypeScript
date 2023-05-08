@@ -1,7 +1,8 @@
 import { sys } from "typescript";
+
+import { compareStringsCaseInsensitive,compareStringsCaseSensitive } from "../../compiler/lang-utils";
 import { FileSystemEntries } from "./vfs";
-import * as vpath from './vpath';
-import { compareStringsCaseSensitive, compareStringsCaseInsensitive } from "../../compiler/lang-utils";
+import * as vpath from "./vpath";
 type RunnerBase = unknown;
 
 export interface IO {
@@ -73,7 +74,7 @@ function createNodeIO(): IO {
         return pathModule.join(...components);
     }
 
-    function enumerateTestFiles(runner: RunnerBase):any[] {
+    function enumerateTestFiles(runner: RunnerBase): any[] {
         throw new Error("Not implemented");
         // return runner.getTestFiles();
     }
@@ -164,7 +165,7 @@ function createNodeIO(): IO {
         exit: exitCode => sys.exit(exitCode),
         readDirectory: (path, extension, exclude, include, depth) => sys.readDirectory(path, extension, exclude, include, depth),
         getAccessibleFileSystemEntries,
-        tryEnableSourceMapsForHost: () => { throw new Error("Not supported")},
+        tryEnableSourceMapsForHost: () => { throw new Error("Not supported");},
         getMemoryUsage: () => sys.getMemoryUsage && sys.getMemoryUsage(),
         getEnvironmentVariable(name: string) {
             return process.env[name] || "";

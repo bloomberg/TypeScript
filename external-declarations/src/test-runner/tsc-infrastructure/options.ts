@@ -1,9 +1,10 @@
 
 // Watch related options
 
-import { WatchFileKind, WatchDirectoryKind, PollingWatchKind, ScriptTarget, ModuleKind, ImportsNotUsedAsValues, ModuleResolutionKind, NewLineKind, ModuleDetectionKind, JsxEmit, DiagnosticMessage, CompilerOptionsValue, Diagnostic } from "typescript";
-import { isNullOrUndefined } from "../../compiler/lang-utils";
+import { CompilerOptionsValue, Diagnostic,DiagnosticMessage, ImportsNotUsedAsValues, JsxEmit, ModuleDetectionKind, ModuleKind, ModuleResolutionKind, NewLineKind, PollingWatchKind, ScriptTarget, WatchDirectoryKind, WatchFileKind } from "typescript";
+
 import { Diagnostics } from "../../compiler/diagnosticInformationMap.generated";
+import { isNullOrUndefined } from "../../compiler/lang-utils";
 import { getEntries, mapDefined, startsWith, trimString } from "../../compiler/lang-utils";
 
 const jsxOptionMap = new Map(getEntries({

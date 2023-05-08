@@ -1,19 +1,19 @@
 import { CompilerOptions, Diagnostic } from "typescript";
 import ts = require("typescript");
 import { hasProperty } from "../../compiler/debug";
-import { trimString, startsWith, mapDefined, map, compareStringsCaseSensitive } from "../../compiler/lang-utils";
+import { compareStringsCaseSensitive,map, mapDefined, startsWith, trimString } from "../../compiler/lang-utils";
+import { fileExtensionIs, getNormalizedAbsolutePath, normalizeSlashes, toPath } from "../../compiler/path-utils";
+import { createGetCanonicalFileName } from "../../compiler/path-utils";
+import { cloneCompilerOptions, getEmitScriptTarget } from "../../compiler/utils";
+import * as compiler from "./compiler";
+import * as fakes from "./fakesHosts";
+import { IO } from "./io";
 import * as opts from "./options";
+import { parseCustomTypeOption, parseListTypeOption } from "./options";
+import * as documents from "./test-document";
 import * as TestCaseParser from "./test-file-parser";
 import * as vfs from "./vfs";
 import * as vpath from "./vpath";
-import { parseCustomTypeOption, parseListTypeOption } from "./options";
-import { fileExtensionIs, getNormalizedAbsolutePath, normalizeSlashes, toPath } from "../../compiler/path-utils";
-import { cloneCompilerOptions, getEmitScriptTarget } from "../../compiler/utils";
-import * as documents from './test-document';
-import { createGetCanonicalFileName } from "../../compiler/path-utils";
-import * as compiler from './compiler';
-import * as fakes from './fakesHosts';
-import { IO } from "./io";
 
 interface HarnessOptions {
     useCaseSensitiveFileNames?: boolean;
@@ -200,7 +200,7 @@ export namespace Utils {
         const length = getByteOrderMarkLength(text);
         return length ? text.slice(length) : text;
     }
-    
+
     export function getByteOrderMarkLength(text: string): number {
         if (text.length >= 1) {
             const ch0 = text.charCodeAt(0);
@@ -211,7 +211,7 @@ export namespace Utils {
         }
         return 0;
     }
-    
+
     function checkDuplicatedFileName(resultName: string, dupeCase: Map<string, number>): string {
         resultName = sanitizeTestFilePath(resultName);
         if (dupeCase.has(resultName)) {

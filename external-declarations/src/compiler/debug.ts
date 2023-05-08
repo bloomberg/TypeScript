@@ -1,7 +1,8 @@
-import { Symbol, Node, NodeArray, SyntaxKind, unescapeLeadingUnderscores, SortedReadonlyArray, NodeFlags, ModifierFlags, EmitFlags, SymbolFlags, TypeFlags, ObjectFlags, FlowFlags, FlowNodeBase, Type, symbolName, LiteralType, BigIntLiteralType, ObjectType, Signature, isIdentifier, idText, isPrivateIdentifier, isStringLiteral, isNumericLiteral, isBigIntLiteral, isTypeParameterDeclaration, isParameter, isConstructorDeclaration, isGetAccessorDeclaration, isSetAccessorDeclaration, isCallSignatureDeclaration, isConstructSignatureDeclaration, isIndexSignatureDeclaration, isTypePredicateNode, isTypeReferenceNode, isFunctionTypeNode, isConstructorTypeNode, isTypeQueryNode, isTypeLiteralNode, isArrayTypeNode, isTupleTypeNode, isOptionalTypeNode, isRestTypeNode, isUnionTypeNode, isIntersectionTypeNode, isConditionalTypeNode, isInferTypeNode, isParenthesizedTypeNode, isThisTypeNode, isTypeOperatorNode, isIndexedAccessTypeNode, isMappedTypeNode, isLiteralTypeNode, isNamedTupleMember, isImportTypeNode, isParseTreeNode, getParseTreeNode, FlowNode, FlowSwitchClause, FlowLabel, MapLike } from "typescript";
+import { BigIntLiteralType, EmitFlags, FlowFlags, FlowLabel, FlowNode, FlowNodeBase, FlowSwitchClause, getParseTreeNode, idText, isArrayTypeNode, isBigIntLiteral, isCallSignatureDeclaration, isConditionalTypeNode, isConstructorDeclaration, isConstructorTypeNode, isConstructSignatureDeclaration, isFunctionTypeNode, isGetAccessorDeclaration, isIdentifier, isImportTypeNode, isIndexedAccessTypeNode, isIndexSignatureDeclaration, isInferTypeNode, isIntersectionTypeNode, isLiteralTypeNode, isMappedTypeNode, isNamedTupleMember, isNumericLiteral, isOptionalTypeNode, isParameter, isParenthesizedTypeNode, isParseTreeNode, isPrivateIdentifier, isRestTypeNode, isSetAccessorDeclaration, isStringLiteral, isThisTypeNode, isTupleTypeNode, isTypeLiteralNode, isTypeOperatorNode, isTypeParameterDeclaration, isTypePredicateNode, isTypeQueryNode, isTypeReferenceNode, isUnionTypeNode, LiteralType, MapLike,ModifierFlags, Node, NodeArray, NodeFlags, ObjectFlags, ObjectType, Signature, SortedReadonlyArray, Symbol, SymbolFlags, symbolName, SyntaxKind, Type, TypeFlags, unescapeLeadingUnderscores } from "typescript";
 import * as ts from "typescript";
+
+import { compareValues,every, map, stableSort } from "./lang-utils";
 import { getSourceFileOfNode, getSourceTextOfNodeFromSourceFile} from "./utils";
-import { every, map, stableSort, compareValues } from "./lang-utils";
 
 /** @internal */
 export const enum AssertionLevel {
@@ -42,7 +43,7 @@ function shouldAssertFunction<K extends AssertionKeys>(_level: AssertionLevel, _
 type AnyFunction = (...a: any) => any;
 /** @internal */
 export namespace Debug {
-    
+
 
     export function fail(message?: string, stackCrawlMark?: AnyFunction): never {
         debugger;

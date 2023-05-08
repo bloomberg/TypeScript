@@ -1,5 +1,5 @@
 import { hasProperty } from "../../compiler/debug";
-import { equateStringsCaseInsensitive, map, forEach, startsWith, findIndex, arrayFrom, orderedRemoveItemAt, getEntries } from "../../compiler/lang-utils";
+import { arrayFrom, equateStringsCaseInsensitive, findIndex, forEach, getEntries,map, orderedRemoveItemAt, startsWith } from "../../compiler/lang-utils";
 import { optionDeclarations } from "./options";
 import { CompilerSettings } from "./test-file-parser";
 

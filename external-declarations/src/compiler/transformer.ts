@@ -1,7 +1,8 @@
-import { Node, NodeFactory, CompilerOptions, TransformerFactory, TransformationResult, SyntaxKind, VariableDeclaration, FunctionDeclaration, Statement, Identifier, EmitHelper, DiagnosticWithLocation, disposeEmitNodes, getParseTreeNode, SourceFile, isSourceFile, EmitFlags, EmitHint, setEmitFlags, NodeFlags } from "typescript";
+import { CompilerOptions, DiagnosticWithLocation, disposeEmitNodes, EmitFlags, EmitHelper, EmitHint, FunctionDeclaration, getParseTreeNode, Identifier, isSourceFile, Node, NodeFactory, NodeFlags,setEmitFlags, SourceFile, Statement, SyntaxKind, TransformationResult, TransformerFactory, VariableDeclaration } from "typescript";
+
 import { Debug } from "./debug";
-import { some, append } from "./lang-utils";
-import { EmitResolver, EmitHost, TransformationContext } from "./types";
+import { append,some } from "./lang-utils";
+import { EmitHost, EmitResolver, TransformationContext } from "./types";
 import { getEmitFlags, getSourceFileOfNode } from "./utils";
 
 /**
@@ -40,7 +41,7 @@ import { getEmitFlags, getSourceFileOfNode } from "./utils";
     // The transformation context is provided to each transformer as part of transformer
     // initialization.
     const context: TransformationContext = {
-        factory: factory as TransformationContext['factory'],
+        factory: factory as TransformationContext["factory"],
         getCompilerOptions: () => options,
         getEmitResolver: () => resolver!, // TODO: GH#18217
         getEmitHost: () => host!, // TODO: GH#18217
