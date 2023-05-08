@@ -77,7 +77,7 @@ async function main() {
         const rootPath = normalizePath(allTests[count].root);
         const caseData = await loadTestCase(testFile);
 
-        const settings: ts.CompilerOptions = {};
+        const settings: ts.CompilerOptions = { isolatedDeclarations: true };
         setCompilerOptionsFromHarnessSetting(caseData.settings, settings);
 
         function createHarnessTestFile(lastUnit: TestUnitData): TestFile {
@@ -116,7 +116,7 @@ async function main() {
                     }]
                 });
                 const transformedFile = ts.transform(sourceFile, [
-                    addTypeAnnotationTransformer(program, moduleResolutionHost),
+                    addTypeAnnotationTransformer(sourceFile, program, moduleResolutionHost),
                 ]);
 
                 const printer = ts.createPrinter({
