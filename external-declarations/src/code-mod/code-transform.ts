@@ -62,6 +62,7 @@ export function addTypeAnnotationTransformer(sourceFile: ts.SourceFile, program:
                                 map((diag) => { return { start: diag.start!, end: diag.start! + diag.length! };});
 
     return (context: ts.TransformationContext) => {
+        // Nothing to fix in terms of --isolatedDeclarations, no need to visit decendants.
         if (!sortedDiags) return (node: ts.Node) => node;
         let hasError = false;
         const reportError = () => {

@@ -97,8 +97,6 @@ async function main() {
         }, settings, /** compilerOptions= */ undefined);
         const program = result.program!;
 
-
-
         for(const testFileContent of caseData.testUnitData) {
             if(!isRelevantTestFile(testFileContent)) continue;
             try {
