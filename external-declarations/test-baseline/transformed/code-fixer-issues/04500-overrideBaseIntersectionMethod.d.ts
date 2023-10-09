@@ -1,10 +1,12 @@
 // overrideBaseIntersectionMethod.d.ts
 type Constructor<T> = new (...args: any[]) => T;
-declare const WithLocation: <T extends Constructor<Point>>(Base: T) => (new (...args: any[]) => {
-    getLocation(): [number, number];
-    x: number;
-    y: number;
-}) & T;
+declare const WithLocation: <T extends Constructor<Point>>(Base: T) => {
+    new (...args: any[]): {
+        getLocation(): [number, number];
+        x: number;
+        y: number;
+    };
+} & T;
 declare class Point {
     x: number;
     y: number;

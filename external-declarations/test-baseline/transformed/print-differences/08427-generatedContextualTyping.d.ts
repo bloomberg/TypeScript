@@ -632,10 +632,14 @@ declare namespace x204 {
 }
 declare var x206: () => Base[];
 declare var x207: () => Base[];
-declare var x209: () => Base[];
-declare var x210: () => Base[];
+declare var x209: {
+    (): Base[];
+};
+declare var x210: {
+    (): Base[];
+};
 declare var x211: Base[];
-declare var x212: Base[];
+declare var x212: Array<Base>;
 declare var x213: {
     [n: number]: Base;
 };

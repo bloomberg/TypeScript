@@ -6,7 +6,7 @@ type BadFlatArray<Arr, Depth extends number> = {
     }[Depth extends -1 ? "done" : "recur"];
 }["obj"];
 declare function flat<A, D extends number = 1>(arr: A, depth?: D): BadFlatArray<A, D>[];
-declare function foo<T>(arr: T[], depth: number): any;
+declare function foo<T>(arr: T[], depth: number): invalid;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/arrayFakeFlatNoCrashInferenceDeclarations.ts

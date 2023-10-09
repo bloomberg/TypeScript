@@ -1,5 +1,7 @@
 // symbolProperty53.d.ts
-declare var obj: invalid;
+declare var obj: {
+    [Symbol.for]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/es6/Symbols/symbolProperty53.ts

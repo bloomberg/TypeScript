@@ -6,7 +6,7 @@ declare module "./observable" {
     class Bar {
     }
     let y: number, z: string;
-    let x: number, x1: number;
+    let x: invalid, x1: invalid;
     namespace Z { }
 }
 export {};

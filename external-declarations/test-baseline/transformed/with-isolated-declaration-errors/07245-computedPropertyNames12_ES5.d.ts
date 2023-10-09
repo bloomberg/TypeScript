@@ -3,8 +3,11 @@ declare var s: string;
 declare var n: number;
 declare var a: any;
 declare class C {
+    [s]: number;
+    [n]: number;
     static [""]: number;
     [0]: number;
+    [a]: number;
     [`hello bye`]: number;
 }
 

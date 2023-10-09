@@ -8,7 +8,6 @@ declare module './parent' {
 export declare function child1(prototype: ParentThing): void;
 
 // parent.d.ts
-import './child1';
 export declare class ParentThing implements ParentThing {
 }
 

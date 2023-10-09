@@ -2,7 +2,11 @@
 declare var p1: number | string;
 declare var p2: number | number[];
 declare var p3: string | boolean;
-declare var v: invalid;
+declare var v: {
+    [p1]: number;
+    [p2]: number;
+    [p3]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/es6/computedProperties/computedPropertyNames6_ES5.ts

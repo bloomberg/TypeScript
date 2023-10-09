@@ -5,6 +5,7 @@ export type test = ;
 export type test = ;
 
 // ./types3.d.ts
+import test from "./test";
 export type test = test;
 
 // ==================

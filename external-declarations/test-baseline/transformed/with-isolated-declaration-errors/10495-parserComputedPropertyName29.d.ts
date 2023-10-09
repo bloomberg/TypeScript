@@ -1,5 +1,7 @@
 // parserComputedPropertyName29.d.ts
 declare class C {
+    [e]: number;
+    [e2]: number;
 }
 
 // ==================

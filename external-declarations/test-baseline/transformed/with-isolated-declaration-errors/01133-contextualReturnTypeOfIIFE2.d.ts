@@ -1,11 +1,6 @@
 // contextualReturnTypeOfIIFE2.d.ts
 declare namespace app {
     function foo(): void;
-    namespace foo {
-        var bar: {
-            someFun: (arg: number) => void;
-        };
-    }
 }
 
 // ==================

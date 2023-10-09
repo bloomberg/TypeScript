@@ -1,5 +1,7 @@
 // parserES5ComputedPropertyName2.d.ts
-declare var v: invalid;
+declare var v: {
+    [e]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/parser/ecmascript5/ComputedPropertyNames/parserES5ComputedPropertyName2.ts

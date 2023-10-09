@@ -8,8 +8,7 @@ export declare namespace ConstEnumOnlyModule {
 }
 
 // reexport.d.ts
-import * as Foo from "./foo";
-declare const _default: typeof Foo.ConstEnumOnlyModule;
+declare const _default: invalid;
 export = _default;
 
 // index.d.ts

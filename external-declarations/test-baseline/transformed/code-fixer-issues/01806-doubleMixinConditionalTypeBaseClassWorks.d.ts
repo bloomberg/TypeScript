@@ -1,14 +1,16 @@
 // doubleMixinConditionalTypeBaseClassWorks.d.ts
 type Constructor = new (...args: any[]) => {};
-declare const Mixin1: <C_1 extends Constructor>(Base: C_1) => (new (...args: any[]) => {
-    _fooPrivate: {};
-}) & C_1;
+declare const Mixin1: <C extends Constructor>(Base: C) => {
+    new (...args: any[]): {
+        _fooPrivate: {};
+    };
+} & C;
 type FooConstructor = typeof Mixin1 extends (a: Constructor) => infer Cls ? Cls : never;
-declare const Mixin2: <C_1 extends (new (...args: any[]) => {
-    _fooPrivate: {};
-}) & Constructor>(Base: C_1) => (new (...args: any[]) => {
-    _fooPrivate: {};
-}) & C_1;
+declare const Mixin2: <C extends FooConstructor>(Base: C) => {
+    new (...args: any[]): {
+        _fooPrivate: {};
+    };
+} & C;
 declare const CBase: (new (...args: any[]) => {
     _fooPrivate: {};
 }) & (new (...args: any[]) => {

@@ -1,5 +1,6 @@
 // parserComputedPropertyName20.d.ts
 interface I {
+    [e](): number;
 }
 
 // ==================

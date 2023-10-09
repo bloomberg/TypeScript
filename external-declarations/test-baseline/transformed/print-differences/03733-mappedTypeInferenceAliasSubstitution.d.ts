@@ -7,7 +7,9 @@ declare const v: {
 type Field<A extends string, R> = {
     [K in A]: R;
 };
-declare const f: <A extends string, B extends string, R>(x: { [K in A]: Field<B, R>; }) => R;
+declare const f: <A extends string, B extends string, R>(x: {
+    [K in A]: Field<B, R>;
+}) => R;
 declare const r1: number;
 declare const g: <A extends string, B extends string, R>(x: Field<A, Field<B, R>>) => R;
 declare const r2: number;

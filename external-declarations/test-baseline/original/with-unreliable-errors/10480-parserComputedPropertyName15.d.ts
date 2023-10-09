@@ -1,6 +1,7 @@
 // parserComputedPropertyName15.d.ts
 declare var v: {
     [e: number]: string;
+    [e]: number;
 };
 
 // ==================

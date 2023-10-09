@@ -1,5 +1,5 @@
 // foo1.d.ts
-declare const _default: "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function";
+declare const _default: invalid;
 export = _default;
 
 // foo2.d.ts
@@ -7,9 +7,7 @@ declare const _default: "sausages";
 export = _default;
 
 // foo3.d.ts
-declare const _default: {
-    new (): {};
-};
+declare const _default: invalid;
 export = _default;
 
 // foo4.d.ts
@@ -20,11 +18,11 @@ export = _default;
 export = undefined;
 
 // foo6.d.ts
-declare const _default: any;
+declare const _default: invalid;
 export = _default;
 
 // foo7.d.ts
-declare const _default: DateConstructor | StringConstructor;
+declare const _default: invalid;
 export = _default;
 
 // foo8.d.ts

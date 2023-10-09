@@ -13,17 +13,21 @@ declare const uniqueSym2: unique symbol;
 declare const sym: symbol;
 declare const strUnion: 'foo' | 'bar';
 declare class C1 {
+    [sym](): void;
     [uniqueSym2](): void;
     [uniqueSym](): void;
 }
 interface I1 {
+    [sym](): void;
     [uniqueSym2](): void;
     [uniqueSym](): void;
     [uniqueSym](): void;
 }
 declare class C2 {
+    [strUnion](): void;
 }
 declare class I2 {
+    [strUnion](): void;
 }
 declare class C3 {
     [1](): void;

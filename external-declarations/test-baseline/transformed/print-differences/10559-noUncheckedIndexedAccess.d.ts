@@ -85,9 +85,9 @@ declare const myRecord2: {
     b: string;
     [key: string]: string;
 };
-declare const fn1: <Key extends "a" | "b">(key: Key) => string;
-declare const fn2: <Key extends "a" | "b">(key: Key) => string;
-declare const fn3: <Key extends string | number>(key: Key) => void;
+declare const fn1: <Key extends keyof typeof myRecord1>(key: Key) => string;
+declare const fn2: <Key extends keyof typeof myRecord1>(key: Key) => string;
+declare const fn3: <Key extends keyof typeof myRecord2>(key: Key) => void;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/pedantic/noUncheckedIndexedAccess.ts

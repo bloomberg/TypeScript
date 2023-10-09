@@ -38,10 +38,10 @@ interface Ops<F extends Target> {
 }
 declare const left: Ops<"left">;
 declare const right: Ops<"right">;
-declare const ok: <F extends keyof Targets<any>>(at: Ops<F>) => {
+declare const ok: <F extends Target>(at: Ops<F>) => {
     lr: Result<F, LR<F, string, number>>;
 };
-declare const orphaned: <F extends keyof Targets<any>>(at: Ops<F>) => Result<F, {
+declare const orphaned: <F extends Target>(at: Ops<F>) => Result<F, {
     lr: LR<F, string, number>;
 }>;
 declare const leftOk: {

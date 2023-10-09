@@ -3,8 +3,12 @@ export {};
 
 // api.d.ts
 import { PublicKeys1 } from './internal';
-export declare const dropPrivateProps1: <Obj>(obj: Obj) => { [K in PublicKeys1<keyof Obj>]: Obj[K]; };
-export declare const dropPrivateProps2: <Obj>(obj: Obj) => { [K in keyof Obj extends infer T ? T extends keyof Obj ? T extends `_${string}` ? never : T : never : never]: Obj[K]; };
+export declare const dropPrivateProps1: <Obj>(obj: Obj) => {
+    [K in PublicKeys1<keyof Obj>]: Obj[K];
+};
+export declare const dropPrivateProps2: <Obj>(obj: Obj) => {
+    [K in keyof Obj extends infer T ? T extends keyof Obj ? T extends `_${string}` ? never : T : never : never]: Obj[K];
+};
 
 // internal.d.ts
 export declare function excludePrivateKeys1<Obj>(obj: Obj): {

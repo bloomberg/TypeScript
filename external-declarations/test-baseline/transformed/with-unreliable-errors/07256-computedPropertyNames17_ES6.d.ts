@@ -1,6 +1,8 @@
 // computedPropertyNames17_ES6.d.ts
 declare var b: boolean;
 declare class C {
+    get [b](): number;
+    static get [undefined](): number;
 }
 
 // ==================

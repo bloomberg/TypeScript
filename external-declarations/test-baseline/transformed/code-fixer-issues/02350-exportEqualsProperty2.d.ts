@@ -1,5 +1,5 @@
 // a.d.ts
-declare const _default: number;
+declare const _default: invalid;
 export = _default;
 
 // b.d.ts

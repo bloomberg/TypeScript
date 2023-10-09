@@ -2,7 +2,7 @@
 declare function Foo(): any;
 declare namespace M {
 }
-declare var x: any;
+declare var x: invalid;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/parser/ecmascript5/SkippedTokens/parserSkippedTokens16.ts

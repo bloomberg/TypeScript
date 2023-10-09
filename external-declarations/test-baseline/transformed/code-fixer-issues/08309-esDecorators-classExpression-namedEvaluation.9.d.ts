@@ -1,15 +1,9 @@
 // a.d.ts
-declare const _default: {
-    new (): {};
-};
+declare const _default: invalid;
 export = _default;
 
 // b.d.ts
-declare const _default: {
-    new (): {
-        y: any;
-    };
-};
+declare const _default: invalid;
 export = _default;
 
 // ==================

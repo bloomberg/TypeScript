@@ -1,16 +1,23 @@
 // typeUsedAsTypeLiteralIndex.d.ts
 type K = number | string;
-type T = {};
+type T = {
+    [K]: number;
+};
 declare const K1: unique symbol;
 type T1 = {
     [K1]: number;
 };
 type K2 = "x" | "y";
-type T2 = {};
+type T2 = {
+    [K2]: number;
+};
 type K3 = number | string;
-type T3 = {};
+type T3 = {
+    [K3]: number;
+};
 type K4 = number | string;
 type T4 = {
+    [K4]: number;
     k4: string;
 };
 

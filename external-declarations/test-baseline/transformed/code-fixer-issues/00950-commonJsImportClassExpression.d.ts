@@ -1,9 +1,5 @@
 // mod1.d.ts
-declare const _default: {
-    new (): {
-        chunk: number;
-    };
-};
+declare const _default: invalid;
 export = _default;
 
 // use.d.ts

@@ -8,10 +8,6 @@ declare namespace pack2 {
     export { test1 };
 }
 export import test1 = pack2.test1;
-declare namespace mod1 {
-    type test1 = string;
-    export { test1 };
-}
 export {};
 
 // ==================

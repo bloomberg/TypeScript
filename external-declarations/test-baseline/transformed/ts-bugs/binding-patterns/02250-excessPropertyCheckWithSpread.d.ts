@@ -1,5 +1,5 @@
 // excessPropertyCheckWithSpread.d.ts
-declare function f({ a }: {
+declare function f({ a: number }: {
     a: any;
 }): void;
 interface I {

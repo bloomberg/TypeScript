@@ -151,12 +151,12 @@ declare var r11b: ((x: {
     foo: string;
     bar: string;
 }) => Base)[];
-declare var r12arg1: <T extends Base[]>(x: Array<Base>, y: T) => Derived[];
+declare var r12arg1: <T extends Array<Base>>(x: Array<Base>, y: T) => Derived[];
 declare var r12arg2: (x: Array<Base>, y: Array<Derived2>) => Derived[];
 declare var r12: (x: Base[], y: Derived2[]) => Derived[];
 declare var r12a: ((x: Base[], y: Derived2[]) => Derived[])[];
 declare var r12b: ((x: Base[], y: Derived2[]) => Derived[])[];
-declare var r13arg1: <T extends Derived[]>(x: Array<Base>, y: T) => T;
+declare var r13arg1: <T extends Array<Derived>>(x: Array<Base>, y: T) => T;
 declare var r13arg2: (x: Array<Base>, y: Array<Derived>) => Derived[];
 declare var r13: (x: Base[], y: Derived[]) => Derived[];
 declare var r13a: ((x: Base[], y: Derived[]) => Derived[])[];

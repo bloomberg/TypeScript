@@ -4,7 +4,7 @@ declare const obj: {
     b: "foo";
     c: string;
 };
-declare let x1: 0 | 1;
+declare let x1: (0 | 1);
 declare let x2: number;
 declare const dest: {
     a: string;

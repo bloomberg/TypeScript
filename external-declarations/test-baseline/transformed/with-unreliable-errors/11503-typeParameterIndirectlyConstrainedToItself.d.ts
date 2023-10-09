@@ -13,8 +13,8 @@ declare var a: {
     <U extends T, T extends U>(): void;
     <T extends U, U extends V, V extends T>(): void;
 };
-declare var b: <U, T>() => void;
-declare var b2: <T, U, V>() => void;
+declare var b: <U extends T, T extends U>() => void;
+declare var b2: <T extends U, U extends V, V extends T>() => void;
 declare class D<U extends T, T extends V, V extends T> {
 }
 type Foo<T> = [T] extends [number] ? {} : {};

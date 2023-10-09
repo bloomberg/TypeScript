@@ -5,7 +5,9 @@ export declare const timestamp: {
 };
 
 // c.d.ts
-export declare const timestamp: {};
+export declare const timestamp: {
+    [timestampSymbol]: true;
+};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/declarationEmitMappedTypeTemplateTypeofSymbol.ts

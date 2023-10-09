@@ -3,7 +3,7 @@ declare enum E {
     member = 0
 }
 declare var v: {
-    0: number;
+    [E.member]: number;
 };
 
 // ==================

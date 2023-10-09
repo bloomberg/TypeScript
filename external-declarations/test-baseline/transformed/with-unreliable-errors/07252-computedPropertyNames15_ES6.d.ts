@@ -3,6 +3,9 @@ declare var p1: number | string;
 declare var p2: number | number[];
 declare var p3: string | boolean;
 declare class C {
+    [p1](): void;
+    [p2](): void;
+    [p3](): void;
 }
 
 // ==================

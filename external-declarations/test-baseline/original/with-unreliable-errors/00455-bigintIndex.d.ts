@@ -13,7 +13,9 @@ declare const a: {};
 declare const b: {
     [1n]: number;
 };
-declare const c: invalid;
+declare const c: {
+    [bigNum]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/compiler/bigintIndex.ts

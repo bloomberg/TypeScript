@@ -104,6 +104,7 @@ declare class C20 {
 
 // yieldInClassComputedPropertyIsError.d.ts
 declare class C21 {
+    [yield](): AsyncGenerator<never, void, unknown>;
 }
 
 // yieldInNestedComputedPropertyIsOk.d.ts
@@ -113,19 +114,19 @@ declare class C22 {
 
 // asyncGeneratorGetAccessorIsError.d.ts
 declare class C23 {
-    get(): any;
+    get(): invalid;
     x(): number;
 }
 
 // asyncGeneratorSetAccessorIsError.d.ts
 declare class C24 {
-    set(): any;
+    set(): invalid;
     x(value: number): void;
 }
 
 // asyncGeneratorPropertyIsError.d.ts
 declare class C25 {
-    x(): any;
+    x(): invalid;
     1: any;
 }
 

@@ -33,7 +33,7 @@ declare var r4: number;
 declare var b: {
     "   ": number;
     "a   b": string;
-    "~!@#$%^&*()_+{}|:'<>?/.,`": number;
+    "~!@#$%^&*()_+{}|:'<>?\/.,`": number;
 };
 declare var r: number;
 declare var r2: any;

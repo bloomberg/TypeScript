@@ -1,5 +1,5 @@
 // thisInInvalidContextsExternalModule.d.ts
-declare const _default: undefined;
+declare const _default: invalid;
 export = _default;
 
 // ==================

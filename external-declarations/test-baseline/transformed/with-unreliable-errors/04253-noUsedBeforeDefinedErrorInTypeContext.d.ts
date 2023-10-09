@@ -2,12 +2,18 @@
 interface IThing<T> {
     owner: T;
 }
-declare var foo: any;
-declare let baz: {
-    two: IThing<any>;
+declare var foo: {
+    one: IThing<typeof foo>;
 };
-declare let bar: any;
-declare const qwe: any;
+declare let baz: {
+    two: IThing<typeof bar>;
+};
+declare let bar: {
+    three: IThing<typeof bar>;
+};
+declare const qwe: {
+    four: IThing<typeof qwe>;
+};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/noUsedBeforeDefinedErrorInTypeContext.ts

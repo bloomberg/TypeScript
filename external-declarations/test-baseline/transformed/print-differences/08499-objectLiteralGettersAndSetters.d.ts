@@ -9,7 +9,7 @@ declare var sameName3a: {
     32: string;
 };
 declare var sameName4a: {
-    "": string;
+    '': string;
 };
 declare var sameName5a: {
     '\t': string;
@@ -64,7 +64,7 @@ declare var sameType1: {
     x: string;
 };
 declare var sameType2: {
-    x: number[];
+    x: Array<number>;
 };
 declare var sameType3: {
     x: any;

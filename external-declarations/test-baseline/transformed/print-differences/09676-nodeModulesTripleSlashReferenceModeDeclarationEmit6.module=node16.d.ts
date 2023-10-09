@@ -1,11 +1,10 @@
 // /uses.d.ts
-/// <reference types="pkg" />
 declare const __default: RequireInterface;
 export default __default;
 
 // /index.d.ts
-/// <reference types="pkg" />
-declare const _default: RequireInterface;
+import obj from "./uses.js";
+declare const _default: typeof obj;
 export default _default;
 
 // ==================

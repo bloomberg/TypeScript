@@ -1,5 +1,7 @@
 // parserComputedPropertyName13.d.ts
-declare var v: {};
+declare var v: {
+    [e]: number;
+};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/parser/ecmascript6/ComputedPropertyNames/parserComputedPropertyName13.ts

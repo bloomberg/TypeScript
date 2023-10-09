@@ -10,8 +10,8 @@ interface I<X, X> {
     f2<X, X>(a: X, b: X): X;
 }
 declare var m: {
-    a: <X>() => void;
-    b: <X_1>(a: X_1, b: X_1) => X_1;
+    a: <X, X>() => void;
+    b: <X, X>(a: X, b: X) => X;
 };
 
 // ==================

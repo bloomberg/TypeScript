@@ -1,5 +1,6 @@
 // symbolProperty59.d.ts
 interface I {
+    [Symbol.keyFor]: string;
 }
 
 // ==================

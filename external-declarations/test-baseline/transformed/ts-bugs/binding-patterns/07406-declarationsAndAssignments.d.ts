@@ -12,7 +12,7 @@ declare function f10(): void;
 declare function f11(): void;
 declare function f12(): void;
 declare function f13(): void;
-declare function f14([a, [b, { x, y }]]: [
+declare function f14([a, [b, { x, y: c }]]: [
     number,
     [
         string,

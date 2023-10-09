@@ -6,8 +6,9 @@ declare const __default: Experiment<"foo">;
 export default __default;
 
 // main.d.ts
+import * as other2 from "./other";
 export declare const obj: {
-    foo: number;
+    [other2.default.name]: number;
 };
 
 // ==================

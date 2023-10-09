@@ -1,14 +1,14 @@
 // callSignaturesWithAccessibilityModifiersOnParameters.d.ts
 declare function foo(x: any, private y: any): void;
-declare var f: (x: any, y: any) => void;
-declare var f2: (x: any, y: any) => void;
-declare var f3: (x: any, y: any) => void;
+declare var f: (x: any, private y: any) => void;
+declare var f2: (x: any, private y: any) => void;
+declare var f3: (x: any, private y: any) => void;
 declare var f4: <T>(x: T, y: T) => void;
 declare function foo2(private x: string, y: number): void;
-declare var f5: (x: string, y: number) => void;
-declare var f6: (x: string, y: number) => void;
-declare var f7: (x: string, y: number) => void;
-declare var f8: <T>(x: T, y: T) => void;
+declare var f5: (private x: string, y: number) => void;
+declare var f6: (private x: string, y: number) => void;
+declare var f7: (private x: string, y: number) => void;
+declare var f8: <T>(private x: T, y: T) => void;
 declare class C {
     foo(x: any, private y: any): void;
     foo2(x: number, private y: string): void;
@@ -27,8 +27,8 @@ declare var a: {
 };
 declare var b: {
     foo(x: any, y: any): void;
-    a: (x: number, y: string) => void;
-    b: <T>(x: T, y: T) => void;
+    a: (x: number, private y: string) => void;
+    b: <T>(x: T, private y: T) => void;
 };
 
 // ==================

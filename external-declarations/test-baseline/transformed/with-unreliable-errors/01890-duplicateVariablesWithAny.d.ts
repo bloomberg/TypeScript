@@ -1,6 +1,6 @@
 // duplicateVariablesWithAny.d.ts
 declare var x: any;
-declare var x: any;
+declare var x: number;
 declare var y: string;
 declare var y: string;
 declare namespace N {

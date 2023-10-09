@@ -1,5 +1,7 @@
 // parserES5SymbolProperty8.d.ts
-declare var x: {};
+declare var x: {
+    [Symbol.toPrimitive](): string;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/parser/ecmascript5/Symbols/parserES5SymbolProperty8.ts

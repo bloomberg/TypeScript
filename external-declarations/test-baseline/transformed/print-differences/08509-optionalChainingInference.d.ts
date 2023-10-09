@@ -15,7 +15,7 @@ declare const b1: {
 };
 declare const v1: number;
 declare const b2: {
-    value: number;
+    value: number | undefined;
 };
 declare const v2: number;
 declare const b3: {

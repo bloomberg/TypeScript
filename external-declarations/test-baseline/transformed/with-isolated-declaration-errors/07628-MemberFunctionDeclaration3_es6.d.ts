@@ -1,5 +1,6 @@
 // MemberFunctionDeclaration3_es6.d.ts
 declare class C {
+    [foo](): Generator<never, void, unknown>;
 }
 
 // ==================

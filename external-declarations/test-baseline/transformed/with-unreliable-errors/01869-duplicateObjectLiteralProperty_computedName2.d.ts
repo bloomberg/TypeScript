@@ -8,16 +8,16 @@ declare enum E2 {
     B = 0
 }
 declare const t1: {
-    1: number;
+    [n]: number;
 };
 declare const t2: {
-    s: number;
+    [s]: number;
 };
 declare const t3: {
-    ENUM_KEY: number;
+    [E1.A]: number;
 };
 declare const t4: {
-    0: number;
+    [E2.B]: number;
 };
 
 // ==================

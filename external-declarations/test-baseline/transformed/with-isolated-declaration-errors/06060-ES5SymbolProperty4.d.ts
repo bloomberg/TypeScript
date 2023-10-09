@@ -3,6 +3,7 @@ declare var Symbol: {
     iterator: string;
 };
 declare class C {
+    [Symbol.iterator](): void;
 }
 
 // ==================

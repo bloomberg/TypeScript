@@ -1,5 +1,5 @@
 // ArrowFunction1.d.ts
-declare var v: (a: any) => void;
+declare var v: (a: ) => void;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/parser/ecmascript5/ErrorRecovery/ArrowFunctions/ArrowFunction1.ts

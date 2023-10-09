@@ -12,10 +12,10 @@ type PostPath = ApiPost["path"];
 type PostBody<PATH extends PostPath> = Extract<ApiPost, {
     path: PATH;
 }>["body"];
-declare const post: <PATH extends "/login" | "/user">(path: PATH, { body, ...options }: Omit<RequestInit, "body"> & {
+declare const post: <PATH extends PostPath>(path: PATH, { body, ...options }: Omit<RequestInit, "body"> & {
     body: PostBody<PATH>;
 }) => void;
-declare const tmp: <PATH extends "/login" | "/user">(path: PATH, body: PostBody<PATH>) => void;
+declare const tmp: <PATH extends PostPath>(path: PATH, body: PostBody<PATH>) => void;
 declare function fx1<P extends PostPath>(x: {
     body: PostBody<P>;
 }, y: {

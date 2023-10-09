@@ -22,8 +22,8 @@ declare namespace M {
     function F2(x: number): string;
 }
 declare var a: any;
-declare var a: any;
-declare var a: any;
+declare var a: number;
+declare var a: string;
 declare var a: any;
 declare var a: any;
 declare var a: any;
@@ -31,7 +31,7 @@ declare var b: I;
 declare var b: I;
 declare var b: I;
 declare var f: typeof F;
-declare var f: typeof F;
+declare var f: (x: number) => string;
 declare var arr: string[];
 declare var arr: string[];
 declare var arr: string[];

@@ -29,6 +29,7 @@ interface i3 {
     new (p6: string, ...p7: any[]): any;
 }
 interface i4 {
+    [p]: any;
     [p1: string]: any;
     [p2: string, p3: number]: any;
 }
@@ -61,6 +62,7 @@ interface i11 {
     new (...p3: any[]): any;
     new (p4: string, p5?: string): any;
     new (p6: string, ...p7: any[]): any;
+    [p]: any;
     [p1: string]: any;
     [p2: string, p3: number]: any;
     p: any;

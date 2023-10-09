@@ -1,6 +1,5 @@
 // wellKnownSymbolExpando.d.ts
 declare function f(): void;
-declare namespace f { }
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/wellKnownSymbolExpando.ts

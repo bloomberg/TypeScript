@@ -1,8 +1,5 @@
 // typeFromPropertyAssignment38.d.ts
 declare function F(): void;
-declare namespace F {
-    var prop: number;
-}
 declare const f: {
     (): void;
     prop: number;

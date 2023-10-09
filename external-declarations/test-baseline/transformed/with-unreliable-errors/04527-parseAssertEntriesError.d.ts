@@ -1,7 +1,7 @@
 // /index.d.ts
 export type LocalInterface = import("pkg", { assert: {} });
-export declare const a: any;
-export declare const b: any;
+export declare const a: import("pkg", { assert: {} });
+export declare const b: import("pkg", { assert: {} });
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/parseAssertEntriesError.ts

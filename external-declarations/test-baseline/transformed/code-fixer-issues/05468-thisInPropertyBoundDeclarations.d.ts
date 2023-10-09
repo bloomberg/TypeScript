@@ -23,7 +23,7 @@ declare class B {
     prop5: {
         a: () => this;
     };
-    prop6: any;
+    prop6: invalid;
 }
 
 // ==================

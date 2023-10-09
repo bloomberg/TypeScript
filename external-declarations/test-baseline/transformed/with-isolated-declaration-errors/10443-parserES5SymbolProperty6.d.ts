@@ -1,5 +1,6 @@
 // parserES5SymbolProperty6.d.ts
 declare class C {
+    [Symbol.toStringTag]: string;
 }
 
 // ==================

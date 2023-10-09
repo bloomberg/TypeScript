@@ -1,5 +1,6 @@
 // parserIndexSignature5.d.ts
 interface I {
+    [a]: any;
 }
 
 // ==================

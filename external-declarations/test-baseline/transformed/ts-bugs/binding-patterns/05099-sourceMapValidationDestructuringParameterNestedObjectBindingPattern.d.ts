@@ -10,8 +10,8 @@ interface Robot {
     };
 }
 declare var robotA: Robot;
-declare function foo1({ skills: { primary: primaryA, secondary } }: Robot): void;
-declare function foo2({ name, skills: { primary, secondary: secondaryB } }: Robot): void;
+declare function foo1({ skills: { primary: primaryA, secondary: secondaryA } }: Robot): void;
+declare function foo2({ name: nameC, skills: { primary: primaryB, secondary: secondaryB } }: Robot): void;
 declare function foo3({ skills }: Robot): void;
 
 // ==================

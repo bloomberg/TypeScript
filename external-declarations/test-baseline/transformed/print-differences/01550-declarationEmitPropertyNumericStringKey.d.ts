@@ -4,11 +4,11 @@ declare const STATUS: {
 };
 declare const hundredStr = "100";
 declare const obj: {
-    "100": string;
+    [hundredStr]: string;
 };
 declare const hundredNum = 100;
 declare const obj2: {
-    100: string;
+    [hundredNum]: string;
 };
 
 // ==================

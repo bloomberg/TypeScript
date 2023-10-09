@@ -9,7 +9,7 @@ declare module "./observable" {
     var x: number;
     let y: number;
     const z: number;
-    let x1: number, y1: string, n: number, el1: number, el2: number, el3: number;
+    let x1: invalid, y1: invalid, n: invalid, el1: invalid, el2: invalid, el3: invalid;
     interface A {
         x: any;
     }

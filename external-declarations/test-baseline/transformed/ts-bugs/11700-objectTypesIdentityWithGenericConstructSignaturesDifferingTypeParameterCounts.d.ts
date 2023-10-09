@@ -15,7 +15,7 @@ declare var a: {
     new <Z, A, B, CC, D>(x: Z): C<Z, A, B>;
 };
 declare var b: {
-    new<A, B_1, C_1, D, E, F>(x: A): A;
+    new<A, B, C, D, E, F>(x: A): A;
 };
 declare function foo1b(x: B<string, string>): any;
 declare function foo1b(x: B<string, string>): any;

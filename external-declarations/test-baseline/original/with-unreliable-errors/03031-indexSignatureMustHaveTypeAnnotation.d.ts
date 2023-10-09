@@ -1,5 +1,6 @@
 // indexSignatureMustHaveTypeAnnotation.d.ts
 interface I {
+    [x]: string;
     [x: string]: any;
 }
 declare class C {

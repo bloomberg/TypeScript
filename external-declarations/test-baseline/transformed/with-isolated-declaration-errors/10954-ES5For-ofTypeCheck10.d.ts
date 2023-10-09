@@ -4,6 +4,7 @@ declare class StringIterator {
         done: boolean;
         value: string;
     };
+    [Symbol.iterator](): this;
 }
 
 // ==================

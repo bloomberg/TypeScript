@@ -1,7 +1,10 @@
 // ES5SymbolProperty2.d.ts
 declare namespace M {
-    class C {
+    var Symbol: any;
+    export class C {
+        [Symbol.iterator](): void;
     }
+    export {};
 }
 
 // ==================

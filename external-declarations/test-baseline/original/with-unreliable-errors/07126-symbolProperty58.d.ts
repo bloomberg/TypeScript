@@ -2,7 +2,9 @@
 interface SymbolConstructor {
     foo: string;
 }
-declare var obj: invalid;
+declare var obj: {
+    [Symbol.foo]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/es6/Symbols/symbolProperty58.ts

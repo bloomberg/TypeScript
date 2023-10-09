@@ -2,7 +2,7 @@
 declare function isNumber(x: any): x is number;
 declare const arrayOfStringsNumbersAndBooleans: (string | number | boolean)[];
 declare const foundNumber: number | undefined;
-declare const readonlyArrayOfStringsNumbersAndBooleans: readonly (string | number | boolean)[];
+declare const readonlyArrayOfStringsNumbersAndBooleans: ReadonlyArray<string | number | boolean>;
 declare const readonlyFoundNumber: number | undefined;
 
 // ==================

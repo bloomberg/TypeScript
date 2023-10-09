@@ -1,5 +1,6 @@
 // parserComputedPropertyName39.d.ts
 declare class C {
+    [public](): void;
 }
 
 // ==================

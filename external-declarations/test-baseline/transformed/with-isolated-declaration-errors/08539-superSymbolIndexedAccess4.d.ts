@@ -1,6 +1,7 @@
 // superSymbolIndexedAccess4.d.ts
 declare var symbol: symbol;
 declare class Bar {
+    [symbol](): any;
 }
 
 // ==================

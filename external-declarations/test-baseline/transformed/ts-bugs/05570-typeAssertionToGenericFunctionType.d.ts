@@ -1,7 +1,7 @@
 // typeAssertionToGenericFunctionType.d.ts
 declare var x: {
     a: <T>(x: T) => T;
-    b: <T_1>(x: T_1) => void;
+    b: <T>(x: T) => void;
 };
 
 // ==================

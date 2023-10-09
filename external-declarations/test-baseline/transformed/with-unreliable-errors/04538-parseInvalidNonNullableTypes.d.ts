@@ -7,9 +7,9 @@ declare function f5(a: !string): void;
 declare function f6(a: !number): void;
 declare function f7(): !string;
 declare function f8(): !string;
-declare const a: any;
+declare const a: !any;
 declare const b: !number;
-declare const c: any;
+declare const c: !any;
 declare const d: !number;
 
 // ==================

@@ -4,10 +4,7 @@ declare class x {
 export = x;
 
 // foo2.d.ts
-import foo1 = require('./foo1');
-declare const _default: {
-    x: typeof foo1;
-};
+declare const _default: invalid;
 export = _default;
 
 // foo3.d.ts

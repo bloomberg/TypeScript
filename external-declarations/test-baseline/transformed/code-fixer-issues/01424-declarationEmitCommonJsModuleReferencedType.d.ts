@@ -1,6 +1,6 @@
 // r/entry.d.ts
 import { RootProps } from "root";
-export declare const x: any;
+export declare const x: invalid;
 export declare const y: RootProps;
 
 // ==================

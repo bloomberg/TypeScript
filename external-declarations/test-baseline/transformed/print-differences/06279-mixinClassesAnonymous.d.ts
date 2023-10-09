@@ -41,9 +41,11 @@ declare class Thing3 extends Thing2 {
     constructor(tag: string);
     test(): void;
 }
-declare const Timestamped: <CT extends Constructor<object>>(Base: CT) => (new (...args: any[]) => {
-    timestamp: Date;
-}) & CT;
+declare const Timestamped: <CT extends Constructor<object>>(Base: CT) => {
+    new (...args: any[]): {
+        timestamp: Date;
+    };
+} & CT;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/classes/mixinClassesAnonymous.ts

@@ -85,7 +85,7 @@ declare var f10: {
     readonly a: number;
 };
 declare var f11: {
-    readonly '1': number;
+    readonly 1: number;
 };
 declare var f12: {
     readonly 0: number;

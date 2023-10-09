@@ -10,7 +10,9 @@ declare const typedArray: Uint8Array;
 
 // b.d.ts
 declare const a: {};
-declare const b: {};
+declare const b: {
+    [1n]: number;
+};
 declare const c: {};
 
 // ==================

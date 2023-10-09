@@ -1,7 +1,11 @@
 // objectLiteralComputedNameNoDeclarationError.d.ts
-export declare const Baa: {
-    banana: number;
+declare const Foo: {
+    BANANA: "banana";
 };
+export declare const Baa: {
+    [Foo.BANANA]: number;
+};
+export {};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/objectLiteralComputedNameNoDeclarationError.ts

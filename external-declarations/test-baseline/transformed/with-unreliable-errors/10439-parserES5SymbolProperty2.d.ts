@@ -1,5 +1,6 @@
 // parserES5SymbolProperty2.d.ts
 interface I {
+    [Symbol.unscopables](): string;
 }
 
 // ==================

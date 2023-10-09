@@ -3,7 +3,7 @@ declare function tag(str: any, ...args: any[]): any;
 declare const a: any;
 declare const b: any;
 declare const x: any;
-declare const y = "\\u{hello} 100 \\xtraordinary 200 wonderful 300 \\uworld";
+declare const y = `\u{hello} ${100} \xtraordinary ${200} wonderful ${300} \uworld`;
 declare const z: any;
 declare const a1: any;
 declare const a2: any;

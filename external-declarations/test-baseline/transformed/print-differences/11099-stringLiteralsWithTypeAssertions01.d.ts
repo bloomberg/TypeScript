@@ -5,7 +5,7 @@ declare let b: "foo";
 declare let c: "foo";
 declare let d: "bar";
 declare let e: "baz";
-declare let f: "foo" | "bar";
+declare let f: typeof fooOrBar;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/types/literal/stringLiteralsWithTypeAssertions01.ts

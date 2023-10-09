@@ -3,7 +3,7 @@ declare class P {
     z: this;
     x: this;
     static y: typeof P;
-    constructor(z?: this, zz?: this, zzz?: (p?: any) => any);
+    constructor(z?: this, zz?: this, zzz?: (p?: this) => this);
     foo(zz?: this): void;
     static bar(zz?: typeof P): void;
 }

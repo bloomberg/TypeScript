@@ -1,5 +1,6 @@
 // parserES5ComputedPropertyName11.d.ts
 declare class C {
+    [e](): any;
 }
 
 // ==================

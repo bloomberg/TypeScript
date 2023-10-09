@@ -1,6 +1,8 @@
 // computedPropertyNames14_ES6.d.ts
 declare var b: boolean;
 declare class C {
+    [b](): void;
+    [undefined](): void;
 }
 
 // ==================

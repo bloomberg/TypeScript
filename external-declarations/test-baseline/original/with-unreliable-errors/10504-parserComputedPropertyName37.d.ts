@@ -1,5 +1,7 @@
 // parserComputedPropertyName37.d.ts
-declare var v: invalid;
+declare var v: {
+    [public]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/parser/ecmascript6/ComputedPropertyNames/parserComputedPropertyName37.ts

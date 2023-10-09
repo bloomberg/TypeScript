@@ -8,16 +8,16 @@ type TestStrs = {
 };
 declare const x: TestStrs;
 declare const ux: {
-    a: string;
-    b: string;
+    [Strs.A]: string;
+    [Strs.B]: string;
 };
 declare const y: TestStrs;
 declare const a = "a";
 declare const b = "b";
 declare const z: TestStrs;
 declare const uz: {
-    a: string;
-    b: string;
+    [a]: string;
+    [b]: string;
 };
 declare enum Nums {
     A = 0,
@@ -29,15 +29,15 @@ type TestNums = {
 };
 declare const n: TestNums;
 declare const un: {
-    0: number;
-    1: number;
+    [Nums.A]: number;
+    [Nums.B]: number;
 };
 declare const an = 0;
 declare const bn = 1;
 declare const m: TestNums;
 declare const um: {
-    0: number;
-    1: number;
+    [an]: number;
+    [bn]: number;
 };
 
 // ==================

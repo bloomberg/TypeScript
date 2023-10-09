@@ -27,16 +27,16 @@ declare const x1_a: typeof globalThis;
 declare const x3_a: typeof globalThis;
 declare class C4 {
     x1: {
-        a: typeof globalThis;
+        a: typeof x1_a;
     };
     x2: this[];
     x3: readonly [{
-        readonly a: typeof globalThis;
+        readonly a: typeof x3_a;
     }];
     x4: () => this;
-    f1(): any;
+    f1(): invalid;
     f2(): this[];
-    f3(): any;
+    f3(): invalid;
     f4(): () => this;
 }
 

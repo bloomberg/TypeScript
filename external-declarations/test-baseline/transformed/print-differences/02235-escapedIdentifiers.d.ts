@@ -25,8 +25,8 @@ interface interfaceType\u0032 {
 }
 declare var interfaceType1Object1: interfaceType1;
 declare var interfaceType1Object2: interfaceType1;
-declare var interfaceType2Object1: interfaceType\u0032;
-declare var interfaceType2Object2: interfaceType\u0032;
+declare var interfaceType2Object1: interfaceType2;
+declare var interfaceType2Object2: interfaceType2;
 declare class testClass {
     func(arg1: number, arg\u0032: string, arg\u0033: boolean, arg4: number): void;
 }

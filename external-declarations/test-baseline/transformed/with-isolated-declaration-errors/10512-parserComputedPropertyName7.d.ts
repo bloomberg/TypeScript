@@ -1,5 +1,6 @@
 // parserComputedPropertyName7.d.ts
 declare class C {
+    [e]: any;
 }
 
 // ==================

@@ -1,7 +1,11 @@
 // parseTypes.d.ts
 declare var x: () => number;
-declare var y: () => number;
-declare var z: new () => number;
+declare var y: {
+    (): number;
+};
+declare var z: {
+    new (): number;
+};
 declare var w: {
     [x: number]: number;
 };

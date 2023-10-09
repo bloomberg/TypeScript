@@ -13,8 +13,8 @@ declare var a: {
     <T extends T>(): void;
     <T, U extends U>(): void;
 };
-declare var b: <T>() => void;
-declare var b2: <T, U>() => void;
+declare var b: <T extends T>() => void;
+declare var b2: <T, U extends U>() => void;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/types/typeParameters/typeParameterLists/typeParameterDirectlyConstrainedToItself.ts

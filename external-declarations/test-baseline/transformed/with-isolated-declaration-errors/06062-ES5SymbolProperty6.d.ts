@@ -1,5 +1,6 @@
 // ES5SymbolProperty6.d.ts
 declare class C {
+    [Symbol.iterator](): void;
 }
 
 // ==================

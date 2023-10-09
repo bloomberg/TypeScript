@@ -2,8 +2,7 @@
 export declare function x(): boolean;
 
 // foo2.d.ts
-import foo1 = require('./foo1');
-declare const _default: typeof foo1.x;
+declare const _default: invalid;
 export = _default;
 
 // ==================

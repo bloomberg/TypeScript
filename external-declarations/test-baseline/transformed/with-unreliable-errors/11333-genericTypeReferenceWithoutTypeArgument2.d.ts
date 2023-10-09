@@ -12,9 +12,9 @@ declare var b: {
 declare var d: {
     [x: I]: I;
 };
-declare var e: (x: any) => any;
+declare var e: (x: I) => any;
 declare function f(x: I): I;
-declare var g: (x: any) => any;
+declare var g: (x: I) => I;
 declare class D extends I {
 }
 interface U extends I {
@@ -33,7 +33,7 @@ interface I2 extends M.C {
 declare function h<T extends I>(x: T): void;
 declare function i<T extends M.E>(x: T): void;
 declare var j: C;
-declare var k: any;
+declare var k: M.E;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/types/specifyingTypes/typeReferences/genericTypeReferenceWithoutTypeArgument2.ts

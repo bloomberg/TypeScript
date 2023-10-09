@@ -3,8 +3,8 @@ declare class C {
     p: number;
 }
 declare class D extends C {
-    p?: number | undefined;
-    constructor(p?: number | undefined);
+    p?: number;
+    constructor(p?: number);
 }
 
 // ==================

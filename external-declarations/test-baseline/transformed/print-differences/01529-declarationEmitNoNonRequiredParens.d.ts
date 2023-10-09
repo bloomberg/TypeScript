@@ -5,7 +5,7 @@ export declare enum Test {
     C = 2
 }
 export type TestType = typeof Test;
-export declare const bar: Test[];
+export declare const bar: TestType[Extract<keyof TestType, string>][];
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/declarationEmitNoNonRequiredParens.ts

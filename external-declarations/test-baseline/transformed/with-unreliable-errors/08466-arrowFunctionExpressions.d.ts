@@ -2,10 +2,10 @@
 declare var a: (p: string) => number;
 declare var a: (p: string) => number;
 declare var b: any, any: any;
-declare var b: any;
+declare var b: (j: any) => number;
 declare var c: number;
 declare var d: any, any: any;
-declare var d: any;
+declare var d: (n: any) => any;
 declare var d: (n: any) => any;
 declare var p1: ([a]: [
     any
@@ -38,10 +38,12 @@ declare var p9: ({ a: { b } }: {
         b?: number;
     };
 }) => void;
-declare var p10: ([{ value, done }]: [{
-    value: any;
-    done: any;
-}]) => void;
+declare var p10: ([{ value, done }]: [
+    {
+        value: any;
+        done: any;
+    }
+]) => void;
 declare class MyClass {
     m: (n: any) => any;
     p: (n: any) => this;

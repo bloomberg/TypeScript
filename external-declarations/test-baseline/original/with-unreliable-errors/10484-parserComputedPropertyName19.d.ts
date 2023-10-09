@@ -1,5 +1,7 @@
 // parserComputedPropertyName19.d.ts
-declare var v: {};
+declare var v: {
+    [e]?: any;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/parser/ecmascript6/ComputedPropertyNames/parserComputedPropertyName19.ts

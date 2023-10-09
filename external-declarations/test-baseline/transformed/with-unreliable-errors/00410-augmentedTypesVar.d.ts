@@ -4,7 +4,7 @@ declare var x1: number;
 declare var x2: number;
 declare function x2(): void;
 declare var x3: number;
-declare var x3: number;
+declare var x3: () => void;
 declare var x4: number;
 declare class x4 {
 }

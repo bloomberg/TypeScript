@@ -4,6 +4,7 @@ export default class db {
 }
 
 // service.d.ts
+import db from './db';
 declare class MyClass {
     db: db.db;
     constructor(db: db.db);

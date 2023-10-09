@@ -3,13 +3,13 @@ declare var x: number;
 declare var y: string;
 
 // duplicateVarsAcrossFileBoundaries_1.d.ts
-declare var x: number;
+declare var x: boolean;
 declare var z: number;
 
 // duplicateVarsAcrossFileBoundaries_2.d.ts
-declare var x: number;
-declare var y: string;
-declare var z: number;
+declare var x: string;
+declare var y: number;
+declare var z: boolean;
 
 // duplicateVarsAcrossFileBoundaries_3.d.ts
 declare var x: number;

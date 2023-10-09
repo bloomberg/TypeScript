@@ -1,5 +1,4 @@
 // /index.d.ts
-/// <reference types="preact/jsx-runtime" />
 export declare const Comp: () => JSX.Element;
 
 // ==================

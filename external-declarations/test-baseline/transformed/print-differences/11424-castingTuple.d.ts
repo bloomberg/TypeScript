@@ -41,7 +41,7 @@ declare var unionTuple3: [number, string | number];
 declare var unionTuple4: [number, number];
 declare var t3: [number, number];
 declare var t9: [A, I];
-declare var array1: {}[];
+declare var array1: number[];
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/types/tuple/castingTuple.ts

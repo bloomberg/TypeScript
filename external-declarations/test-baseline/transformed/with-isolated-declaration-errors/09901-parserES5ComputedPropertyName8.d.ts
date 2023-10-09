@@ -1,5 +1,7 @@
 // parserES5ComputedPropertyName8.d.ts
-declare var v: {};
+declare var v: {
+    [e]: number;
+};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/parser/ecmascript5/ComputedPropertyNames/parserES5ComputedPropertyName8.ts

@@ -1,9 +1,9 @@
 // forwardRefInEnum.d.ts
 declare enum E1 {
-    X = 0,
-    X1 = 0,
-    Y = 0,
-    Y1 = 0
+    X,
+    X1,
+    Y,
+    Y1
 }
 declare enum E1 {
     Z = 4

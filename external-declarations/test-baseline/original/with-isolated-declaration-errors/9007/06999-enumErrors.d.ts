@@ -15,8 +15,8 @@ declare enum E9 {
     B = 0
 }
 declare enum E10 {
-    A = 0,
-    B = 0
+    A,
+    B
 }
 declare enum E11 {
     A,

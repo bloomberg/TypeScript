@@ -35,10 +35,12 @@ declare var p9: ({ a: { b } }: {
         b?: number;
     };
 }) => void;
-declare var p10: ([{ value, done }]: [{
-    value: any;
-    done: any;
-}]) => void;
+declare var p10: ([{ value, done }]: [
+    {
+        value: any;
+        done: any;
+    }
+]) => void;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/es6/arrowFunction/emitArrowFunctionES6.ts

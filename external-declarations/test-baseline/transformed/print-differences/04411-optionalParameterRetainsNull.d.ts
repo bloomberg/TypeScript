@@ -4,7 +4,7 @@ interface Bar {
     foo: object | null;
 }
 declare let a: {
-    test<K extends keyof Bar>(a: K, b?: Bar[K] | null | undefined): void;
+    test<K extends keyof Bar>(a: K, b?: Bar[K] | null): void;
 };
 
 // ==================

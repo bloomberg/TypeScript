@@ -94,11 +94,15 @@ declare var c12t3: number[];
 declare var c12t4: () => IFoo;
 declare var c12t5: (n: number) => IFoo;
 declare var c12t6: (n: number, s: string) => IFoo;
-declare var c12t7: (n: number, s: string) => number;
+declare var c12t7: {
+    (n: number, s: string): number;
+};
 declare var c12t8: (n: number, s: string) => number;
 declare var c12t9: number[][];
 declare var c12t10: IFoo[];
-declare var c12t11: ((n: number, s: string) => string)[];
+declare var c12t11: {
+    (n: number, s: string): string;
+}[];
 declare var c12t12: IBar;
 declare var c12t13: IFoo;
 declare var c12t14: IFoo;

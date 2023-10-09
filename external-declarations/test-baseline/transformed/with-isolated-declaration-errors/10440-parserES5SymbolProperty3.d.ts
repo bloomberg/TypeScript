@@ -1,5 +1,6 @@
 // parserES5SymbolProperty3.d.ts
 declare class C {
+    [Symbol.unscopables](): string;
 }
 
 // ==================

@@ -139,7 +139,7 @@ declare function d5({ x, y }?: {
     x: number;
     y: number;
 }): void;
-declare function e1({ x }: {
+declare function e1({ x: number }: {
     x: any;
 }): void;
 declare function e2({ x }: {

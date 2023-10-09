@@ -1,5 +1,6 @@
 // parserES5SymbolProperty4.d.ts
 declare class C {
+    [Symbol.isRegExp]: string;
 }
 
 // ==================

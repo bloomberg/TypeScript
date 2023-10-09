@@ -3,17 +3,13 @@ declare var x: {};
 declare function foo(): void;
 declare class C1 extends undefined {
 }
-declare const C2_base: true;
-declare class C2 extends C2_base {
+declare class C2 extends invalid {
 }
-declare const C3_base: false;
-declare class C3 extends C3_base {
+declare class C3 extends invalid {
 }
-declare const C4_base: 42;
-declare class C4 extends C4_base {
+declare class C4 extends invalid {
 }
-declare const C5_base: "hello";
-declare class C5 extends C5_base {
+declare class C5 extends invalid {
 }
 declare class C6 extends x {
 }

@@ -1,12 +1,12 @@
 // parserCastVersusArrowFunction1.d.ts
 declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
-declare var v: <T>() => number;
+declare var v: T;
+declare var v: <T>(a: any) => number;
+declare var v: <T>(a: any, b: any) => number;
+declare var v: <T>(a?: number, b?: number) => number;
+declare var v: T;
+declare var v: T;
+declare var v: T;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/conformance/parser/ecmascript5/Generics/parserCastVersusArrowFunction1.ts

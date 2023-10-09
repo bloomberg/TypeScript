@@ -1,5 +1,6 @@
 // indexWithoutParamType2.d.ts
 declare class C {
+    [x]: string;
 }
 
 // ==================

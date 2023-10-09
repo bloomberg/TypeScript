@@ -8,14 +8,23 @@ interface Point {
     y: number;
 }
 declare var p: Point;
-declare var p: Point;
-declare var p: Point;
-declare var p: Point;
 declare var p: {
     x: number;
     y: number;
 };
 declare var p: Point;
+declare var p: {
+    x: number;
+    y: number;
+};
+declare var p: {
+    x: number;
+    y: number;
+};
+declare var p: {
+    x: number;
+    y: number;
+};
 declare var p: typeof p;
 declare var fn: (s: string) => number;
 declare var fn: (s: string) => number;

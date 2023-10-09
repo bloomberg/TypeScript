@@ -1,6 +1,9 @@
 // computedPropertyNamesWithStaticProperty.d.ts
 declare class C {
     static staticProp: number;
+    get [C.staticProp](): string;
+    set [C.staticProp](x: string);
+    [C.staticProp](): void;
 }
 
 // ==================

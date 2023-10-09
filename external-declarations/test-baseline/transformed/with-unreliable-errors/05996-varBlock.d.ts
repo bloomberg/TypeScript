@@ -24,7 +24,7 @@ declare namespace m4 {
     var d2E: any, d3E: number, d4E: number;
 }
 declare var c: any;
-declare var c: any;
+declare var c: number;
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/varBlock.ts

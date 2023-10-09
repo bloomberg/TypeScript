@@ -1,12 +1,12 @@
 // accessorBodyInTypeContext.d.ts
 type A = {
-    get foo(): number;
+    get foo(): any;
 };
 type B = {
     set foo(v: any);
 };
 interface X {
-    get foo(): number;
+    get foo(): any;
 }
 interface Y {
     set foo(v: any);

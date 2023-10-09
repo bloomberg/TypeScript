@@ -18,7 +18,7 @@ declare var a: {
     foo<Z>(x: Z): Z;
 };
 declare var b: {
-    foo<A_1>(x: A_1): A_1;
+    foo<A>(x: A): A;
 };
 declare function foo1(x: A): any;
 declare function foo1(x: A): any;

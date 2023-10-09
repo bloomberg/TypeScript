@@ -1,8 +1,10 @@
 // superSymbolIndexedAccess6.d.ts
 declare var symbol: any;
 declare class Foo {
+    static [symbol](): number;
 }
 declare class Bar extends Foo {
+    static [symbol](): any;
 }
 
 // ==================

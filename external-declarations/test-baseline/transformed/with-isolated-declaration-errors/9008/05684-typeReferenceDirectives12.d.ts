@@ -4,7 +4,6 @@ export declare class Cls {
 }
 
 // /mod1.d.ts
-/// <reference types="lib" />
 declare module "./main" {
     interface Cls {
         foo(): Lib;
@@ -16,7 +15,6 @@ declare module "./main" {
 export {};
 
 // /mod2.d.ts
-/// <reference types="lib" />
 import { Cls } from "./main";
 import "./mod1";
 export declare const cls: typeof Cls;

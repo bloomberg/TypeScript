@@ -2,13 +2,13 @@
 interface Show {
     show: (x: number) => string;
 }
-declare function f({ show }: Show): void;
+declare function f({ show: showRename }: Show): void;
 declare function f2({ "show": showRename }: Show): void;
 declare function f3({ ["show"]: showRename }: Show): void;
 interface Nested {
     nested: Show;
 }
-declare function ff({ nested }: Nested): void;
+declare function ff({ nested: nestedRename }: Nested): void;
 interface StringIdentity {
     stringIdentity(s: string): string;
 }

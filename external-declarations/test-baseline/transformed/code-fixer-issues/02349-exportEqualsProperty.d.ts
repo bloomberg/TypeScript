@@ -1,17 +1,9 @@
 // a.d.ts
-declare namespace A {
-    class B {
-        constructor(b: number);
-    }
-    namespace B {
-        const b: number;
-    }
-}
-declare const _default: typeof A.B;
+declare const _default: invalid;
 export = _default;
 
 // b.d.ts
-declare const _default: number;
+declare const _default: invalid;
 export = _default;
 
 // index.d.ts

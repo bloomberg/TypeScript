@@ -6,7 +6,9 @@ export interface Interface {
 export declare function createInstance(): Interface;
 
 // index.d.ts
-export declare const spread: {};
+export declare const spread: {
+    [SYMBOL]: string;
+};
 
 // ==================
 // Original test file: tsc-tests/updated-tests/compiler/declarationEmitReadonlyComputedProperty.ts

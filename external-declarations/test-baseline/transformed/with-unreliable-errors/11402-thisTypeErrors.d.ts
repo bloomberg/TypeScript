@@ -41,7 +41,7 @@ declare class C1 {
 }
 declare class C2 {
     static x: this;
-    static y: any;
+    static y: this;
     static foo(x: this): this;
 }
 declare namespace N1 {
@@ -50,7 +50,7 @@ declare namespace N1 {
 }
 declare class C3 {
     x1: {
-        g(x: any): any;
+        g(x: this): this;
     };
     f(): void;
 }

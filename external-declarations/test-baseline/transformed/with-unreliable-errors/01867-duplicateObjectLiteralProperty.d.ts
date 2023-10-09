@@ -6,7 +6,7 @@ declare var x: {
     b: boolean;
 };
 declare var y: {
-    readonly a: number;
+    a: number;
 };
 
 // ==================

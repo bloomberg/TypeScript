@@ -9,7 +9,7 @@ declare var console: {
 declare var hello: string;
 declare var robotA: Robot;
 declare function foo1({ name: nameA }: Robot): void;
-declare function foo2({ name: nameB, skill }: Robot): void;
+declare function foo2({ name: nameB, skill: skillB }: Robot): void;
 declare function foo3({ name }: Robot): void;
 
 // ==================

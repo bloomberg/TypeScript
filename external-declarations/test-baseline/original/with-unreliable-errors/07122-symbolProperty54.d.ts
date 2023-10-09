@@ -1,5 +1,7 @@
 // symbolProperty54.d.ts
-declare var obj: invalid;
+declare var obj: {
+    [Symbol.prototype]: number;
+};
 
 // ==================
 // Original test file: ../tests/cases/conformance/es6/Symbols/symbolProperty54.ts

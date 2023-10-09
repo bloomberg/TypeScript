@@ -5,7 +5,9 @@ declare var foo1: {
 declare var bar1: {
     x: number;
 };
-declare var foo2: {};
+declare var foo2: {
+    [index]: any;
+};
 declare var bar2: {
     x: number;
 };

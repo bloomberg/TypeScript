@@ -1,6 +1,6 @@
 // FunctionPropertyAssignments2_es6.d.ts
 declare var v: {
-    ""(): Generator<never, void, unknown>;
+    (): Generator<never, void, unknown>;
 };
 
 // ==================
