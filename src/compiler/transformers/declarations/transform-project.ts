@@ -22,6 +22,7 @@ import {
     getRootLength,
     getSourceFilePathInNewDir,
     IsolatedEmitHost,
+    LexicalEnvironmentFlags,
     noop,
     normalizePath,
     normalizeSlashes,
@@ -74,6 +75,12 @@ export function transpileDeclaration(sourceFile: SourceFile, emitHost: IsolatedE
         addDiagnostic(diag: any) {
             diagnostics.push(diag);
         },
+        startLexicalEnvironment() {},
+        setLexicalEnvironmentFlags() {},
+        getLexicalEnvironmentFlags() {return LexicalEnvironmentFlags.None; },
+        suspendLexicalEnvironment() {},
+        resumeLexicalEnvironment() {},
+        endLexicalEnvironment() { return undefined; },
     } as Partial<TransformationContext> as TransformationContext);
     const result = transformer(sourceFile);
 

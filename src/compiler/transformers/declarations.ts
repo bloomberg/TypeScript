@@ -15,6 +15,8 @@ import {
     canHaveModifiers,
     canProduceDiagnostics,
     ClassDeclaration,
+    ClassElement,
+    ClassExpression,
     CommentRange,
     compact,
     concatenate,
@@ -103,6 +105,7 @@ import {
     isBindingPattern,
     isClassDeclaration,
     isClassElement,
+    isClassExpression,
     isComputedPropertyName,
     isDeclaration,
     isEntityName,
@@ -154,6 +157,7 @@ import {
     isTypeNode,
     isTypeParameterDeclaration,
     isTypeQueryNode,
+    isTypeReferenceNode,
     isUnparsedSource,
     isVarAwaitUsing,
     isVariableDeclaration,
@@ -448,7 +452,7 @@ export function transformDeclarations(context: TransformationContext) {
         else {
             // Report error
             const errorInfo = getSymbolAccessibilityDiagnostic(symbolAccessibilityResult);
-            if (errorInfo) {
+            if (errorInfo && !(isClassExpression(enclosingDeclaration) && enclosingDeclaration.name?.escapedText === symbolAccessibilityResult.errorSymbolName)) {
                 if (errorInfo.typeName) {
                     context.addDiagnostic(createDiagnosticForNode(symbolAccessibilityResult.errorNode || errorInfo.errorNode, errorInfo.diagnosticMessage, getTextOfNode(errorInfo.typeName), symbolAccessibilityResult.errorSymbolName!, symbolAccessibilityResult.errorModuleName!));
                 }
@@ -999,6 +1003,7 @@ export function transformDeclarations(context: TransformationContext) {
             || isTypeAliasDeclaration(node)
             || isModuleDeclaration(node)
             || isClassDeclaration(node)
+            || isClassExpression(node)
             || isInterfaceDeclaration(node)
             || isFunctionLike(node)
             || isIndexSignatureDeclaration(node)
@@ -1785,10 +1790,10 @@ export function transformDeclarations(context: TransformationContext) {
                     ));
                 }
             }
-            case SyntaxKind.ClassDeclaration: 
-                return handleClassDeclaration(input, cleanup);
+            case SyntaxKind.ClassDeclaration:
+                return handleClassDeclaration(input, /*parent*/ undefined, cleanup);
             case SyntaxKind.VariableStatement: {
-                return cleanup(transformVariableStatement(input));
+                return transformVariableStatement(input, cleanup);
             }
             case SyntaxKind.EnumDeclaration: {
                 return cleanup(factory.updateEnumDeclaration(
@@ -1840,11 +1845,13 @@ export function transformDeclarations(context: TransformationContext) {
         }
     }
 
-    function handleClassDeclaration(input: ClassDeclaration, cleanup: <T extends Node>(node: T | undefined) => T | undefined) {
+    function handleClassDeclaration(input: ClassDeclaration | ClassExpression, parent: VariableStatement | undefined, cleanup: <T extends Node>(node: T | undefined) => T | undefined) {
         errorNameNode = input.name;
         errorFallbackNode = input;
-        const modifiers = factory.createNodeArray(ensureModifiers(input));
-        const typeParameters = ensureTypeParams(input, input.typeParameters);
+        const previousEnclosingDeclaration = enclosingDeclaration;
+        enclosingDeclaration = input;
+        const modifiers = factory.createNodeArray(parent && isolatedDeclarations ? ensureModifiers(parent) : ensureModifiers(input));
+        let typeParameters = ensureTypeParams(input, input.typeParameters);
         const ctor = getFirstConstructorWithBody(input);
         let parameterProperties: readonly PropertyDeclaration[] | undefined;
         if (ctor) {
@@ -1903,10 +1910,27 @@ export function transformDeclarations(context: TransformationContext) {
                 /*initializer*/ undefined,
             ),
         ] : undefined;
-        const memberNodes = concatenate(concatenate(privateIdentifier, parameterProperties), visitNodes(input.members, visitDeclarationSubtree, isClassElement));
-        const members = factory.createNodeArray(memberNodes);
+        let memberNodes = concatenate(concatenate(privateIdentifier, parameterProperties), visitNodes(input.members, visitDeclarationSubtree, isClassElement));
+        let newName;
+        let classTypeHolder;
+        if (isolatedDeclarations && parent) {
+            // We're transforming class expression to a standalone class declaration.
+            // If the existing class doesn't have a name, it can never be referred, thus
+            // we can safely use the existing variable name as the new name of this class.
+            newName = (input.parent as VariableDeclaration).name as Identifier;
 
+            // The class expression already has a name, and might have been referred within that class.
+            // So we need to rename anything that referrs to that class.
+            if (input.name) {
+                ({ memberNodes, typeParameters } = renameReferenceOfClassInMembers(newName.escapedText as string, input as ClassExpression, typeParameters, memberNodes));
+            }
+        }
+        else {
+            newName = input.name;
+        }
+        const members = factory.createNodeArray(memberNodes);
         const extendsClause = getEffectiveBaseTypeNode(input);
+        enclosingDeclaration = previousEnclosingDeclaration;
         if (extendsClause && !isEntityNameExpression(extendsClause.expression) && extendsClause.expression.kind !== SyntaxKind.NullKeyword) {
             // We must add a temporary declaration for the extends clause expression
 
@@ -1922,10 +1946,9 @@ export function transformDeclarations(context: TransformationContext) {
                 ) {
                     reportIsolatedDeclarationError(extendsClause);
                 }
-                return cleanup(factory.updateClassDeclaration(
-                    input,
+                const classDecl = cleanup(factory.createClassDeclaration(
                     modifiers,
-                    input.name,
+                    newName,
                     typeParameters,
                     factory.createNodeArray([factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
                         factory.createExpressionWithTypeArguments(
@@ -1934,7 +1957,11 @@ export function transformDeclarations(context: TransformationContext) {
                         ),
                     ])]),
                     members,
-                ));
+                ))!;
+                if (classTypeHolder) {
+                    return [classDecl, classTypeHolder];
+                }
+                return classDecl;
             }
             const oldId = input.name ? unescapeLeadingUnderscores(input.name.escapedText) : "default";
             const newId = factory.createUniqueName(`${oldId}_base`, GeneratedIdentifierFlags.Optimistic);
@@ -1955,35 +1982,98 @@ export function transformDeclarations(context: TransformationContext) {
                 }
                 return factory.updateHeritageClause(clause, visitNodes(factory.createNodeArray(filter(clause.types, t => isEntityNameExpression(t.expression) || t.expression.kind === SyntaxKind.NullKeyword)), visitDeclarationSubtree, isExpressionWithTypeArguments));
             }));
+            const classDecl = cleanup(factory.createClassDeclaration(
+                modifiers,
+                newName,
+                typeParameters,
+                heritageClauses,
+                members,
+            ))!;
+            if (classTypeHolder) {
+                return [
+                    statement,
+                    classDecl,
+                    classTypeHolder,
+                ]; // TODO: GH#18217
+            }
             return [
                 statement,
-                cleanup(factory.updateClassDeclaration(
-                    input,
-                    modifiers,
-                    input.name,
-                    typeParameters,
-                    heritageClauses,
-                    members,
-                ))!,
+                classDecl,
             ]; // TODO: GH#18217
         }
         else {
             const heritageClauses = transformHeritageClauses(input.heritageClauses);
-            return cleanup(factory.updateClassDeclaration(
-                input,
+            const classDecl = cleanup(factory.createClassDeclaration(
                 modifiers,
-                input.name,
+                newName,
                 typeParameters,
                 heritageClauses,
                 members,
-            ));
+            ))!;
+            if (classTypeHolder) {
+                return [classDecl, classTypeHolder];
+            }
+            return classDecl;
         }
     }
 
-    function transformVariableStatement(input: VariableStatement) {
+    function renameReferenceOfClassInMembers(renameTo: string, classExpr: ClassExpression, typeParameters: NodeArray<TypeParameterDeclaration>|undefined, memberNodes: readonly ClassElement[]|undefined) {
+        if (!memberNodes) {
+            return {memberNodes: [], typeParameters};
+        }
+        function visitor(node: Node) {
+            if (isTypeReferenceNode(node)) {
+                const symbolVisibility = resolver.isEntityNameVisible(node.typeName, classExpr);
+                if (symbolVisibility.accessibility === SymbolAccessibility.NotAccessible) {                    
+                    return factory.createTypeReferenceNode(
+                        renameTo,
+                    );
+                }
+                return node;
+            }
+            return visitEachChild(node, visitor, context);
+        }
+        const newMembers = [];
+        for (const member of memberNodes) {
+            newMembers.push(visitEachChild(member, visitor, context));
+        }
+        const newTypeParameters = [];
+        if (typeParameters) {
+            for (const typeParameter of typeParameters) {
+                newTypeParameters.push(visitEachChild(typeParameter, visitor, context));
+            }
+        }
+        return {memberNodes: newMembers, typeParameters: factory.createNodeArray(newTypeParameters)};
+    }
+    
+    function transformVariableStatement(input: VariableStatement, cleanup: <T extends Node>(node: T | undefined) => T | undefined) {
         if (!forEach(input.declarationList.declarations, getBindingNameVisible)) return;
-        const nodes = visitNodes(input.declarationList.declarations, visitDeclarationSubtree, isVariableDeclaration);
-        if (!length(nodes)) return;
+        const declarations: Node[] = [];
+        const classAndVariableDeclarations = [];
+        let priorNeedsDeclare;
+        for (const declaration of input.declarationList.declarations) {
+            if (isolatedDeclarations && declaration.initializer && isClassExpression(declaration.initializer)) {
+                priorNeedsDeclare = needsDeclare;
+                needsDeclare = true;
+                const classDecl = handleClassDeclaration(declaration.initializer, input, cleanup);
+                needsDeclare = priorNeedsDeclare;
+                if (classDecl) {
+                    if (isArray(classDecl)) {
+                        classAndVariableDeclarations.push(...classDecl);
+                    }
+                    else {
+                        classAndVariableDeclarations.push(classDecl);
+                    }
+                }
+                continue;
+            }
+            declarations.push(declaration);
+        }
+
+        const nodes = visitNodes(factory.createNodeArray(declarations), visitDeclarationSubtree, isVariableDeclaration);
+        if (!length(nodes)) {
+            return classAndVariableDeclarations;
+        }
 
         const modifiers = factory.createNodeArray(ensureModifiers(input));
         let declList: VariableDeclarationList;
@@ -1996,7 +2086,7 @@ export function transformDeclarations(context: TransformationContext) {
         else {
             declList = factory.updateVariableDeclarationList(input.declarationList, nodes);
         }
-        return factory.updateVariableStatement(input, modifiers, declList);
+        return [...classAndVariableDeclarations, cleanup(factory.updateVariableStatement(input, modifiers, declList))!];
     }
 
     function recreateBindingPattern(d: BindingPattern): VariableDeclaration[] {
