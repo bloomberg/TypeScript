@@ -1786,143 +1786,7 @@ export function transformDeclarations(context: TransformationContext) {
                 }
             }
             case SyntaxKind.ClassDeclaration: {
-                errorNameNode = input.name;
-                errorFallbackNode = input;
-                const modifiers = factory.createNodeArray(ensureModifiers(input));
-                const typeParameters = ensureTypeParams(input, input.typeParameters);
-                const ctor = getFirstConstructorWithBody(input);
-                let parameterProperties: readonly PropertyDeclaration[] | undefined;
-                if (ctor) {
-                    const oldDiag = getSymbolAccessibilityDiagnostic;
-                    parameterProperties = compact(flatMap(ctor.parameters, param => {
-                        if (!hasSyntacticModifier(param, ModifierFlags.ParameterPropertyModifier) || shouldStripInternal(param)) return;
-                        getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(param);
-                        if (param.name.kind === SyntaxKind.Identifier) {
-                            return preserveJsDoc(
-                                factory.createPropertyDeclaration(
-                                    ensureModifiers(param),
-                                    param.name,
-                                    param.questionToken,
-                                    ensureType(param, param.type),
-                                    ensureNoInitializer(param),
-                                ),
-                                param,
-                            );
-                        }
-                        else {
-                            // Pattern - this is currently an error, but we emit declarations for it somewhat correctly
-                            return walkBindingPattern(param.name);
-                        }
-
-                        function walkBindingPattern(pattern: BindingPattern) {
-                            let elems: PropertyDeclaration[] | undefined;
-                            for (const elem of pattern.elements) {
-                                if (isOmittedExpression(elem)) continue;
-                                if (isBindingPattern(elem.name)) {
-                                    elems = concatenate(elems, walkBindingPattern(elem.name));
-                                }
-                                elems = elems || [];
-                                elems.push(factory.createPropertyDeclaration(
-                                    ensureModifiers(param),
-                                    elem.name as Identifier,
-                                    /*questionOrExclamationToken*/ undefined,
-                                    ensureType(elem, /*type*/ undefined),
-                                    /*initializer*/ undefined,
-                                ));
-                            }
-                            return elems;
-                        }
-                    }));
-                    getSymbolAccessibilityDiagnostic = oldDiag;
-                }
-
-                const hasPrivateIdentifier = some(input.members, member => !!member.name && isPrivateIdentifier(member.name));
-                // When the class has at least one private identifier, create a unique constant identifier to retain the nominal typing behavior
-                // Prevents other classes with the same public members from being used in place of the current class
-                const privateIdentifier = hasPrivateIdentifier ? [
-                    factory.createPropertyDeclaration(
-                        /*modifiers*/ undefined,
-                        factory.createPrivateIdentifier("#private"),
-                        /*questionOrExclamationToken*/ undefined,
-                        /*type*/ undefined,
-                        /*initializer*/ undefined,
-                    ),
-                ] : undefined;
-                const memberNodes = concatenate(concatenate(privateIdentifier, parameterProperties), visitNodes(input.members, visitDeclarationSubtree, isClassElement));
-                const members = factory.createNodeArray(memberNodes);
-
-                const extendsClause = getEffectiveBaseTypeNode(input);
-                if (extendsClause && !isEntityNameExpression(extendsClause.expression) && extendsClause.expression.kind !== SyntaxKind.NullKeyword) {
-                    // We must add a temporary declaration for the extends clause expression
-
-                    // Isolated declarations does not allow inferred type in the extends clause
-                    if (isolatedDeclarations) {
-                        if (
-                            // Checking if it's a separate compiler error so we don't make it an isolatedDeclarations error.
-                            // This is only an approximation as we need type information to figure out if something
-                            // is a constructor type or not.
-                            !isLiteralExpression(extendsClause.expression) &&
-                            extendsClause.expression.kind !== SyntaxKind.FalseKeyword &&
-                            extendsClause.expression.kind !== SyntaxKind.TrueKeyword
-                        ) {
-                            reportIsolatedDeclarationError(extendsClause);
-                        }
-                        return cleanup(factory.updateClassDeclaration(
-                            input,
-                            modifiers,
-                            input.name,
-                            typeParameters,
-                            factory.createNodeArray([factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
-                                factory.createExpressionWithTypeArguments(
-                                    factory.createIdentifier("invalid"),
-                                    /*typeArguments*/ undefined,
-                                ),
-                            ])]),
-                            members,
-                        ));
-                    }
-                    const oldId = input.name ? unescapeLeadingUnderscores(input.name.escapedText) : "default";
-                    const newId = factory.createUniqueName(`${oldId}_base`, GeneratedIdentifierFlags.Optimistic);
-                    getSymbolAccessibilityDiagnostic = () => ({
-                        diagnosticMessage: Diagnostics.extends_clause_of_exported_class_0_has_or_is_using_private_name_1,
-                        errorNode: extendsClause,
-                        typeName: input.name,
-                    });
-                    const varDecl = factory.createVariableDeclaration(newId, /*exclamationToken*/ undefined, resolver.createTypeOfExpression(extendsClause.expression, input, declarationEmitNodeBuilderFlags, symbolTracker), /*initializer*/ undefined);
-                    const statement = factory.createVariableStatement(needsDeclare ? [factory.createModifier(SyntaxKind.DeclareKeyword)] : [], factory.createVariableDeclarationList([varDecl], NodeFlags.Const));
-                    const heritageClauses = factory.createNodeArray(map(input.heritageClauses, clause => {
-                        if (clause.token === SyntaxKind.ExtendsKeyword) {
-                            const oldDiag = getSymbolAccessibilityDiagnostic;
-                            getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(clause.types[0]);
-                            const newClause = factory.updateHeritageClause(clause, map(clause.types, t => factory.updateExpressionWithTypeArguments(t, newId, visitNodes(t.typeArguments, visitDeclarationSubtree, isTypeNode))));
-                            getSymbolAccessibilityDiagnostic = oldDiag;
-                            return newClause;
-                        }
-                        return factory.updateHeritageClause(clause, visitNodes(factory.createNodeArray(filter(clause.types, t => isEntityNameExpression(t.expression) || t.expression.kind === SyntaxKind.NullKeyword)), visitDeclarationSubtree, isExpressionWithTypeArguments));
-                    }));
-                    return [
-                        statement,
-                        cleanup(factory.updateClassDeclaration(
-                            input,
-                            modifiers,
-                            input.name,
-                            typeParameters,
-                            heritageClauses,
-                            members,
-                        ))!,
-                    ]; // TODO: GH#18217
-                }
-                else {
-                    const heritageClauses = transformHeritageClauses(input.heritageClauses);
-                    return cleanup(factory.updateClassDeclaration(
-                        input,
-                        modifiers,
-                        input.name,
-                        typeParameters,
-                        heritageClauses,
-                        members,
-                    ));
-                }
+                return handleClassDeclaration(input);
             }
             case SyntaxKind.VariableStatement: {
                 return cleanup(transformVariableStatement(input));
@@ -1974,6 +1838,146 @@ export function transformDeclarations(context: TransformationContext) {
             errorFallbackNode = undefined;
             errorNameNode = undefined;
             return node && setOriginalNode(preserveJsDoc(node, input), input);
+        }
+
+        function handleClassDeclaration(input: ClassDeclaration) {        
+            errorNameNode = input.name;
+            errorFallbackNode = input;
+            const modifiers = factory.createNodeArray(ensureModifiers(input));
+            const typeParameters = ensureTypeParams(input, input.typeParameters);
+            const ctor = getFirstConstructorWithBody(input);
+            let parameterProperties: readonly PropertyDeclaration[] | undefined;
+            if (ctor) {
+                const oldDiag = getSymbolAccessibilityDiagnostic;
+                parameterProperties = compact(flatMap(ctor.parameters, param => {
+                    if (!hasSyntacticModifier(param, ModifierFlags.ParameterPropertyModifier) || shouldStripInternal(param)) return;
+                    getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(param);
+                    if (param.name.kind === SyntaxKind.Identifier) {
+                        return preserveJsDoc(
+                            factory.createPropertyDeclaration(
+                                ensureModifiers(param),
+                                param.name,
+                                param.questionToken,
+                                ensureType(param, param.type),
+                                ensureNoInitializer(param),
+                            ),
+                            param,
+                        );
+                    }
+                    else {
+                        // Pattern - this is currently an error, but we emit declarations for it somewhat correctly
+                        return walkBindingPattern(param.name);
+                    }
+    
+                    function walkBindingPattern(pattern: BindingPattern) {
+                        let elems: PropertyDeclaration[] | undefined;
+                        for (const elem of pattern.elements) {
+                            if (isOmittedExpression(elem)) continue;
+                            if (isBindingPattern(elem.name)) {
+                                elems = concatenate(elems, walkBindingPattern(elem.name));
+                            }
+                            elems = elems || [];
+                            elems.push(factory.createPropertyDeclaration(
+                                ensureModifiers(param),
+                                elem.name as Identifier,
+                                /*questionOrExclamationToken*/ undefined,
+                                ensureType(elem, /*type*/ undefined),
+                                /*initializer*/ undefined,
+                            ));
+                        }
+                        return elems;
+                    }
+                }));
+                getSymbolAccessibilityDiagnostic = oldDiag;
+            }
+    
+            const hasPrivateIdentifier = some(input.members, member => !!member.name && isPrivateIdentifier(member.name));
+            // When the class has at least one private identifier, create a unique constant identifier to retain the nominal typing behavior
+            // Prevents other classes with the same public members from being used in place of the current class
+            const privateIdentifier = hasPrivateIdentifier ? [
+                factory.createPropertyDeclaration(
+                    /*modifiers*/ undefined,
+                    factory.createPrivateIdentifier("#private"),
+                    /*questionOrExclamationToken*/ undefined,
+                    /*type*/ undefined,
+                    /*initializer*/ undefined,
+                ),
+            ] : undefined;
+            const memberNodes = concatenate(concatenate(privateIdentifier, parameterProperties), visitNodes(input.members, visitDeclarationSubtree, isClassElement));
+            const members = factory.createNodeArray(memberNodes);
+    
+            const extendsClause = getEffectiveBaseTypeNode(input);
+            if (extendsClause && !isEntityNameExpression(extendsClause.expression) && extendsClause.expression.kind !== SyntaxKind.NullKeyword) {
+                // We must add a temporary declaration for the extends clause expression
+    
+                // Isolated declarations does not allow inferred type in the extends clause
+                if (isolatedDeclarations) {
+                    if (
+                        // Checking if it's a separate compiler error so we don't make it an isolatedDeclarations error.
+                        // This is only an approximation as we need type information to figure out if something
+                        // is a constructor type or not.
+                        !isLiteralExpression(extendsClause.expression) &&
+                        extendsClause.expression.kind !== SyntaxKind.FalseKeyword &&
+                        extendsClause.expression.kind !== SyntaxKind.TrueKeyword
+                    ) {
+                        reportIsolatedDeclarationError(extendsClause);
+                    }
+                    return cleanup(factory.updateClassDeclaration(
+                        input,
+                        modifiers,
+                        input.name,
+                        typeParameters,
+                        factory.createNodeArray([factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
+                            factory.createExpressionWithTypeArguments(
+                                factory.createIdentifier("invalid"),
+                                /*typeArguments*/ undefined,
+                            ),
+                        ])]),
+                        members,
+                    ));
+                }
+                const oldId = input.name ? unescapeLeadingUnderscores(input.name.escapedText) : "default";
+                const newId = factory.createUniqueName(`${oldId}_base`, GeneratedIdentifierFlags.Optimistic);
+                getSymbolAccessibilityDiagnostic = () => ({
+                    diagnosticMessage: Diagnostics.extends_clause_of_exported_class_0_has_or_is_using_private_name_1,
+                    errorNode: extendsClause,
+                    typeName: input.name,
+                });
+                const varDecl = factory.createVariableDeclaration(newId, /*exclamationToken*/ undefined, resolver.createTypeOfExpression(extendsClause.expression, input, declarationEmitNodeBuilderFlags, symbolTracker), /*initializer*/ undefined);
+                const statement = factory.createVariableStatement(needsDeclare ? [factory.createModifier(SyntaxKind.DeclareKeyword)] : [], factory.createVariableDeclarationList([varDecl], NodeFlags.Const));
+                const heritageClauses = factory.createNodeArray(map(input.heritageClauses, clause => {
+                    if (clause.token === SyntaxKind.ExtendsKeyword) {
+                        const oldDiag = getSymbolAccessibilityDiagnostic;
+                        getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(clause.types[0]);
+                        const newClause = factory.updateHeritageClause(clause, map(clause.types, t => factory.updateExpressionWithTypeArguments(t, newId, visitNodes(t.typeArguments, visitDeclarationSubtree, isTypeNode))));
+                        getSymbolAccessibilityDiagnostic = oldDiag;
+                        return newClause;
+                    }
+                    return factory.updateHeritageClause(clause, visitNodes(factory.createNodeArray(filter(clause.types, t => isEntityNameExpression(t.expression) || t.expression.kind === SyntaxKind.NullKeyword)), visitDeclarationSubtree, isExpressionWithTypeArguments));
+                }));
+                return [
+                    statement,
+                    cleanup(factory.updateClassDeclaration(
+                        input,
+                        modifiers,
+                        input.name,
+                        typeParameters,
+                        heritageClauses,
+                        members,
+                    ))!,
+                ]; // TODO: GH#18217
+            }
+            else {
+                const heritageClauses = transformHeritageClauses(input.heritageClauses);
+                return cleanup(factory.updateClassDeclaration(
+                    input,
+                    modifiers,
+                    input.name,
+                    typeParameters,
+                    heritageClauses,
+                    members,
+                ));
+            }
         }
     }
 
