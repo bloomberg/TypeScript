@@ -1839,7 +1839,7 @@ export function transformDeclarations(context: TransformationContext) {
             errorNameNode = undefined;
             return node && setOriginalNode(preserveJsDoc(node, input), input);
         }
-
+        
         function handleClassDeclaration(input: ClassDeclaration) {        
             errorNameNode = input.name;
             errorFallbackNode = input;
@@ -1979,26 +1979,28 @@ export function transformDeclarations(context: TransformationContext) {
                 ));
             }
         }
+
+        function transformVariableStatement(input: VariableStatement) {
+            if (!forEach(input.declarationList.declarations, getBindingNameVisible)) return;
+            
+            const nodes = visitNodes(input.declarationList.declarations, visitDeclarationSubtree, isVariableDeclaration);
+            if (!length(nodes)) return;
+
+            const modifiers = factory.createNodeArray(ensureModifiers(input));
+            let declList: VariableDeclarationList;
+            if (isVarUsing(input.declarationList) || isVarAwaitUsing(input.declarationList)) {
+                declList = factory.createVariableDeclarationList(nodes, NodeFlags.Const);
+                setOriginalNode(declList, input.declarationList);
+                setTextRange(declList, input.declarationList);
+                setCommentRange(declList, input.declarationList);
+            }
+            else {
+                declList = factory.updateVariableDeclarationList(input.declarationList, nodes);
+            }
+            return factory.updateVariableStatement(input, modifiers, declList);
+        }
     }
 
-    function transformVariableStatement(input: VariableStatement) {
-        if (!forEach(input.declarationList.declarations, getBindingNameVisible)) return;
-        const nodes = visitNodes(input.declarationList.declarations, visitDeclarationSubtree, isVariableDeclaration);
-        if (!length(nodes)) return;
-
-        const modifiers = factory.createNodeArray(ensureModifiers(input));
-        let declList: VariableDeclarationList;
-        if (isVarUsing(input.declarationList) || isVarAwaitUsing(input.declarationList)) {
-            declList = factory.createVariableDeclarationList(nodes, NodeFlags.Const);
-            setOriginalNode(declList, input.declarationList);
-            setTextRange(declList, input.declarationList);
-            setCommentRange(declList, input.declarationList);
-        }
-        else {
-            declList = factory.updateVariableDeclarationList(input.declarationList, nodes);
-        }
-        return factory.updateVariableStatement(input, modifiers, declList);
-    }
 
     function recreateBindingPattern(d: BindingPattern): VariableDeclaration[] {
         return flatten<VariableDeclaration>(mapDefined(d.elements, e => recreateBindingElement(e)));
