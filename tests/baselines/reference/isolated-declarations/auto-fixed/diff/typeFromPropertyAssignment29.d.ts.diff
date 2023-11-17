@@ -1,4 +1,4 @@
-// [[Reason: undefined]] ////
+// [[Reason: Expando functions not supported and will be an error so differences are acceptable]] ////
 
 //// [tests/cases/conformance/salsa/typeFromPropertyAssignment29.ts] ////
 
@@ -46,9 +46,19 @@
      export {};
  }
  declare var ExpandoExpr2: (n: number) => string;
-@@ -62,10 +49,15 @@
-     };
- };
+@@ -55,17 +42,20 @@
+ declare class ExpandoClass {
+     n: number;
+ }
+ declare var n: number;
+-declare var ExpandoExpr3: {
+-    new (): {
+-        n: number;
+-    };
+-};
++declare class ExpandoExpr3 {
++    n: number;
++}
  declare var n: number;
  //# sourceMappingURL=typeFromPropertyAssignment29.d.ts.map
 +
@@ -62,7 +72,7 @@
  typeFromPropertyAssignment29.ts(78,14): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
  typeFromPropertyAssignment29.ts(81,30): error TS2339: Property 'prop' does not exist on type '(n: number) => string'.
  typeFromPropertyAssignment29.ts(81,50): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
-@@ -78,10 +70,12 @@
+@@ -78,10 +68,12 @@
  typeFromPropertyAssignment29.ts(101,30): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
  typeFromPropertyAssignment29.ts(101,50): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
  
@@ -76,7 +86,7 @@
      }
      ExpandoDecl.prop = 2
      ExpandoDecl.m = function(n: number) {
-@@ -120,8 +114,10 @@
+@@ -120,8 +112,10 @@
      
      }
      
@@ -87,7 +97,7 @@
          total: number;
      } {
          const nested = function (m: number) {
-@@ -132,8 +128,10 @@
+@@ -132,8 +126,10 @@
      }
      ExpandoNested.also = -1;
      
@@ -98,7 +108,7 @@
      }
      ExpandoMerge.p1 = 111
      namespace ExpandoMerge {
-@@ -145,8 +143,10 @@
+@@ -145,8 +141,10 @@
      var n: number = ExpandoMerge.p1 + ExpandoMerge.p2 + ExpandoMerge.p3 + ExpandoMerge(1);
      
      namespace Ns {

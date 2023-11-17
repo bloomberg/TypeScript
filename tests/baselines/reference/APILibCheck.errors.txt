@@ -1,5 +1,5 @@
-typescript.d.ts(9832,112): error TS2304: Cannot find name 'IsolatedEmitHost'.
-typescript.d.ts(9833,69): error TS2304: Cannot find name 'IsolatedEmitHost'.
+typescript.d.ts(9847,112): error TS2304: Cannot find name 'IsolatedEmitHost'.
+typescript.d.ts(9848,69): error TS2304: Cannot find name 'IsolatedEmitHost'.
 
 
 ==== index.ts (0 errors) ====

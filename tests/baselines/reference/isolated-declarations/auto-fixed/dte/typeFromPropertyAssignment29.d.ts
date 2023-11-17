@@ -152,11 +152,9 @@ declare class ExpandoClass {
     n: number;
 }
 declare var n: number;
-declare var ExpandoExpr3: {
-    new (): {
-        n: number;
-    };
-};
+declare class ExpandoExpr3 {
+    n: number;
+}
 declare var n: number;
 //# sourceMappingURL=typeFromPropertyAssignment29.d.ts.map
 
