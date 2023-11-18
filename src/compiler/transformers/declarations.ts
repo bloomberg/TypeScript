@@ -329,6 +329,7 @@ export function transformDeclarations(context: TransformationContext) {
     let errorFallbackNode: Declaration | undefined;
     let promotingClassExpression : ClassExpression | undefined;
     let newClassName : string | undefined;
+    const typeParameters = new Set<string>;
 
     let currentSourceFile: SourceFile;
     let refs: Map<NodeId, SourceFile>;
@@ -456,7 +457,10 @@ export function transformDeclarations(context: TransformationContext) {
             // to a classDeclaration, thus it will complaing about visibility of the class name.
             // Rather rewriting the whole class handling from the declaration emit separately for classExpressions,
             // we ignore these errors as they will be promoted and visible.
-            if (errorInfo && !(promotingClassExpression && promotingClassExpression.name?.escapedText === symbolAccessibilityResult.errorSymbolName)) {
+            if (errorInfo && 
+                !(promotingClassExpression && 
+                    (promotingClassExpression.name?.escapedText === symbolAccessibilityResult.errorSymbolName ||
+                     symbolAccessibilityResult.errorSymbolName && typeParameters?.has(symbolAccessibilityResult.errorSymbolName)))) {
                 if (errorInfo.typeName) {
                     context.addDiagnostic(createDiagnosticForNode(symbolAccessibilityResult.errorNode || errorInfo.errorNode, errorInfo.diagnosticMessage, getTextOfNode(errorInfo.typeName), symbolAccessibilityResult.errorSymbolName!, symbolAccessibilityResult.errorModuleName!));
                 }
@@ -2039,6 +2043,7 @@ export function transformDeclarations(context: TransformationContext) {
             for (const declaration of input.declarationList.declarations) {
                 if (isolatedDeclarations && declaration.initializer && isClassExpression(declaration.initializer) && isIdentifier(declaration.name)) {
                     const classExpr = declaration.initializer;
+                    let hasTypeParameterWithClassName = false;
                     promotingClassExpression = classExpr;
                     // We're generating declaration for class expressions that will be transformed into class declarations.
                     // Any type reference to the class name can only happen in type locations (as we only care about things that 
@@ -2046,11 +2051,12 @@ export function transformDeclarations(context: TransformationContext) {
                     // parameter has the same name. If that's the case we should not rename any identifier that has the same name 
                     // of the classes from replaceReferralToClassExpressionName. One other place that the class name can appear in 
                     // extends clause, but TS do not allow self reference within declaration so it'll be a separate error.
-                    if (!declaration.initializer.typeParameters?.some(
-                        (typeParameter) => typeParameter.name.escapedText === classExpr.name?.escapedText
-                    )) {
-                        newClassName = declaration.name.escapedText as string;
+                    for (const typeParameter of declaration.initializer.typeParameters || []) {
+                        const typeName = typeParameter.name.escapedText;
+                        if (typeName === classExpr.name?.escapedText) hasTypeParameterWithClassName = true;
+                        typeParameters.add(typeName as string);
                     }
+                    if (!hasTypeParameterWithClassName) newClassName = declaration.name.escapedText as string;
                     const classDecl = handleClassDeclaration(declaration.initializer);
                     if (classDecl) {
                         if (isArray(classDecl)) {
@@ -2060,6 +2066,7 @@ export function transformDeclarations(context: TransformationContext) {
                             classAndVariableDeclarations.push(classDecl);
                         }
                     }
+                    typeParameters.clear();
                     newClassName = undefined;
                     promotingClassExpression = undefined;
                     continue;
