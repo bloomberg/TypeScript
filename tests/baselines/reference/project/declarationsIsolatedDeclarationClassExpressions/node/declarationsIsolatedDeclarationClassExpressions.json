@@ -1,0 +1,20 @@
+{
+    "scenario": "declarations_IsolatedDeclarations promote class expressions to class declarations",
+    "projectRoot": "tests/cases/projects/declarations_IsolatedDeclarations",
+    "inputFiles": [
+        "classExpressions.ts"
+    ],
+    "declaration": true,
+    "isolatedDeclarations": true,
+    "baselineCheck": true,
+    "resolvedInputFiles": [
+        "lib.es5.d.ts",
+        "lib.decorators.d.ts",
+        "lib.decorators.legacy.d.ts",
+        "classExpressions.ts"
+    ],
+    "emittedFiles": [
+        "classExpressions.js",
+        "classExpressions.d.ts"
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "scenario": "declarations_IsolatedDeclarations promote class expressions to class declarations",
+    "projectRoot": "tests/cases/projects/declarations_IsolatedDeclarations",
+    "inputFiles": [
+        "classExpressions.ts"
+    ],
+    "declaration": true,
+    "isolatedDeclarations": true,
+    "baselineCheck": true
+}
