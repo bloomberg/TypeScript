@@ -3,6 +3,7 @@ import {
     createEmitDeclarationResolver,
     createGetCanonicalFileName,
     createPrinter,
+    createPrinterOptions,
     createSourceMapGenerator,
     createTextWriter,
     Diagnostic,
@@ -50,18 +51,7 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
     const transformer = transformDeclarations(transformationContext);
     const result = transformer(sourceFile);
 
-    const printer = createPrinter({
-        removeComments: compilerOptions.removeComments,
-        newLine: compilerOptions.newLine,
-        noEmitHelpers: true,
-        module: compilerOptions.module,
-        target: compilerOptions.target,
-        sourceMap: compilerOptions.declarationMap,
-        inlineSourceMap: compilerOptions.inlineSourceMap,
-        extendedDiagnostics: compilerOptions.extendedDiagnostics,
-        onlyPrintJsDocStyle: true,
-        omitBraceSourceMapPositions: true,
-    });
+    const printer = createPrinter(createPrinterOptions("declaration", compilerOptions));
 
     const writer = createTextWriter(getNewLineCharacter(compilerOptions));
     const declarationPath = getDeclarationEmitOutputFilePathWorker(

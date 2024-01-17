@@ -910,19 +910,10 @@ export function emitFiles(resolver: EmitResolver, host: EmitHost, targetSourceFi
         // Transform the source files
         const transform = transformNodes(resolver, host, factory, compilerOptions, [sourceFileOrBundle], scriptTransformers, /*allowDtsFiles*/ false);
 
-        const printerOptions: PrinterOptions = {
-            removeComments: compilerOptions.removeComments,
-            newLine: compilerOptions.newLine,
-            noEmitHelpers: compilerOptions.noEmitHelpers,
-            module: compilerOptions.module,
-            target: compilerOptions.target,
-            sourceMap: compilerOptions.sourceMap,
-            inlineSourceMap: compilerOptions.inlineSourceMap,
-            inlineSources: compilerOptions.inlineSources,
-            extendedDiagnostics: compilerOptions.extendedDiagnostics,
+        const printerOptions: PrinterOptions = createPrinterOptions("javascript", compilerOptions, {
             writeBundleFileInfo: !!bundleBuildInfo,
             relativeToBuildInfo,
-        };
+        });
 
         // Create a printer to print the nodes
         const printer = createPrinter(printerOptions, {
@@ -981,21 +972,12 @@ export function emitFiles(resolver: EmitResolver, host: EmitHost, targetSourceFi
         emitSkipped = emitSkipped || declBlocked;
         if (!declBlocked || forceDtsEmit) {
             Debug.assert(declarationTransform.transformed.length === 1, "Should only see one output from the decl transform");
-            const printerOptions: PrinterOptions = {
-                removeComments: compilerOptions.removeComments,
-                newLine: compilerOptions.newLine,
-                noEmitHelpers: true,
-                module: compilerOptions.module,
-                target: compilerOptions.target,
+            const printerOptions: PrinterOptions = createPrinterOptions("declaration", compilerOptions, {
                 sourceMap: !forceDtsEmit && compilerOptions.declarationMap,
-                inlineSourceMap: compilerOptions.inlineSourceMap,
-                extendedDiagnostics: compilerOptions.extendedDiagnostics,
-                onlyPrintJsDocStyle: true,
-                omitBraceSourceMapPositions: true,
                 writeBundleFileInfo: !!bundleBuildInfo,
                 recordInternalSection: !!bundleBuildInfo,
                 relativeToBuildInfo,
-            };
+            });
 
             const declarationPrinter = createPrinter(printerOptions, {
                 // resolver hooks
@@ -6704,6 +6686,28 @@ export function createPrinter(printerOptions: PrinterOptions = {}, handlers: Pri
     }
 }
 
+/** @internal */
+export function createPrinterOptions(printerKind: "javascript" | "declaration", compilerOptions: CompilerOptions, printerOptions: PrinterOptions = {}) {
+    return {
+        removeComments: compilerOptions.removeComments,
+        newLine: compilerOptions.newLine,
+        module: compilerOptions.module,
+        target: compilerOptions.target,
+        inlineSourceMap: compilerOptions.inlineSourceMap,
+        extendedDiagnostics: compilerOptions.extendedDiagnostics,
+        ...(printerKind === "declaration" ? {
+            sourceMap: compilerOptions.declarationMap, // compilerOptions.sourceMap
+            noEmitHelpers: true,
+            onlyPrintJsDocStyle: true,
+            omitBraceSourceMapPositions: true,
+        } : {
+            sourceMap: compilerOptions.sourceMap,
+            noEmitHelpers: compilerOptions.noEmitHelpers,
+            inlineSources: compilerOptions.inlineSources,
+        }),
+        ...printerOptions
+    }
+}
 function createBracketsMap() {
     const brackets: string[][] = [];
     brackets[ListFormat.Braces] = ["{", "}"];
