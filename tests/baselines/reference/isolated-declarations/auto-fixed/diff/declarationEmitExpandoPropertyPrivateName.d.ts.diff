@@ -18,5 +18,5 @@
 +//# sourceMappingURL=b.d.ts.map
  /// [Errors] ////
  
- b.ts(5,14): error TS2304: Cannot find name 'I'.
- b.ts(5,14): error TS4025: Exported variable 'val' has or is using private name 'I'.
+ b.ts(5,21): error TS2304: Cannot find name 'I'.
+ b.ts(5,21): error TS4025: Exported variable 'val' has or is using private name 'I'.

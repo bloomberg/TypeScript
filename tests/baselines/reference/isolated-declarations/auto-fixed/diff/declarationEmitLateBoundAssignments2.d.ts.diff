@@ -18,7 +18,7 @@
 @@ -69,11 +70,20 @@
  /// [Errors] ////
  
- declarationEmitLateBoundAssignments2.ts(17,9): error TS2733: Property 'C' was also declared here.
+ declarationEmitLateBoundAssignments2.ts(17,16): error TS2733: Property 'C' was also declared here.
  declarationEmitLateBoundAssignments2.ts(19,1): error TS2718: Duplicate property 'C'.
 +declarationEmitLateBoundAssignments2.ts(19,1): error TS9023: Assigning properties to functions without declaring them is not supported with --isolatedDeclarations. Add an explicit declaration for the properties assigned to this function.
 +declarationEmitLateBoundAssignments2.ts(22,1): error TS9023: Assigning properties to functions without declaring them is not supported with --isolatedDeclarations. Add an explicit declaration for the properties assigned to this function.

@@ -1,6 +1,7 @@
 // @strict: true
 // @declaration: true
 // @target: es6
+// @isolatedDeclarationFixedDiffReason: We cannot add typings for invalid property names.
 export function foo() {}
 foo.bar = 12;
 const _private = Symbol();
