@@ -5,21 +5,11 @@ type props = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "
 
 type manyprops = `${props}${props}`;
 
-export const c = null as any as {[K in manyprops]: {[K2 in manyprops]: `${K}.${K2}`}};
+export const c = () => null as any as {[K in manyprops]: {[K2 in manyprops]: `${K}.${K2}`}};
 
 //// [hugeDeclarationOutputGetsTruncatedWithError.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.c = void 0;
-exports.c = null;
-
-
-//// [hugeDeclarationOutputGetsTruncatedWithError.d.ts]
-type props = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z";
-type manyprops = `${props}${props}`;
-export declare const c: {
-    [K in manyprops]: {
-        [K2 in manyprops]: `${K}.${K2}`;
-    };
-};
-export {};
+var c = function () { return null; };
+exports.c = c;
