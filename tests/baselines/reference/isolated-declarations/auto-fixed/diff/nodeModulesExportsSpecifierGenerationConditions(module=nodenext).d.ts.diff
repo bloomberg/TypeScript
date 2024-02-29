@@ -31,7 +31,7 @@
      export const a = (await import("inner")).x();
 +                 ~
 +!!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-+!!! related TS9027 index.ts:3:14: Add a type annotation to the variable a.
++!!! related TS9028 index.ts:3:14: Add a type annotation to the variable a.
                        ~~~~~
  !!! error TS1378: Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', or 'nodenext', and the 'target' option is set to 'es2017' or higher.
                              ~~~~~~~~~~~~~~~

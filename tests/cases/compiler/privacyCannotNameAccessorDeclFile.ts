@@ -1,7 +1,7 @@
 // @target: ES5
 // @module: commonjs
 // @declaration: true
-
+// @isolatedDeclarationFixedDiffReason: explicit reference directives are ommitted.
 // @Filename: privacyCannotNameAccessorDeclFile_GlobalWidgets.ts
 declare module "GlobalWidgets" {
     export class Widget3 {

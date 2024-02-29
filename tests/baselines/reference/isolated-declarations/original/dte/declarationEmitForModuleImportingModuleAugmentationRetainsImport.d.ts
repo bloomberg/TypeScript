@@ -40,7 +40,7 @@ export declare class ParentThing implements ParentThing {
 /// [Errors] ////
 
 child1.ts(9,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-parent.ts(1,1): error TS9026: Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.
+parent.ts(1,1): error TS9027: Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.
 
 
 ==== child1.ts (1 errors) ====
@@ -55,14 +55,14 @@ parent.ts(1,1): error TS9026: Declaration emit for this file requires preserving
     export function child1(prototype: ParentThing) {
                     ~~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9031 child1.ts:9:17: Add a return type to the function declaration.
+!!! related TS9032 child1.ts:9:17: Add a return type to the function declaration.
         prototype.add = (a: number, b: number) => a + b;
     }
     
 ==== parent.ts (1 errors) ====
     import { child1 } from './child1'; // this import should still exist in some form in the output, since it augments this module
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9026: Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.
+!!! error TS9027: Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.
     
     export class ParentThing implements ParentThing {}
     

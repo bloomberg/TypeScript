@@ -1,6 +1,6 @@
 // @module: commonjs
 // @declaration: true
-
+// @isolatedDeclarationFixedDiffReason: explicit reference directives are ommitted.
 
 // @Filename: privacyFunctionCannotNameParameterTypeDeclFile_GlobalWidgets.ts
 declare module "GlobalWidgets" {

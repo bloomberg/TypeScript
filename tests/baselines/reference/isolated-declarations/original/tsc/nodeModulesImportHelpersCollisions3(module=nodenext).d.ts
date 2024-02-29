@@ -37,8 +37,8 @@ export { default } from "fs";
 
 /// [Errors] ////
 
-index.ts(2,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
-subfolder/index.ts(2,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+index.ts(2,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
+subfolder/index.ts(2,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
 subfolder/index.ts(2,9): error TS2343: This syntax requires an imported helper named '__importDefault' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
 
 
@@ -46,14 +46,14 @@ subfolder/index.ts(2,9): error TS2343: This syntax requires an imported helper n
     // cjs format file
     export {default} from "fs";
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
             ~~~~~~~
 !!! error TS2343: This syntax requires an imported helper named '__importDefault' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
 ==== index.ts (1 errors) ====
     // esm format file
     export {default} from "fs";
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
 ==== package.json (0 errors) ====
     {
         "name": "package",

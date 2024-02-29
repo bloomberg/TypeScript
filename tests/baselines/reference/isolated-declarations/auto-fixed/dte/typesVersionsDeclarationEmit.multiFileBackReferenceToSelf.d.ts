@@ -56,7 +56,7 @@ main.ts(5,14): error TS9010: Variable must have an explicit type annotation with
     export const vb = fb();
                  ~~
 !!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9027 main.ts:5:14: Add a type annotation to the variable vb.
+!!! related TS9028 main.ts:5:14: Add a type annotation to the variable vb.
     
 ==== node_modules/ext/package.json (0 errors) ====
     {

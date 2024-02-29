@@ -35,7 +35,7 @@ export type T<T> = Result<Error, T>;
 
 /// [Errors] ////
 
-src/datastore_result.ts(1,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to './lib/lib' with --isolatedDeclarations.
+src/datastore_result.ts(1,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to '../lib/lib.d.ts' with --isolatedDeclarations.
 
 
 ==== lib/lib.d.ts (0 errors) ====
@@ -48,7 +48,7 @@ src/datastore_result.ts(1,1): error TS9024: Declaration emit for this expression
 ==== src/datastore_result.ts (1 errors) ====
     import { Result } from "lib/result";
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to './lib/lib' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to '../lib/lib.d.ts' with --isolatedDeclarations.
     
     export type T<T> = Result<Error, T>;
     

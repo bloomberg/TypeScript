@@ -2,6 +2,7 @@
 // @module: node16,nodenext
 // @declaration: true
 // @outDir: out
+// @isolatedDeclarationFixedDiffReason: explicit reference directives are ommitted.
 // @filename: /node_modules/pkg/package.json
 {
     "name": "pkg",

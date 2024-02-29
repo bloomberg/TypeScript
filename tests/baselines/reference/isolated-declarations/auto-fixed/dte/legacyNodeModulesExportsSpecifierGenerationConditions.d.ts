@@ -47,8 +47,8 @@ index.ts(1,18): error TS9007: Function must have an explicit return type annotat
     export const a = async () => (await import("inner")).x();
                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9027 index.ts:1:14: Add a type annotation to the variable a.
-!!! related TS9030 index.ts:1:18: Add a return type to the function expression.
+!!! related TS9028 index.ts:1:14: Add a type annotation to the variable a.
+!!! related TS9031 index.ts:1:18: Add a return type to the function expression.
 ==== node_modules/inner/index.d.ts (0 errors) ====
     export { x } from "./other.js";
 ==== node_modules/inner/other.d.ts (0 errors) ====

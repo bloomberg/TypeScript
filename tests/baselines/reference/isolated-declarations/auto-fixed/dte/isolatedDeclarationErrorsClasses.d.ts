@@ -172,7 +172,7 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS7010: '[noAnnotationLiteralNa
 !!! error TS7006: Parameter 'value' implicitly has an 'any' type.
                                           ~~~~~
 !!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9033 isolatedDeclarationErrorsClasses.ts:48:9: Add a type to parameter of the set accessor declaration.
+!!! related TS9034 isolatedDeclarationErrorsClasses.ts:48:9: Add a type to parameter of the set accessor declaration.
     
         [("A" + "B") as "AB"] =  1;
         ~~~~~~~~~~~~~~~~~~~~~

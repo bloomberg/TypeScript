@@ -64,6 +64,6 @@ r/entry.ts(3,14): error TS9010: Variable must have an explicit type annotation w
 !!! error TS2742: The inferred type of 'x' cannot be named without a reference to 'foo/node_modules/nested'. This is likely not portable. A type annotation is necessary.
                  ~
 !!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9027 r/entry.ts:3:14: Add a type annotation to the variable x.
+!!! related TS9028 r/entry.ts:3:14: Add a type annotation to the variable x.
     export const y: RootProps = bar();
     

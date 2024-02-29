@@ -83,7 +83,7 @@ import "e";
 
 /// [Errors] ////
 
-e.ts(2,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to '.c' with --isolatedDeclarations.
+e.ts(2,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to 'c.d.ts' with --isolatedDeclarations.
 
 
 ==== a.ts (0 errors) ====
@@ -115,7 +115,7 @@ e.ts(2,1): error TS9024: Declaration emit for this expression requires adding a 
     import {A} from "./a";
     import {Cls} from "C";
     ~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to '.c' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to 'c.d.ts' with --isolatedDeclarations.
     
     A.prototype.getCls = function () { return undefined; }
     

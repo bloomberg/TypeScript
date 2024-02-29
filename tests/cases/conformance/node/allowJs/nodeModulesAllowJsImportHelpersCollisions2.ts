@@ -4,7 +4,6 @@
 // @allowJs: true
 // @checkJs: true
 // @outDir: out
-// @isolatedDeclarationFixedDiffReason: TSC adds type reference directives.
 // @isolatedDeclarationDiffReason:TSC adds type reference directives.
 // @filename: subfolder/index.ts
 // cjs format file

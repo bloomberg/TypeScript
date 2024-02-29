@@ -1,5 +1,4 @@
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: TSC adds type reference directives.
 // @filename: types/component.d.ts
 declare module '@namespace/component' {
     export class Foo {}

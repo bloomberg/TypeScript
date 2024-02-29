@@ -50,7 +50,7 @@ file1.ts(4,11): error TS9012: Property must have an explicit type annotation wit
         c3? = 1 as N;
               ~~~~~~
 !!! error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9029 file1.ts:4:5: Add a type annotation to the property c3.
+!!! related TS9030 file1.ts:4:5: Add a type annotation to the property c3.
         readonly r = 1;
         f = 2;
     }

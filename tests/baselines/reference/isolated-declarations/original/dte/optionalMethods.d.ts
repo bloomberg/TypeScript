@@ -110,7 +110,7 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
     function test1(x: Foo) {
              ~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9031 optionalMethods.ts:8:10: Add a return type to the function declaration.
+!!! related TS9032 optionalMethods.ts:8:10: Add a return type to the function declaration.
         x.a;
         x.b;
         x.f;
@@ -128,14 +128,14 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
         f() {
         ~
 !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9034 optionalMethods.ts:23:5: Add a return type to the method
+!!! related TS9035 optionalMethods.ts:23:5: Add a return type to the method
             return 1;
         }
         g?(): number;  // Body of optional method can be omitted
         h?() {
         ~
 !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9034 optionalMethods.ts:27:5: Add a return type to the method
+!!! related TS9035 optionalMethods.ts:27:5: Add a return type to the method
             return 2;
         }
     }
@@ -143,7 +143,7 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
     function test2(x: Bar) {
              ~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9031 optionalMethods.ts:32:10: Add a return type to the function declaration.
+!!! related TS9032 optionalMethods.ts:32:10: Add a return type to the function declaration.
         x.a;
         x.b;
         x.c;

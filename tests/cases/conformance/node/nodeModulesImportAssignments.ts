@@ -1,6 +1,5 @@
 // @module: node16,nodenext
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: TSC adds type reference directives.
 // @isolatedDeclarationDiffReason:TSC adds type reference directives.
 // @filename: subfolder/index.ts
 // cjs format file

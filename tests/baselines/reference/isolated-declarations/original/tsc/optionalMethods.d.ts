@@ -94,7 +94,7 @@ declare class Derived extends Base {
 /// [Errors] ////
 
 optionalMethods.ts(8,10): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-optionalMethods.ts(22,17): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+optionalMethods.ts(22,17): error TS9026: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
 optionalMethods.ts(23,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
 optionalMethods.ts(27,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
 optionalMethods.ts(32,10): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
@@ -111,7 +111,7 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
     function test1(x: Foo) {
              ~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9031 optionalMethods.ts:8:10: Add a return type to the function declaration.
+!!! related TS9032 optionalMethods.ts:8:10: Add a return type to the function declaration.
         x.a;
         x.b;
         x.f;
@@ -127,19 +127,19 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
         c? = 2;
         constructor(public d?: number, public e = 10) {}
                     ~~~~~~~~~~~~~~~~~
-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
-!!! related TS9028 optionalMethods.ts:22:17: Add a type annotation to the parameter d.
+!!! error TS9026: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+!!! related TS9029 optionalMethods.ts:22:17: Add a type annotation to the parameter d.
         f() {
         ~
 !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9034 optionalMethods.ts:23:5: Add a return type to the method
+!!! related TS9035 optionalMethods.ts:23:5: Add a return type to the method
             return 1;
         }
         g?(): number;  // Body of optional method can be omitted
         h?() {
         ~
 !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9034 optionalMethods.ts:27:5: Add a return type to the method
+!!! related TS9035 optionalMethods.ts:27:5: Add a return type to the method
             return 2;
         }
     }
@@ -147,7 +147,7 @@ optionalMethods.ts(32,10): error TS9007: Function must have an explicit return t
     function test2(x: Bar) {
              ~~~~~
 !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9031 optionalMethods.ts:32:10: Add a return type to the function declaration.
+!!! related TS9032 optionalMethods.ts:32:10: Add a return type to the function declaration.
         x.a;
         x.b;
         x.c;

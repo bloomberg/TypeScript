@@ -599,6 +599,7 @@ class IsolatedDeclarationTest extends CompilerTestBase {
         ts.Diagnostics.Enum_member_initializers_must_be_computable_without_references_to_external_symbols_with_isolatedDeclarations,
         ts.Diagnostics.Extends_clause_can_t_contain_an_expression_with_isolatedDeclarations,
         ts.Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations,
+        ts.Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_path_reference_directive_to_0_with_isolatedDeclarations,
         ts.Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
         ts.Diagnostics.Objects_that_contain_shorthand_properties_can_t_be_inferred_with_isolatedDeclarations,
         ts.Diagnostics.Objects_that_contain_spread_assignments_can_t_be_inferred_with_isolatedDeclarations,
@@ -732,22 +733,18 @@ export class FixedIsolatedDeclarationTest extends IsolatedDeclarationTest {
         fixerOptions.isolatedDeclarations = true;
         const fixResults = fixTestFiles(env.fileSystem, env.programFileNames, fixerOptions);
 
-        const hasReferenceDirectiveErrors = fixResults.success && fixResults.unfixedDiagnostics.some(d => FixedIsolatedDeclarationTest.referenceDirectiveErrors.has(d.code));
         for (const file of env.allFiles) {
             const content = env.fileSystem.readFileSync(file.unitName, "utf-8");
             file.content = content;
         }
 
-        if (!fixResults.success || hasReferenceDirectiveErrors) {
+        if (!fixResults.success) {
             return undefined;
         }
         env.fileSystem.makeReadonly();
         env.fileSystem = env.fileSystem.shadow();
         return env;
     }
-    private static referenceDirectiveErrors = new Set([
-        ts.Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations.code,
-    ]);
 
     protected override get baselinePath() {
         return "isolated-declarations/auto-fixed";

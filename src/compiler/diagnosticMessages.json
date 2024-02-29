@@ -6818,57 +6818,61 @@
         "category": "Error",
         "code": 9024
     },
-    "Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.": {
+    "Declaration emit for this expression requires adding a path reference directive to '{0}' with --isolatedDeclarations.": {
         "category": "Error",
         "code": 9025
     },
-    "Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.": {
+    "Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.": {
         "category": "Error",
         "code": 9026
     },
-    "Add a type annotation to the variable {0}.": {
+    "Declaration emit for this file requires preserving this import for augmentations. This is not supported with --isolatedDeclarations.": {
         "category": "Error",
         "code": 9027
     },
-    "Add a type annotation to the parameter {0}.": {
+    "Add a type annotation to the variable {0}.": {
         "category": "Error",
         "code": 9028
     },
-    "Add a type annotation to the property {0}.": {
+    "Add a type annotation to the parameter {0}.": {
         "category": "Error",
         "code": 9029
     },
-    "Add a return type to the function expression.": {
+    "Add a type annotation to the property {0}.": {
         "category": "Error",
         "code": 9030
     },
-    "Add a return type to the function declaration.": {
+    "Add a return type to the function expression.": {
         "category": "Error",
         "code": 9031
     },
-    "Add a return type to the get accessor declaration.": {
+    "Add a return type to the function declaration.": {
         "category": "Error",
         "code": 9032
     },
-    "Add a type to parameter of the set accessor declaration.": {
+    "Add a return type to the get accessor declaration.": {
         "category": "Error",
         "code": 9033
     },
-    "Add a return type to the method": {
+    "Add a type to parameter of the set accessor declaration.": {
         "category": "Error",
         "code": 9034
     },
-    "Add a type assertion to this expression to make type type explicit.": {
+    "Add a return type to the method": {
         "category": "Error",
         "code": 9035
     },
-    "Move the expression in default export to a variable and add a type annotation to it.": {
+    "Add a type assertion to this expression to make type type explicit.": {
         "category": "Error",
         "code": 9036
     },
-    "Default exports can't be inferred with --isolatedDeclarations.": {
+    "Move the expression in default export to a variable and add a type annotation to it.": {
         "category": "Error",
         "code": 9037
+    },
+    "Default exports can't be inferred with --isolatedDeclarations.": {
+        "category": "Error",
+        "code": 9038
     },
     "JSX attributes must only be assigned a non-empty 'expression'.": {
         "category": "Error",
@@ -7223,8 +7227,11 @@
     "Annotate types of properties expando function in a namespace": {
       "category": "Message",
       "code": 90071
-  },
-
+    },
+    "Add triple slash directives for import resolution": {
+      "category": "Message",
+      "code": 90072
+    },
     "Convert function to an ES2015 class": {
         "category": "Message",
         "code": 95001

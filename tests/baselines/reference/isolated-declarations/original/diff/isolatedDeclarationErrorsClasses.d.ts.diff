@@ -70,7 +70,7 @@
              ~~~~~~~~~~~~~~~~~~~~~~~~
 -!!! error TS9014: Computed properties must be number or string literals, variables or dotted expressions with --isolatedDeclarations.
 +!!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-+!!! related TS9032 isolatedDeclarationErrorsClasses.ts:46:9: Add a return type to the get accessor declaration.
++!!! related TS9033 isolatedDeclarationErrorsClasses.ts:46:9: Add a return type to the get accessor declaration.
      
          set [noParamAnnotationStringName](value) { }
              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,7 +81,7 @@
  !!! error TS7006: Parameter 'value' implicitly has an 'any' type.
 +                                          ~~~~~
 +!!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-+!!! related TS9033 isolatedDeclarationErrorsClasses.ts:48:9: Add a type to parameter of the set accessor declaration.
++!!! related TS9034 isolatedDeclarationErrorsClasses.ts:48:9: Add a type to parameter of the set accessor declaration.
      
          [("A" + "B") as "AB"] =  1;
          ~~~~~~~~~~~~~~~~~~~~~

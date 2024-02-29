@@ -29,11 +29,11 @@
 +    export const va = fa();
 +                 ~~
 +!!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-+!!! related TS9027 main.ts:4:14: Add a type annotation to the variable va.
++!!! related TS9028 main.ts:4:14: Add a type annotation to the variable va.
 +    export const va2 = fa2();
 +                 ~~~
 +!!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-+!!! related TS9027 main.ts:5:14: Add a type annotation to the variable va2.
++!!! related TS9028 main.ts:5:14: Add a type annotation to the variable va2.
 +    
 +==== node_modules/ext/package.json (0 errors) ====
 +    {

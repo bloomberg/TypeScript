@@ -2,7 +2,7 @@
 // @declaration: true
 // @module: amd
 // @outFile: out/datastore.bundle.js
-// @isolatedDeclarationFixedDiffReason: TSC adds type reference directives.
+// @isolatedDeclarationFixedDiffReason: --noResolve prevents reference directives from being generated.
 // @isolatedDeclarationDiffReason: TSC adds type reference directives.
 // @filename: lib/lib.d.ts
 declare module "lib/result" {

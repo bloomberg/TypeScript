@@ -31,7 +31,7 @@ export declare const bar: invalid;
     export const bar = foo();
                  ~~~
 !!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9027 /mod2.ts:2:14: Add a type annotation to the variable bar.
+!!! related TS9028 /mod2.ts:2:14: Add a type annotation to the variable bar.
     
 ==== /types/lib/index.d.ts (0 errors) ====
     interface Lib { x }

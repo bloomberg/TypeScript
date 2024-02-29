@@ -29,11 +29,11 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS7010: '[noAnnotationLiteralNa
         field = 1 + 1;
         ~~~~~
 !!! error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9029 isolatedDeclarationErrorsClasses.ts:3:5: Add a type annotation to the property field.
+!!! related TS9030 isolatedDeclarationErrorsClasses.ts:3:5: Add a type annotation to the property field.
         method() {}
         ~~~~~~
 !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9034 isolatedDeclarationErrorsClasses.ts:4:5: Add a return type to the method
+!!! related TS9035 isolatedDeclarationErrorsClasses.ts:4:5: Add a return type to the method
     
         methodOk(): void {}
     
@@ -42,16 +42,16 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS7010: '[noAnnotationLiteralNa
 !!! error TS7006: Parameter 'p' implicitly has an 'any' type.
                      ~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9028 isolatedDeclarationErrorsClasses.ts:8:18: Add a type annotation to the parameter p.
+!!! related TS9029 isolatedDeclarationErrorsClasses.ts:8:18: Add a type annotation to the parameter p.
         methodParams2(p = 1 + 1): void {}
                           ~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9028 isolatedDeclarationErrorsClasses.ts:9:19: Add a type annotation to the parameter p.
+!!! related TS9029 isolatedDeclarationErrorsClasses.ts:9:19: Add a type annotation to the parameter p.
     
         get getOnly() { return 0 }
             ~~~~~~~
 !!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9032 isolatedDeclarationErrorsClasses.ts:11:9: Add a return type to the get accessor declaration.
+!!! related TS9033 isolatedDeclarationErrorsClasses.ts:11:9: Add a return type to the get accessor declaration.
         set setOnly(value) { }
             ~~~~~~~
 !!! error TS7032: Property 'setOnly' implicitly has type 'any', because its set accessor lacks a parameter type annotation.
@@ -59,13 +59,13 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS7010: '[noAnnotationLiteralNa
 !!! error TS7006: Parameter 'value' implicitly has an 'any' type.
                     ~~~~~
 !!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9033 isolatedDeclarationErrorsClasses.ts:12:9: Add a type to parameter of the set accessor declaration.
+!!! related TS9034 isolatedDeclarationErrorsClasses.ts:12:9: Add a type to parameter of the set accessor declaration.
     
         get getSetBad() { return 0 }
             ~~~~~~~~~
 !!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
-!!! related TS9033 isolatedDeclarationErrorsClasses.ts:15:9: Add a type to parameter of the set accessor declaration.
-!!! related TS9032 isolatedDeclarationErrorsClasses.ts:14:9: Add a return type to the get accessor declaration.
+!!! related TS9034 isolatedDeclarationErrorsClasses.ts:15:9: Add a type to parameter of the set accessor declaration.
+!!! related TS9033 isolatedDeclarationErrorsClasses.ts:14:9: Add a return type to the get accessor declaration.
         set getSetBad(value) { }
                       ~~~~~
 !!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.

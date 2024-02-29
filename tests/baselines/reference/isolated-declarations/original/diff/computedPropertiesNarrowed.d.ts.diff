@@ -28,19 +28,19 @@
          [x]: 1 // error narrow type !== declared type
 -        ~~~
 -!!! error TS9014: Computed properties must be number or string literals, variables or dotted expressions with --isolatedDeclarations.
--!!! related TS9027 computedPropertiesNarrowed.ts:4:12: Add a type annotation to the variable o.
+-!!! related TS9028 computedPropertiesNarrowed.ts:4:12: Add a type annotation to the variable o.
      }
      
      
      const y: 0 = 0
 @@ -77,11 +72,8 @@
  !!! error TS9010: Variable must have an explicit type annotation with --isolatedDeclarations.
- !!! related TS9027 computedPropertiesNarrowed.ts:20:5: Add a type annotation to the variable u.
+ !!! related TS9028 computedPropertiesNarrowed.ts:20:5: Add a type annotation to the variable u.
      export let o4 = {
          [u]: 1 // Should error, nut a unique symbol
 -        ~~~
 -!!! error TS9014: Computed properties must be number or string literals, variables or dotted expressions with --isolatedDeclarations.
--!!! related TS9027 computedPropertiesNarrowed.ts:21:12: Add a type annotation to the variable o4.
+-!!! related TS9028 computedPropertiesNarrowed.ts:21:12: Add a type annotation to the variable o4.
      }
      
      export let o5  ={

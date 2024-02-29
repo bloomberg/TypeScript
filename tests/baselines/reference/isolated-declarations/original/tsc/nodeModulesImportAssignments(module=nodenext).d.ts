@@ -48,9 +48,9 @@ export import fs2 = require("fs");
 
 /// [Errors] ////
 
-file.ts(6,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
-index.ts(4,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
-subfolder/index.ts(4,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+file.ts(6,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
+index.ts(4,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
+subfolder/index.ts(4,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
 
 
 ==== subfolder/index.ts (1 errors) ====
@@ -59,14 +59,14 @@ subfolder/index.ts(4,1): error TS9024: Declaration emit for this expression requ
     fs.readFile;
     export import fs2 = require("fs");
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
 ==== index.ts (1 errors) ====
     // esm format file
     import fs = require("fs");
     fs.readFile;
     export import fs2 = require("fs");
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
 ==== file.ts (1 errors) ====
     // esm format file
     const __require = null;
@@ -75,7 +75,7 @@ subfolder/index.ts(4,1): error TS9024: Declaration emit for this expression requ
     fs.readFile;
     export import fs2 = require("fs");
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
 ==== package.json (0 errors) ====
     {
         "name": "package",

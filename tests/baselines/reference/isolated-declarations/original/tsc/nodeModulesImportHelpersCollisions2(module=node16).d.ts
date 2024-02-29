@@ -41,9 +41,9 @@ export * as fs from "fs";
 
 /// [Errors] ////
 
-index.ts(2,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
+index.ts(2,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
 subfolder/index.ts(2,1): error TS2343: This syntax requires an imported helper named '__exportStar' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
-subfolder/index.ts(2,1): error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+subfolder/index.ts(2,1): error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
 subfolder/index.ts(3,1): error TS2343: This syntax requires an imported helper named '__importStar' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
 
 
@@ -53,7 +53,7 @@ subfolder/index.ts(3,1): error TS2343: This syntax requires an imported helper n
     ~~~~~~~~~~~~~~~~~~~
 !!! error TS2343: This syntax requires an imported helper named '__exportStar' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
     ~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to './types' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to '../types.d.ts' with --isolatedDeclarations.
     export * as fs from "fs";
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 !!! error TS2343: This syntax requires an imported helper named '__importStar' which does not exist in 'tslib'. Consider upgrading your version of 'tslib'.
@@ -61,7 +61,7 @@ subfolder/index.ts(3,1): error TS2343: This syntax requires an imported helper n
     // esm format file
     export * from "fs";
     ~~~~~~~~~~~~~~~~~~~
-!!! error TS9024: Declaration emit for this expression requires adding a type reference directive to '.types.js' with --isolatedDeclarations.
+!!! error TS9025: Declaration emit for this expression requires adding a path reference directive to 'types.d.ts' with --isolatedDeclarations.
     export * as fs from "fs";
 ==== package.json (0 errors) ====
     {

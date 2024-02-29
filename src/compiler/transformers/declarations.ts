@@ -721,8 +721,8 @@ export function transformDeclarations(context: TransformationContext) {
                     if (!isPresentInSource && isolatedDeclarations) {
                         context.addDiagnostic(createDiagnosticForNode(
                             requestingNode,
-                            Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations,
-                            specifier,
+                            Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_path_reference_directive_to_0_with_isolatedDeclarations,
+                            fileName,
                         ));
                     }
                     references.push({ pos: -1, end: -1, fileName });
