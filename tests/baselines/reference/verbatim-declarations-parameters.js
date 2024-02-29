@@ -27,8 +27,7 @@ export function foo1(
 //// [verbatim-declarations-parameters.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Foo = void 0;
-exports.foo1 = foo1;
+exports.foo1 = exports.Foo = void 0;
 var Foo = /** @class */ (function () {
     function Foo(
     // Type node is accurate, preserve
@@ -51,6 +50,7 @@ resolveType, requiredParam) {
     if (reuseTypeNode2 === void 0) { reuseTypeNode2 = {}; }
     if (resolveType === void 0) { resolveType = {}; }
 }
+exports.foo1 = foo1;
 
 
 //// [verbatim-declarations-parameters.d.ts]
