@@ -5,8 +5,8 @@ function ExpandoDecl(n: number): string {
     return n.toString();
 }
 declare namespace ExpandoDecl {
-    var prop: number;
-    var m: (n: number) => number;
+    export var prop: number;
+    export var m: (n: number) => number;
 }
 ExpandoDecl.prop = 2
 ExpandoDecl.m = function(n: number) {
@@ -56,7 +56,7 @@ function ExpandoNested(n: number): {
     return nested;
 }
 declare namespace ExpandoNested {
-    var also: number;
+    export var also: number;
 }
 ExpandoNested.also = -1;
 
@@ -64,9 +64,7 @@ function ExpandoMerge(n: number): number {
     return n * 100;
 }
 declare namespace ExpandoMerge {
-    var p1: number;
-    var p2: number;
-    var p3: number;
+    export var p1: number;
 }
 ExpandoMerge.p1 = 111
 namespace ExpandoMerge {
@@ -80,7 +78,7 @@ var n = ExpandoMerge.p1 + ExpandoMerge.p2 + ExpandoMerge.p3 + ExpandoMerge(1);
 namespace Ns {
     function ExpandoNamespace(): void {}
     declare namespace ExpandoNamespace {
-        var p6: number;
+        export var p6: number;
     }
     ExpandoNamespace.p6 = 42;
     export function foo(): typeof ExpandoNamespace {
@@ -158,8 +156,6 @@ declare namespace ExpandoNested {
 declare function ExpandoMerge(n: number): number;
 declare namespace ExpandoMerge {
     var p1: number;
-    var p2: number;
-    var p3: number;
 }
 declare namespace ExpandoMerge {
     var p2: number;
@@ -187,21 +183,21 @@ declare var n: number;
 //# sourceMappingURL=typeFromPropertyAssignment29.d.ts.map
 /// [Errors] ////
 
-typeFromPropertyAssignment29.ts(6,9): error TS2300: Duplicate identifier 'm'.
+typeFromPropertyAssignment29.ts(6,16): error TS2300: Duplicate identifier 'm'.
 typeFromPropertyAssignment29.ts(9,13): error TS2300: Duplicate identifier 'm'.
-typeFromPropertyAssignment29.ts(92,14): error TS2339: Property 'prop' does not exist on type '(n: number) => string'.
-typeFromPropertyAssignment29.ts(93,14): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
-typeFromPropertyAssignment29.ts(96,22): error TS2339: Property 'prop' does not exist on type '(n: number) => string'.
-typeFromPropertyAssignment29.ts(96,42): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
-typeFromPropertyAssignment29.ts(102,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
-typeFromPropertyAssignment29.ts(103,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
-typeFromPropertyAssignment29.ts(106,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
-typeFromPropertyAssignment29.ts(106,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
-typeFromPropertyAssignment29.ts(109,20): error TS9022: Inference from class expressions is not supported with --isolatedDeclarations.
-typeFromPropertyAssignment29.ts(112,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
-typeFromPropertyAssignment29.ts(113,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
-typeFromPropertyAssignment29.ts(116,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
-typeFromPropertyAssignment29.ts(116,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
+typeFromPropertyAssignment29.ts(90,14): error TS2339: Property 'prop' does not exist on type '(n: number) => string'.
+typeFromPropertyAssignment29.ts(91,14): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
+typeFromPropertyAssignment29.ts(94,22): error TS2339: Property 'prop' does not exist on type '(n: number) => string'.
+typeFromPropertyAssignment29.ts(94,42): error TS2339: Property 'm' does not exist on type '(n: number) => string'.
+typeFromPropertyAssignment29.ts(100,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
+typeFromPropertyAssignment29.ts(101,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
+typeFromPropertyAssignment29.ts(104,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
+typeFromPropertyAssignment29.ts(104,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
+typeFromPropertyAssignment29.ts(107,20): error TS9022: Inference from class expressions is not supported with --isolatedDeclarations.
+typeFromPropertyAssignment29.ts(110,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
+typeFromPropertyAssignment29.ts(111,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
+typeFromPropertyAssignment29.ts(114,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
+typeFromPropertyAssignment29.ts(114,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
 
 
 ==== typeFromPropertyAssignment29.ts (15 errors) ====
@@ -209,9 +205,9 @@ typeFromPropertyAssignment29.ts(116,42): error TS2339: Property 'm' does not exi
         return n.toString();
     }
     declare namespace ExpandoDecl {
-        var prop: number;
-        var m: (n: number) => number;
-            ~
+        export var prop: number;
+        export var m: (n: number) => number;
+                   ~
 !!! error TS2300: Duplicate identifier 'm'.
     }
     ExpandoDecl.prop = 2
@@ -264,7 +260,7 @@ typeFromPropertyAssignment29.ts(116,42): error TS2339: Property 'm' does not exi
         return nested;
     }
     declare namespace ExpandoNested {
-        var also: number;
+        export var also: number;
     }
     ExpandoNested.also = -1;
     
@@ -272,9 +268,7 @@ typeFromPropertyAssignment29.ts(116,42): error TS2339: Property 'm' does not exi
         return n * 100;
     }
     declare namespace ExpandoMerge {
-        var p1: number;
-        var p2: number;
-        var p3: number;
+        export var p1: number;
     }
     ExpandoMerge.p1 = 111
     namespace ExpandoMerge {
@@ -288,7 +282,7 @@ typeFromPropertyAssignment29.ts(116,42): error TS2339: Property 'm' does not exi
     namespace Ns {
         function ExpandoNamespace(): void {}
         declare namespace ExpandoNamespace {
-            var p6: number;
+            export var p6: number;
         }
         ExpandoNamespace.p6 = 42;
         export function foo(): typeof ExpandoNamespace {

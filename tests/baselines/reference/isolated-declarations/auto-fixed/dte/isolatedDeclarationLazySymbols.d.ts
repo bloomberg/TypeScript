@@ -5,7 +5,7 @@ export function foo(): void {
 
 }
 export declare namespace foo {
-    var b: string;
+    export var b: string;
 }
 
 const o = {
@@ -57,7 +57,7 @@ export {};
 //# sourceMappingURL=isolatedDeclarationLazySymbols.d.ts.map
 /// [Errors] ////
 
-isolatedDeclarationLazySymbols.ts(5,9): error TS2733: Property 'b' was also declared here.
+isolatedDeclarationLazySymbols.ts(5,16): error TS2733: Property 'b' was also declared here.
 isolatedDeclarationLazySymbols.ts(16,1): error TS2718: Duplicate property 'b'.
 isolatedDeclarationLazySymbols.ts(16,1): error TS9023: Assigning properties to functions without declaring them is not supported with --isolatedDeclarations. Add an explicit declaration for the properties assigned to this function.
 isolatedDeclarationLazySymbols.ts(19,5): error TS1166: A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.
@@ -68,8 +68,8 @@ isolatedDeclarationLazySymbols.ts(19,5): error TS1166: A computed property name 
     
     }
     export declare namespace foo {
-        var b: string;
-            ~
+        export var b: string;
+                   ~
 !!! error TS2733: Property 'b' was also declared here.
     }
     

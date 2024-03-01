@@ -8,7 +8,7 @@ import {f} from "./a";
 
 export function q(): void {}
 export declare namespace q {
-    var val: I;
+    export var val: I;
 }
 q.val = f();
 
@@ -31,8 +31,8 @@ export declare namespace q {
 //# sourceMappingURL=b.d.ts.map
 /// [Errors] ////
 
-b.ts(5,14): error TS2304: Cannot find name 'I'.
-b.ts(5,14): error TS4025: Exported variable 'val' has or is using private name 'I'.
+b.ts(5,21): error TS2304: Cannot find name 'I'.
+b.ts(5,21): error TS4025: Exported variable 'val' has or is using private name 'I'.
 
 
 ==== a.ts (0 errors) ====
@@ -43,10 +43,10 @@ b.ts(5,14): error TS4025: Exported variable 'val' has or is using private name '
     
     export function q(): void {}
     export declare namespace q {
-        var val: I;
-                 ~
+        export var val: I;
+                        ~
 !!! error TS2304: Cannot find name 'I'.
-                 ~
+                        ~
 !!! error TS4025: Exported variable 'val' has or is using private name 'I'.
     }
     q.val = f();

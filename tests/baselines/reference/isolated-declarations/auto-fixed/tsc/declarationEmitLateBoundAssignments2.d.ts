@@ -11,13 +11,13 @@ const emoji = "🤷‍♂️"
 
 export function decl(): void {}
 export declare namespace decl {
-    var B: string
+    export var B: string
 }
 decl["B"] = 'foo'
 
 export function decl2(): void {}
 export declare namespace decl2 {
-    var C: number
+    export var C: number
 }
 decl2[c] = 0
 
@@ -178,7 +178,7 @@ export declare const arrow10: {
 //# sourceMappingURL=declarationEmitLateBoundAssignments2.d.ts.map
 /// [Errors] ////
 
-declarationEmitLateBoundAssignments2.ts(17,9): error TS2733: Property 'C' was also declared here.
+declarationEmitLateBoundAssignments2.ts(17,16): error TS2733: Property 'C' was also declared here.
 declarationEmitLateBoundAssignments2.ts(19,1): error TS2718: Duplicate property 'C'.
 
 
@@ -193,14 +193,14 @@ declarationEmitLateBoundAssignments2.ts(19,1): error TS2718: Duplicate property 
     
     export function decl(): void {}
     export declare namespace decl {
-        var B: string
+        export var B: string
     }
     decl["B"] = 'foo'
     
     export function decl2(): void {}
     export declare namespace decl2 {
-        var C: number
-            ~
+        export var C: number
+                   ~
 !!! error TS2733: Property 'C' was also declared here.
     }
     decl2[c] = 0
