@@ -241,55 +241,55 @@ function withChanges<T>(
         const nodeWithDiag = getTokenAtPosition(sourceFile, span.start);
         const expandoFunction = findExpandoFunction(nodeWithDiag);
         if (expandoFunction) {
-          if (isFunctionDeclaration(expandoFunction)) {
-            return createNamespaceForExpandoProperties(expandoFunction);
-          }
-          return fixupForIsolatedDeclarations(expandoFunction);
+            if (isFunctionDeclaration(expandoFunction)) {
+                return createNamespaceForExpandoProperties(expandoFunction);
+            }
+            return fixupForIsolatedDeclarations(expandoFunction);
         }
-        const nodeWithNoType = findNearestParentWithTypeAnnotation(nodeWithDiag)
+        const nodeWithNoType = findNearestParentWithTypeAnnotation(nodeWithDiag);
         if (nodeWithNoType) {
             return fixupForIsolatedDeclarations(nodeWithNoType);
         }
         return undefined;
     }
 
-    function createNamespaceForExpandoProperties(expandoFunc: FunctionDeclaration): DiagnosticOrDiagnosticAndArguments|undefined {
-      if (expandoPropertiesAdded?.has(expandoFunc)) return undefined;
-      expandoPropertiesAdded?.add(expandoFunc);
-      const type = typeChecker.getTypeAtLocation(expandoFunc);
-      const elements = typeChecker.getPropertiesOfType(type);
-      if (!expandoFunc.name || elements.length === 0) return undefined;
-      const newProperties = []
-      for (const symbol of elements) {
-        if (!isIdentifierText(symbol.name, program.getCompilerOptions().target)) continue;
-        // If there's an existing variable declaration for this property - skip.
-        if (symbol.valueDeclaration && isVariableDeclaration(symbol.valueDeclaration)) continue;
-        newProperties.push(factory.createVariableStatement(
-          [factory.createModifier(SyntaxKind.ExportKeyword)],
-          factory.createVariableDeclarationList(
-            [factory.createVariableDeclaration(
-              symbol.name,
-              /*exclamationToken*/ undefined,
-              typeToTypeNode(typeChecker.getTypeOfSymbol(symbol), expandoFunc),
-              /*initializer*/ undefined,
-              )],
-          )
-        ));
-      }
-      if (newProperties.length === 0) return undefined;
-      const modifiers: ModifierLike[] = [];
-      if (expandoFunc.modifiers?.some((modifier)=> modifier.kind === SyntaxKind.ExportKeyword)) {
-        modifiers.push(factory.createModifier(SyntaxKind.ExportKeyword))
-      }
-      modifiers.push(factory.createModifier(SyntaxKind.DeclareKeyword));
-      const namespace = factory.createModuleDeclaration(
-        modifiers,
-        expandoFunc.name,
-        factory.createModuleBlock(newProperties),
-        /*flags*/ NodeFlags.Namespace | NodeFlags.ExportContext | NodeFlags.Ambient | NodeFlags.ContextFlags,
-      );
-      changeTracker.insertNodeAfter(sourceFile, expandoFunc, namespace);
-      return [Diagnostics.Annotate_types_of_properties_expando_function_in_a_namespace];
+    function createNamespaceForExpandoProperties(expandoFunc: FunctionDeclaration): DiagnosticOrDiagnosticAndArguments | undefined {
+        if (expandoPropertiesAdded?.has(expandoFunc)) return undefined;
+        expandoPropertiesAdded?.add(expandoFunc);
+        const type = typeChecker.getTypeAtLocation(expandoFunc);
+        const elements = typeChecker.getPropertiesOfType(type);
+        if (!expandoFunc.name || elements.length === 0) return undefined;
+        const newProperties = [];
+        for (const symbol of elements) {
+            if (!isIdentifierText(symbol.name, program.getCompilerOptions().target)) continue;
+            // If there's an existing variable declaration for this property - skip.
+            if (symbol.valueDeclaration && isVariableDeclaration(symbol.valueDeclaration)) continue;
+            newProperties.push(factory.createVariableStatement(
+                [factory.createModifier(SyntaxKind.ExportKeyword)],
+                factory.createVariableDeclarationList(
+                    [factory.createVariableDeclaration(
+                        symbol.name,
+                        /*exclamationToken*/ undefined,
+                        typeToTypeNode(typeChecker.getTypeOfSymbol(symbol), expandoFunc),
+                        /*initializer*/ undefined,
+                    )],
+                ),
+            ));
+        }
+        if (newProperties.length === 0) return undefined;
+        const modifiers: ModifierLike[] = [];
+        if (expandoFunc.modifiers?.some(modifier => modifier.kind === SyntaxKind.ExportKeyword)) {
+            modifiers.push(factory.createModifier(SyntaxKind.ExportKeyword));
+        }
+        modifiers.push(factory.createModifier(SyntaxKind.DeclareKeyword));
+        const namespace = factory.createModuleDeclaration(
+            modifiers,
+            expandoFunc.name,
+            factory.createModuleBlock(newProperties),
+            /*flags*/ NodeFlags.Namespace | NodeFlags.ExportContext | NodeFlags.Ambient | NodeFlags.ContextFlags,
+        );
+        changeTracker.insertNodeAfter(sourceFile, expandoFunc, namespace);
+        return [Diagnostics.Annotate_types_of_properties_expando_function_in_a_namespace];
     }
 
     function needsParenthesizedExpressionForAssertion(node: Expression) {
@@ -571,12 +571,12 @@ function withChanges<T>(
             if (some(properties, p => p.valueDeclaration === expandoDeclaration || p.valueDeclaration === expandoDeclaration.parent)) {
                 const fn = targetType.symbol.valueDeclaration;
                 if (fn) {
-                  if (isFunctionExpressionOrArrowFunction(fn) && isVariableDeclaration(fn.parent)) {
-                    return fn.parent;
-                  }
-                  if (isFunctionDeclaration(fn)) {
-                    return fn;
-                  }
+                    if (isFunctionExpressionOrArrowFunction(fn) && isVariableDeclaration(fn.parent)) {
+                        return fn.parent;
+                    }
+                    if (isFunctionDeclaration(fn)) {
+                        return fn;
+                    }
                 }
             }
         }

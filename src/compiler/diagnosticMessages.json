@@ -7189,9 +7189,9 @@
         "code": 90070
     },
     "Annotate types of properties expando function in a namespace": {
-      "category": "Message",
-      "code": 90071
-  },
+        "category": "Message",
+        "code": 90071
+    },
 
     "Convert function to an ES2015 class": {
         "category": "Message",

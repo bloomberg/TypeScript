@@ -47374,7 +47374,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             hasSyntacticModifier(parameter, ModifierFlags.ParameterPropertyModifier);
     }
 
-    function isExpandoFunction(node: Declaration): boolean {
+    function isExpandoFunctionDeclaration(node: Declaration): boolean {
         const declaration = getParseTreeNode(node, (n): n is FunctionDeclaration | VariableDeclaration => isFunctionDeclaration(n) || isVariableDeclaration(n));
         if (!declaration) {
             return false;

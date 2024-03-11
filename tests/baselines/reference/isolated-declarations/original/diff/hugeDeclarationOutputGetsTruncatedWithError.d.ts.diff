@@ -1,0 +1,17 @@
+// [[Reason: Semantically invalid. TSC does not emit .d.ts]] ////
+
+//// [tests/cases/compiler/hugeDeclarationOutputGetsTruncatedWithError.ts] ////
+
+===================================================================
+--- TSC	declarations
++++ DTE	declarations
+@@ -1,5 +1,9 @@
+ 
++
++//// [hugeDeclarationOutputGetsTruncatedWithError.d.ts]
++export declare const c: () => invalid;
++
+ /// [Errors] ////
+ 
+ hugeDeclarationOutputGetsTruncatedWithError.ts(5,18): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ 

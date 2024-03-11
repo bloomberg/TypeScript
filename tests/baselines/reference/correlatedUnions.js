@@ -568,9 +568,9 @@ declare function makeCompleteLookupMapping<T extends ReadonlyArray<any>, Attr ex
     [Item in T[number] as Item[Attr]]: Item;
 };
 declare const ALL_BARS: readonly [{
-    readonly name: "a";
+    readonly name: 'a';
 }, {
-    readonly name: "b";
+    readonly name: 'b';
 }];
 declare const BAR_LOOKUP: {
     a: {

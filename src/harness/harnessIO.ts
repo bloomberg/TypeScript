@@ -1065,8 +1065,8 @@ export namespace Compiler {
         expectNull?: boolean,
     ) {
         if (expectNull) {
-          // eslint-disable-next-line no-null/no-null
-          return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts.diff`), /*actual*/ null);
+            // eslint-disable-next-line no-null/no-null
+            return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts.diff`), /*actual*/ null);
         }
         const Diff = require("diff");
         const dteContent = declarationContent(dteDeclarationFiles, tsSources, dteDiagnostics, prettyErrors);
@@ -1129,8 +1129,8 @@ export namespace Compiler {
         expectNull?: boolean,
     ) {
         if (expectNull) {
-          // eslint-disable-next-line no-null/no-null
-          return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts`), /*actual*/ null);
+            // eslint-disable-next-line no-null/no-null
+            return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts`), /*actual*/ null);
         }
 
         let code = "//// [" + header + "] ////\r\n\r\n";

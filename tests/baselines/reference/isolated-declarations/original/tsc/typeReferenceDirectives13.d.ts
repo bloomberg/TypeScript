@@ -19,7 +19,6 @@ declare let $: { x: number }
 
 
 //// [/app.d.ts]
-/// <reference types="lib" />
 export interface A {
     x: () => typeof $;
 }

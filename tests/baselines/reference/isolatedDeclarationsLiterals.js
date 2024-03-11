@@ -128,9 +128,9 @@ export declare const constObject: {
     /** Value Of 1 */
     readonly one: 1;
     /** Value Of 0o1 */
-    readonly oneOctal: 1;
+    readonly oneOctal: 0o1;
     /** Value Of 0x1 */
-    readonly oneHex: 1;
+    readonly oneHex: 0x1;
     /** Value Of +1 */
     readonly pOne: 1;
     /** Value Of -1 */
@@ -143,22 +143,22 @@ export declare const constObject: {
     /** Value Of "1" */
     readonly oneStrDoubleQuote: "1";
     /** Value Of '1' */
-    readonly oneStrSingleQuote: "1";
+    readonly oneStrSingleQuote: '1';
     /** Value Of `1` */
-    readonly oneStrTemplate: "1";
+    readonly oneStrTemplate: `1`;
     /** A method */
     readonly method: () => void;
 };
 export declare const one = 1;
-export declare const oneOctal = 1;
-export declare const oneHex = 1;
+export declare const oneOctal = 0o1;
+export declare const oneHex = 0x1;
 export declare const pOne = 1;
 export declare const mOne = -1;
 export declare const onen = 1n;
 export declare const mOnen = -1n;
 export declare const oneStrDoubleQuote = "1";
-export declare const oneStrSingleQuote = "1";
-export declare const oneStrTemplate = "1";
+export declare const oneStrSingleQuote = '1';
+export declare const oneStrTemplate = `1`;
 export declare const mutableObject: {
     /** Value Of 1 */
     one: number;

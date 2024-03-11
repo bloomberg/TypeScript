@@ -34,13 +34,13 @@ exports.Bar = Bar;
 //// [file2.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Bar2 = exports.foo = void 0;
+exports.Bar2 = void 0;
+exports.foo = foo;
 function foo(p) {
     if (p === void 0) { p = function (ip, v) {
         if (ip === void 0) { ip = 10; }
     }; }
 }
-exports.foo = foo;
 var Bar2 = /** @class */ (function () {
     function Bar2() {
         this.r = 1;

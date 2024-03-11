@@ -25,7 +25,7 @@ export class Bar2 {
 type N = 1;
 export declare class Bar {
     c?: readonly [N] | undefined;
-    c3?: invalid | undefined;
+    c3?: invalid;
     readonly r = 1;
     f: number;
 }
@@ -40,7 +40,7 @@ export declare class Bar2 {
 
 /// [Errors] ////
 
-file1.ts(4,11): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
+file1.ts(4,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
 
 
 ==== file1.ts (1 errors) ====
@@ -48,7 +48,7 @@ file1.ts(4,11): error TS9012: Property must have an explicit type annotation wit
     export class Bar {
         c? = [2 as N] as const;
         c3? = 1 as N;
-              ~~~~~~
+        ~~
 !!! error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9029 file1.ts:4:5: Add a type annotation to the property c3.
         readonly r = 1;

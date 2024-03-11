@@ -1,5 +1,6 @@
 // @strictNullChecks: true
 // @declaration: true
+// @isolatedDeclarationDiffReason: Implicit undefined in parameter can only be detected by TSC.
 
 type Map = {} & { [P in string]: any }
 type MapOrUndefined = Map | undefined | "dummy"

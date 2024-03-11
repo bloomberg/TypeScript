@@ -44,7 +44,6 @@ interface RegExp {
 interface IArguments {
 }
 //// [file1.d.ts]
-/// <reference lib="dom" />
 export declare interface HTMLElement {
     field: string;
 }

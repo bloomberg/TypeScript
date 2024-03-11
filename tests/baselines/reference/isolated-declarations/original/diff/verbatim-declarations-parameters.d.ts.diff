@@ -1,0 +1,59 @@
+// [[Reason: Implicit undefined in parameter can only be detected by TSC.]] ////
+
+//// [tests/cases/compiler/verbatim-declarations-parameters.ts] ////
+
+===================================================================
+--- TSC	declarations
++++ DTE	declarations
+@@ -7,22 +7,20 @@
+ type MapOrUndefined = Map | undefined | "dummy";
+ export declare class Foo {
+     reuseTypeNode?: Map | undefined;
+     reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">;
+-    resolveType?: invalid;
+-    constructor(reuseTypeNode?: Map | undefined, reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">, resolveType?: invalid);
++    resolveType?: Map;
++    constructor(reuseTypeNode?: Map | undefined, reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">, resolveType?: Map);
+ }
+-export declare function foo1(reuseTypeNode: Map | undefined, reuseTypeNode2: Exclude<MapOrUndefined, "dummy">, resolveType: invalid, requiredParam: number): invalid;
++export declare function foo1(reuseTypeNode: Map | undefined, reuseTypeNode2: Exclude<MapOrUndefined, "dummy">, resolveType: Map, requiredParam: number): invalid;
+ export {};
+ 
+ /// [Errors] ////
+ 
+-verbatim-declarations-parameters.ts(9,5): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ verbatim-declarations-parameters.ts(13,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+-verbatim-declarations-parameters.ts(18,5): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ 
+ 
+-==== verbatim-declarations-parameters.ts (3 errors) ====
++==== verbatim-declarations-parameters.ts (1 errors) ====
+     type Map = {} & { [P in string]: any }
+     type MapOrUndefined = Map | undefined | "dummy"
+     export class Foo {
+       constructor(
+@@ -30,11 +28,8 @@
+         public reuseTypeNode?: Map | undefined,
+         public reuseTypeNode2?: Exclude<MapOrUndefined, "dummy">,
+         // Resolve type node, requires adding | undefined
+         public resolveType?: Map,
+-        ~~~~~~~~~~~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 verbatim-declarations-parameters.ts:9:5: Add a type annotation to the parameter resolveType.
+       ) { }
+     }
+     
+     export function foo1(
+@@ -45,11 +40,8 @@
+         reuseTypeNode: Map | undefined = {},
+         reuseTypeNode2: Exclude<MapOrUndefined, "dummy">  = {},
+         // Resolve type node, requires adding | undefined
+         resolveType: Map = {}, 
+-        ~~~~~~~~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 verbatim-declarations-parameters.ts:18:5: Add a type annotation to the parameter resolveType.
+         requiredParam: number) {
+     
+     }
+     
+\ No newline at end of file

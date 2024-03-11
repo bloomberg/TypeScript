@@ -1,0 +1,195 @@
+// [[Reason: Implicit undefined in parameter can only be detected by TSC.]] ////
+
+//// [tests/cases/compiler/verbatim-declarations-assertions.ts] ////
+
+===================================================================
+--- TSC	declarations
++++ DTE	declarations
+@@ -6,16 +6,16 @@
+ };
+ export declare let vLet: P;
+ export declare const vConst: P;
+ export declare function fn(p?: P): invalid;
+-export declare function fnWithRequiredDefaultParam(p: invalid, req: number): invalid;
++export declare function fnWithRequiredDefaultParam(p: P, req: number): invalid;
+ export declare class C {
+     ctorField: P;
+     field: P;
+     optField?: invalid;
+     readonly roFiled: P;
+     method(p?: P): invalid;
+-    methodWithRequiredDefault(p: invalid, req: number): invalid;
++    methodWithRequiredDefault(p: P, req: number): invalid;
+     constructor(ctorField?: P);
+ }
+ export {};
+ 
+@@ -50,9 +50,11 @@
+ };
+ export declare function fn(p?: {} & {
+     name: string;
+ }): invalid;
+-export declare function fnWithRequiredDefaultParam(p: invalid, req: number): invalid;
++export declare function fnWithRequiredDefaultParam(p: {} & {
++    name: string;
++}, req: number): invalid;
+ export declare class C {
+     ctorField: {} & {
+         name: string;
+     };
+@@ -64,9 +66,11 @@
+     };
+     method(p?: {} & {
+         name: string;
+     }): invalid;
+-    methodWithRequiredDefault(p: invalid, req: number): invalid;
++    methodWithRequiredDefault(p: {} & {
++        name: string;
++    }, req: number): invalid;
+     constructor(ctorField?: {} & {
+         name: string;
+     });
+     get x(): invalid;
+@@ -83,15 +87,15 @@
+ };
+ export declare let vLet: P;
+ export declare const vConst: P;
+ export declare function fn(p?: P): invalid;
+-export declare function fnWithRequiredDefaultParam(p: invalid, req: number): invalid;
++export declare function fnWithRequiredDefaultParam(p: P, req: number): invalid;
+ export declare class C {
+     ctorField: P;
+     field: P;
+     readonly roFiled: P;
+     method(p?: P): invalid;
+-    methodWithRequiredDefault(p: invalid, req: number): invalid;
++    methodWithRequiredDefault(p: P, req: number): invalid;
+     constructor(ctorField?: P);
+ }
+ declare const _default: P;
+ export default _default;
+@@ -99,32 +103,26 @@
+ /// [Errors] ////
+ 
+ angularAssertionToTypeReferences.ts(6,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ angularAssertionToTypeReferences.ts(8,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+-angularAssertionToTypeReferences.ts(8,44): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ angularAssertionToTypeReferences.ts(12,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
+ angularAssertionToTypeReferences.ts(14,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ angularAssertionToTypeReferences.ts(15,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+-angularAssertionToTypeReferences.ts(15,31): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ assertToOtherTypes.ts(11,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
+ assertToOtherTypes.ts(12,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
+ assertToTypeLiteral.ts(4,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeLiteral.ts(6,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+-assertToTypeLiteral.ts(6,44): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ assertToTypeLiteral.ts(11,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeLiteral.ts(12,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+-assertToTypeLiteral.ts(12,31): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ assertToTypeLiteral.ts(16,9): error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeLiteral.ts(17,11): error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeReferences.ts(6,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeReferences.ts(8,17): error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+-assertToTypeReferences.ts(8,44): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ assertToTypeReferences.ts(13,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ assertToTypeReferences.ts(14,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+-assertToTypeReferences.ts(14,31): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+ 
+ 
+-==== assertToTypeReferences.ts (6 errors) ====
++==== assertToTypeReferences.ts (4 errors) ====
+     type P = { } & { name: string }
+     
+     export let vLet = null! as P
+     export const vConst = null! as P
+@@ -137,11 +135,8 @@
+     export function fnWithRequiredDefaultParam(p = null! as P, req: number) {}
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9031 assertToTypeReferences.ts:8:17: Add a return type to the function declaration.
+-                                               ~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 assertToTypeReferences.ts:8:44: Add a type annotation to the parameter p.
+     
+     export class C {
+         field = null! as P
+         readonly roFiled = null! as P;
+@@ -152,18 +147,15 @@
+         methodWithRequiredDefault(p = null! as P, req: number) {}
+         ~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9034 assertToTypeReferences.ts:14:5: Add a return type to the method
+-                                  ~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 assertToTypeReferences.ts:14:31: Add a type annotation to the parameter p.
+     
+         constructor(public ctorField = null! as P) {}
+     }
+     
+     export default null! as P;
+     
+-==== assertToTypeLiteral.ts (8 errors) ====
++==== assertToTypeLiteral.ts (6 errors) ====
+     export let vLet = null! as {} & { name: string }
+     export const vConst = null! as {} & { name: string }
+     
+     export function fn(p = null! as {} & { name: string }) {}
+@@ -174,11 +166,8 @@
+     export function fnWithRequiredDefaultParam(p = null! as {} & { name: string }, req: number) {}
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9031 assertToTypeLiteral.ts:6:17: Add a return type to the function declaration.
+-                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 assertToTypeLiteral.ts:6:44: Add a type annotation to the parameter p.
+     
+     export class C {
+         field = null! as {} & { name: string }
+         readonly roFiled = null! as {} & { name: string };
+@@ -189,11 +178,8 @@
+         methodWithRequiredDefault(p = null! as {} & { name: string }, req: number) {}
+         ~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9034 assertToTypeLiteral.ts:12:5: Add a return type to the method
+-                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 assertToTypeLiteral.ts:12:31: Add a type annotation to the parameter p.
+     
+         constructor(public ctorField = null! as {} & { name: string }) {}
+     
+         get x() { return null! as {} & { name: string } }
+@@ -241,9 +227,9 @@
+         reuseType8? = null! as `${string}-ok` | `${string}-ok`;
+         reuseType9? = null! as this | this;
+     }
+     
+-==== angularAssertionToTypeReferences.ts (7 errors) ====
++==== angularAssertionToTypeReferences.ts (5 errors) ====
+     type P = { } & { name: string }
+     
+     export let vLet = <P>null!
+     export const vConst = <P>null!
+@@ -256,11 +242,8 @@
+     export function fnWithRequiredDefaultParam(p = <P>null!, req: number) {}
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9007: Function must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9031 angularAssertionToTypeReferences.ts:8:17: Add a return type to the function declaration.
+-                                               ~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 angularAssertionToTypeReferences.ts:8:44: Add a type annotation to the parameter p.
+     
+     export class C {
+         field = <P>null!
+         optField? = <P>null!
+@@ -275,10 +258,7 @@
+         methodWithRequiredDefault(p = <P>null!, req: number) {}
+         ~~~~~~~~~~~~~~~~~~~~~~~~~
+ !!! error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
+ !!! related TS9034 angularAssertionToTypeReferences.ts:15:5: Add a return type to the method
+-                                  ~~~~~~~~~~~~
+-!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+-!!! related TS9028 angularAssertionToTypeReferences.ts:15:31: Add a type annotation to the parameter p.
+     
+         constructor(public ctorField = <P>null!) {}
+     }
+\ No newline at end of file

@@ -1,5 +1,6 @@
 // @declaration: true
 // @strict: true,false
+// @isolatedDeclarationDiffReason: Implicit undefined in parameter can only be detected by TSC.
 
 // @fileName: assertToTypeReferences.ts
 type P = { } & { name: string }

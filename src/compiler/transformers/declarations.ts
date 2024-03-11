@@ -1,5 +1,4 @@
 import {
-    __String,
     AccessorDeclaration,
     addRelatedInfo,
     AllAccessorDeclarations,
@@ -19,7 +18,6 @@ import {
     canHaveModifiers,
     canProduceDiagnostics,
     ClassDeclaration,
-    clonePrimitiveLiteralValue,
     compact,
     ComputedPropertyName,
     concatenate,
@@ -88,7 +86,6 @@ import {
     getThisParameter,
     hasDynamicName,
     hasEffectiveModifier,
-    hasEffectiveReadonlyModifier,
     hasExtension,
     hasJSDocNodes,
     HasModifiers,
@@ -116,6 +113,7 @@ import {
     isComputedPropertyName,
     isConstTypeReference,
     isDeclaration,
+    isDeclarationReadonly,
     isEntityName,
     isEntityNameExpression,
     isExpandoPropertyDeclaration,
@@ -149,7 +147,6 @@ import {
     isMethodSignature,
     isModifier,
     isModuleDeclaration,
-    isNamedDeclaration,
     isOmittedExpression,
     isOptionalDeclaration,
     isParameter,
@@ -178,6 +175,7 @@ import {
     isTypeQueryNode,
     isUnionTypeNode,
     isVarAwaitUsing,
+    isVarConstLike,
     isVariableDeclaration,
     isVarUsing,
     KeywordTypeSyntaxKind,
@@ -260,6 +258,7 @@ import {
     TypeReferenceNode,
     unescapeLeadingUnderscores,
     UnionTypeNode,
+    unwrapParenthesizedExpression,
     VariableDeclaration,
     VariableDeclarationList,
     VariableLikeDeclaration,
@@ -304,11 +303,11 @@ export function transformDeclarations(context: TransformationContext) {
     let needsScopeFixMarker = false;
     let resultHasScopeMarker = false;
     let enclosingDeclaration: Node;
-    let necessaryTypeReferences: Map<string, TypeReferenceInformation> | undefined;
+    let necessaryTypeReferences: Set<[specifier: string, mode: ResolutionMode]> | undefined;
     let lateMarkedStatements: LateVisibilityPaintedStatement[] | undefined;
     let lateStatementReplacementMap: Map<NodeId, VisitResult<LateVisibilityPaintedStatement | ExportAssignment | undefined>>;
     let suppressNewDiagnosticContexts: boolean;
-    let exportedModulesFromDeclarationEmit: Map<Symbol, ImportReferenceInformation> | undefined;
+    let exportedModulesFromDeclarationEmit: Symbol[] | undefined;
 
     const { factory } = context;
     const host = context.getEmitHost();
@@ -328,11 +327,10 @@ export function transformDeclarations(context: TransformationContext) {
     };
     let errorNameNode: DeclarationName | undefined;
     let errorFallbackNode: Declaration | undefined;
-    let referenceRequestingNode: Node | undefined;
 
     let currentSourceFile: SourceFile;
-    let refs: Map<NodeId, ModuleReferenceInformation>;
-    let libs: Set<string>;
+    let refs: Map<NodeId, SourceFile>;
+    let libs: Map<string, boolean>;
     let emittedImports: readonly AnyImportSyntax[] | undefined; // must be declared in container so it can be `undefined` while transformer's first pass
     const resolver = context.getEmitResolver();
     const options = context.getCompilerOptions();
@@ -340,49 +338,29 @@ export function transformDeclarations(context: TransformationContext) {
     const strictNullChecks = getStrictOptionValue(options, "strictNullChecks");
     return transformRoot;
 
-    function recordTypeReferenceDirectivesIfNecessary(typeReferenceDirectives: readonly [specifier: string, mode: ResolutionMode][] | undefined, isPresentInSource: boolean, requestingNode = referenceRequestingNode): void {
+    function recordTypeReferenceDirectivesIfNecessary(typeReferenceDirectives: readonly [specifier: string, mode: ResolutionMode][] | undefined): void {
         if (!typeReferenceDirectives) {
             return;
         }
-        necessaryTypeReferences ??= new Map();
-        for (const [specifier, mode] of typeReferenceDirectives) {
-            const referenceKey = specifier + mode;
-            if (!necessaryTypeReferences.has(referenceKey)) {
-                Debug.assert(isPresentInSource || (requestingNode !== undefined), "If reference is added, we should know why it was added");
-                const existingReference = isPresentInSource ?
-                    { specifier, requestingNode: undefined, mode, isPresentInSource } :
-                    { specifier, requestingNode: requestingNode!, mode, isPresentInSource };
-                necessaryTypeReferences.set(referenceKey, existingReference);
-            }
+        necessaryTypeReferences = necessaryTypeReferences || new Set();
+        for (const ref of typeReferenceDirectives) {
+            necessaryTypeReferences.add(ref);
         }
     }
 
-    function recordExportedModuleFromDeclarationEmit(symbol: Symbol, isPresentInSource: boolean, requestingNode = referenceRequestingNode) {
-        Debug.assert(isPresentInSource || (requestingNode !== undefined), "If reference comes from source, the requesting node must be missing, otherwise it must exist");
-        exportedModulesFromDeclarationEmit ??= new Map();
-        if (!exportedModulesFromDeclarationEmit.has(symbol)) {
-            exportedModulesFromDeclarationEmit.set(symbol, isPresentInSource ? { isPresentInSource, symbol, requestingNode: undefined } : { isPresentInSource, symbol, requestingNode: requestingNode! });
-        }
-    }
     function trackReferencedAmbientModule(node: ModuleDeclaration, symbol: Symbol) {
         // If it is visible via `// <reference types="..."/>`, then we should just use that
         const directives = resolver.getTypeReferenceDirectivesForSymbol(symbol, SymbolFlags.All);
         if (length(directives)) {
-            return recordTypeReferenceDirectivesIfNecessary(directives, /*isPresentInSource*/ false);
+            return recordTypeReferenceDirectivesIfNecessary(directives);
         }
         // Otherwise we should emit a path-based reference
         const container = getSourceFileOfNode(node);
-        Debug.assert(referenceRequestingNode, "We should kow the requesting node for a module reference");
-        const containerId = getOriginalNodeId(container);
-        if (!refs.has(containerId)) {
-            refs.set(getOriginalNodeId(container), { sourceFile: container, requestingNode: referenceRequestingNode, isPresentInSource: false });
-        }
+        refs.set(getOriginalNodeId(container), container);
     }
 
     function trackReferencedAmbientModuleFromImport(node: ImportDeclaration | ExportDeclaration | ImportEqualsDeclaration | ImportTypeNode) {
         const moduleSpecifier = tryGetModuleSpecifierFromDeclaration(node);
-        const savedReferenceRequestingNode = referenceRequestingNode;
-        referenceRequestingNode = node;
         const symbol = moduleSpecifier && resolver.tryFindAmbientModule(moduleSpecifier);
         if (symbol?.declarations) {
             for (const decl of symbol.declarations) {
@@ -391,7 +369,6 @@ export function transformDeclarations(context: TransformationContext) {
                 }
             }
         }
-        referenceRequestingNode = savedReferenceRequestingNode;
     }
 
     function handleSymbolAccessibilityError(symbolAccessibilityResult: SymbolAccessibilityResult) {
@@ -427,14 +404,14 @@ export function transformDeclarations(context: TransformationContext) {
 
     function trackExternalModuleSymbolOfImportTypeNode(symbol: Symbol) {
         if (!isBundledEmit) {
-            recordExportedModuleFromDeclarationEmit(symbol, /*isPresentInSource*/ false);
+            (exportedModulesFromDeclarationEmit || (exportedModulesFromDeclarationEmit = [])).push(symbol);
         }
     }
 
     function trackSymbol(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags) {
         if (symbol.flags & SymbolFlags.TypeParameter) return false;
         const issuedDiagnostic = handleSymbolAccessibilityError(resolver.isSymbolAccessible(symbol, enclosingDeclaration, meaning, /*shouldComputeAliasToMarkVisible*/ true));
-        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForSymbol(symbol, meaning), /*isPresentInSource*/ false);
+        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForSymbol(symbol, meaning));
         return issuedDiagnostic;
     }
 
@@ -510,11 +487,8 @@ export function transformDeclarations(context: TransformationContext) {
                 : Diagnostics.Declaration_emit_for_this_file_requires_using_private_name_0_An_explicit_type_annotation_may_unblock_declaration_emit,
             errorNode: s.errorNode || sourceFile,
         }));
-        const oldReferenceRequestingNode = referenceRequestingNode;
-        referenceRequestingNode = sourceFile;
         const result = resolver.getDeclarationStatementsForSourceFile(sourceFile, declarationEmitNodeBuilderFlags, symbolTracker, bundled);
         getSymbolAccessibilityDiagnostic = oldDiag;
-        referenceRequestingNode = oldReferenceRequestingNode;
         return result;
     }
 
@@ -529,7 +503,7 @@ export function transformDeclarations(context: TransformationContext) {
         if (node.kind === SyntaxKind.Bundle) {
             isBundledEmit = true;
             refs = new Map();
-            libs = new Set();
+            libs = new Map();
             let hasNoDefaultLib = false;
             const bundle = factory.createBundle(
                 map(node.sourceFiles, sourceFile => {
@@ -592,12 +566,8 @@ export function transformDeclarations(context: TransformationContext) {
         lateMarkedStatements = undefined;
         lateStatementReplacementMap = new Map();
         necessaryTypeReferences = undefined;
-        recordTypeReferenceDirectivesIfNecessary(
-            node.typeReferenceDirectives.map(f => [f.fileName, f.resolutionMode ?? currentSourceFile.impliedNodeFormat]),
-            /*isPresentInSource*/ true,
-        );
         refs = collectReferences(currentSourceFile, new Map());
-        libs = collectLibs(currentSourceFile, new Set());
+        libs = collectLibs(currentSourceFile, new Map());
         const references: FileReference[] = [];
         const outputFilePath = getDirectoryPath(normalizeSlashes(getOutputPathsFor(node, host, /*forceDtsPaths*/ true).declarationFilePath!));
         const referenceVisitor = mapReferencesIntoArray(references, outputFilePath);
@@ -616,8 +586,12 @@ export function transformDeclarations(context: TransformationContext) {
                 combinedStatements = setTextRange(factory.createNodeArray([...combinedStatements, createEmptyExports(factory)]), combinedStatements);
             }
         }
-        const updated = factory.updateSourceFile(node, combinedStatements, /*isDeclarationFile*/ true, references, getFileReferencesForUsedTypeReferences(), node.hasNoDefaultLib, getLibReferences());
-        updated.exportedModulesFromDeclarationEmit = exportedModulesFromDeclarationEmit && [...exportedModulesFromDeclarationEmit.keys()];
+        const updated = factory.updateSourceFile(node, combinedStatements, /*isDeclarationFile*/ true, 
+            isolatedDeclarations ? []: references,
+            isolatedDeclarations ? []: getFileReferencesForUsedTypeReferences(), 
+            node.hasNoDefaultLib, 
+            isolatedDeclarations ? []: getLibReferences());
+        updated.exportedModulesFromDeclarationEmit = exportedModulesFromDeclarationEmit;
         return updated;
 
         function getLibReferences() {
@@ -625,42 +599,32 @@ export function transformDeclarations(context: TransformationContext) {
         }
 
         function getFileReferencesForUsedTypeReferences() {
-            return necessaryTypeReferences ? mapDefined(arrayFrom(necessaryTypeReferences.values()), getFileReferenceForSpecifierModeTuple) : [];
+            return necessaryTypeReferences ? mapDefined(arrayFrom(necessaryTypeReferences.keys()), getFileReferenceForSpecifierModeTuple) : [];
         }
 
-        function getFileReferenceForSpecifierModeTuple({ specifier, mode, requestingNode, isPresentInSource }: TypeReferenceInformation): FileReference | undefined {
+        function getFileReferenceForSpecifierModeTuple([typeName, mode]: [specifier: string, mode: ResolutionMode]): FileReference | undefined {
             // Elide type references for which we have imports
             if (emittedImports) {
                 for (const importStatement of emittedImports) {
                     if (isImportEqualsDeclaration(importStatement) && isExternalModuleReference(importStatement.moduleReference)) {
                         const expr = importStatement.moduleReference.expression;
-                        if (isStringLiteralLike(expr) && expr.text === specifier) {
+                        if (isStringLiteralLike(expr) && expr.text === typeName) {
                             return undefined;
                         }
                     }
-                    else if (isImportDeclaration(importStatement) && isStringLiteral(importStatement.moduleSpecifier) && importStatement.moduleSpecifier.text === specifier) {
+                    else if (isImportDeclaration(importStatement) && isStringLiteral(importStatement.moduleSpecifier) && importStatement.moduleSpecifier.text === typeName) {
                         return undefined;
                     }
                 }
             }
-            if (!isPresentInSource && isolatedDeclarations) {
-                context.addDiagnostic(createDiagnosticForNode(
-                    requestingNode,
-                    Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations,
-                    specifier,
-                ));
-            }
-            return { fileName: specifier, pos: -1, end: -1, ...(mode ? { resolutionMode: mode } : undefined) };
+            return { fileName: typeName, pos: -1, end: -1, ...(mode ? { resolutionMode: mode } : undefined) };
         }
 
-        function mapReferencesIntoArray(references: FileReference[], outputFilePath: string): (moduleReference: ModuleReferenceInformation) => void {
-            return ({ sourceFile: file, isPresentInSource, requestingNode }) => {
-                if (exportedModulesFromDeclarationEmit) {
-                    const importReference = exportedModulesFromDeclarationEmit?.get(file.symbol);
+        function mapReferencesIntoArray(references: FileReference[], outputFilePath: string): (file: SourceFile) => void {
+            return file => {
+                if (exportedModulesFromDeclarationEmit?.includes(file.symbol)) {
                     // Already have an import declaration resolving to this file
-                    if (importReference) {
-                        return;
-                    }
+                    return;
                 }
 
                 let declFileName: string;
@@ -685,7 +649,7 @@ export function transformDeclarations(context: TransformationContext) {
                         // If some compiler option/symlink/whatever allows access to the file containing the ambient module declaration
                         // via a non-relative name, emit a type reference directive to that non-relative name, rather than
                         // a relative path to the declaration file
-                        recordTypeReferenceDirectivesIfNecessary([[specifier, /*mode*/ undefined]], isPresentInSource, requestingNode);
+                        recordTypeReferenceDirectivesIfNecessary([[specifier, /*mode*/ undefined]]);
                         return;
                     }
 
@@ -706,13 +670,6 @@ export function transformDeclarations(context: TransformationContext) {
                         return;
                     }
 
-                    if (!isPresentInSource && isolatedDeclarations) {
-                        context.addDiagnostic(createDiagnosticForNode(
-                            requestingNode,
-                            Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations,
-                            specifier,
-                        ));
-                    }
                     references.push({ pos: -1, end: -1, fileName });
                 }
             };
@@ -767,7 +724,7 @@ export function transformDeclarations(context: TransformationContext) {
                 elem.dotDotDotToken,
                 elem.propertyName,
                 filterBindingPatternInitializers(elem.name),
-                shouldPrintWithInitializer(elem) ? elem.initializer : undefined,
+                /*initializer*/ undefined,
             );
         }
     }
@@ -793,13 +750,23 @@ export function transformDeclarations(context: TransformationContext) {
         return newParam;
     }
 
-    function shouldPrintWithInitializer(node: Node) {
-        return canHaveLiteralInitializer(node) && !node.type && resolver.isLiteralConstDeclaration(getParseTreeNode(node) as CanHaveLiteralInitializer); // TODO: Make safe
+    function shouldPrintWithInitializer(node: Node): node is CanHaveLiteralInitializer & { initializer: Expression; } {
+        return canHaveLiteralInitializer(node)
+            && !node.type
+            && !!node.initializer
+            && resolver.isLiteralConstDeclaration(getParseTreeNode(node) as CanHaveLiteralInitializer); // TODO: Make safe
     }
 
     function ensureNoInitializer(node: CanHaveLiteralInitializer) {
         if (shouldPrintWithInitializer(node)) {
-            return resolver.createLiteralConstValue(getParseTreeNode(node) as CanHaveLiteralInitializer, symbolTracker); // TODO: Make safe
+            const unwrappedInitializer = unwrapParenthesizedExpression(node.initializer);
+            if (isPrimitiveLiteralValue(unwrappedInitializer)) {
+                if (unwrappedInitializer.kind === SyntaxKind.PrefixUnaryExpression && unwrappedInitializer.operator === SyntaxKind.PlusToken) {
+                    return unwrappedInitializer.operand;
+                }
+                return unwrappedInitializer;
+            }
+            return resolver.createLiteralConstValue(getParseTreeNode(node, canHaveLiteralInitializer)!, symbolTracker);
         }
         return undefined;
     }
@@ -832,630 +799,625 @@ export function transformDeclarations(context: TransformationContext) {
             return;
         }
         return typeFromDeclaration(node);
-
-        function reportIsolatedDeclarationError(node: Node, message: DiagnosticWithLocation) {
-            // Do not report errors on nodes with other errors.
-            if (node.flags & NodeFlags.ThisNodeHasError) return;
-            if (isolatedDeclarations) {
-                context.addDiagnostic(message);
-            }
+    }
+    function reportIsolatedDeclarationError(node: Node, message: DiagnosticWithLocation) {
+        // Do not report errors on nodes with other errors.
+        if (node.flags & NodeFlags.ThisNodeHasError) return;
+        if (isolatedDeclarations) {
+            context.addDiagnostic(message);
         }
+    }
 
-        function reportErrorAndFallback<T extends SignatureDeclaration | Expression | VariableLikeDeclaration>(node: T, diagMessage?: (node: T) => DiagnosticWithLocation): TypeNode | undefined {
-            if (isolatedDeclarations && diagMessage) {
-                reportIsolatedDeclarationError(node, diagMessage(node));
-            }
-            if (isolatedDeclarationsNoFallback) {
-                return makeInvalidType();
-            }
-            return undefined;
+    function reportErrorAndFallback<T extends SignatureDeclaration | Expression | VariableLikeDeclaration>(node: T, diagMessage?: (node: T) => DiagnosticWithLocation): TypeNode | undefined {
+        if (isolatedDeclarations && diagMessage) {
+            reportIsolatedDeclarationError(node, diagMessage(node));
         }
-
-        function findNearestDeclaration(node: Node) {
-            const result = findAncestor(node, n => isExportAssignment(n) || (isStatement(n) ? "quit" : isVariableDeclaration(n) || isPropertyDeclaration(n) || isParameter(n)));
-            return result as VariableDeclaration | PropertyDeclaration | ParameterDeclaration | ExportAssignment | undefined;
+        if (isolatedDeclarationsNoFallback) {
+            return makeInvalidType();
         }
+        return undefined;
+    }
 
-        function createAccessorTypeError(node: GetAccessorDeclaration | SetAccessorDeclaration) {
-            const { getAccessor, setAccessor } = resolver.getAllAccessorDeclarations(node);
+    function findNearestDeclaration(node: Node) {
+        const result = findAncestor(node, n => isExportAssignment(n) || (isStatement(n) ? "quit" : isVariableDeclaration(n) || isPropertyDeclaration(n) || isParameter(n)));
+        return result as VariableDeclaration | PropertyDeclaration | ParameterDeclaration | ExportAssignment | undefined;
+    }
 
-            const targetNode = (isSetAccessor(node) ? node.parameters[0] : node) ?? node;
-            const diag = createDiagnosticForNode(targetNode, errorByDeclarationKind[node.kind]);
+    function createAccessorTypeError(node: GetAccessorDeclaration | SetAccessorDeclaration) {
+        const { getAccessor, setAccessor } = resolver.getAllAccessorDeclarations(node);
 
-            if (setAccessor) {
-                addRelatedInfo(diag, createDiagnosticForNode(setAccessor, relatedSuggestionByDeclarationKind[setAccessor.kind]));
-            }
-            if (getAccessor) {
-                addRelatedInfo(diag, createDiagnosticForNode(getAccessor, relatedSuggestionByDeclarationKind[getAccessor.kind]));
-            }
-            return diag;
+        const targetNode = (isSetAccessor(node) ? node.parameters[0] : node) ?? node;
+        const diag = createDiagnosticForNode(targetNode, errorByDeclarationKind[node.kind]);
+
+        if (setAccessor) {
+            addRelatedInfo(diag, createDiagnosticForNode(setAccessor, relatedSuggestionByDeclarationKind[setAccessor.kind]));
         }
-        function createObjectLiteralError(node: ShorthandPropertyAssignment | SpreadAssignment | ComputedPropertyName) {
-            const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
-            const parentDeclaration = findNearestDeclaration(node);
-            if (parentDeclaration) {
-                const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
+        if (getAccessor) {
+            addRelatedInfo(diag, createDiagnosticForNode(getAccessor, relatedSuggestionByDeclarationKind[getAccessor.kind]));
+        }
+        return diag;
+    }
+    function createObjectLiteralError(node: ShorthandPropertyAssignment | SpreadAssignment | ComputedPropertyName) {
+        const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
+        const parentDeclaration = findNearestDeclaration(node);
+        if (parentDeclaration) {
+            const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
+            addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
+        }
+        return diag;
+    }
+    function createArrayLiteralError(node: ArrayLiteralExpression | SpreadElement) {
+        const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
+        const parentDeclaration = findNearestDeclaration(node);
+        if (parentDeclaration) {
+            const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
+            addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
+        }
+        return diag;
+    }
+    function createReturnTypeError(node: FunctionDeclaration | FunctionExpression | ArrowFunction | MethodDeclaration | ConstructSignatureDeclaration) {
+        const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
+        const parentDeclaration = findNearestDeclaration(node);
+        if (parentDeclaration) {
+            const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
+            addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
+        }
+        addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind]));
+        return diag;
+    }
+    function createBindingElementError(node: BindingElement) {
+        return createDiagnosticForNode(node, Diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations);
+    }
+    function createVariableOrPropertyError(node: VariableDeclaration | PropertyDeclaration) {
+        const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
+        const targetStr = getTextOfNode(node.name, /*includeTrivia*/ false);
+        addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind], targetStr));
+        return diag;
+    }
+    function createParameterError(node: ParameterDeclaration) {
+        if (isSetAccessor(node.parent)) {
+            return createAccessorTypeError(node.parent);
+        }
+        const addUndefined = resolver.requiresAddingImplicitUndefined(node);
+        if (!addUndefined && node.initializer) {
+            return createExpressionError(node.initializer);
+        }
+        const message = addUndefined ?
+            Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations :
+            errorByDeclarationKind[node.kind];
+        const diag = createDiagnosticForNode(node, message);
+        const targetStr = getTextOfNode(node.name, /*includeTrivia*/ false);
+        addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind], targetStr));
+        return diag;
+    }
+    function createExpressionError(node: Expression) {
+        const parentDeclaration = findNearestDeclaration(node);
+        let diag: DiagnosticWithLocation;
+        if (parentDeclaration) {
+            const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
+            const parent = findAncestor(node.parent, n => isExportAssignment(n) || (isStatement(n) ? "quit" : !isParenthesizedExpression(n) && !isTypeAssertionExpression(n) && !isAsExpression(n)));
+            if (parentDeclaration === parent) {
+                diag = createDiagnosticForNode(node, errorByDeclarationKind[parentDeclaration.kind]);
                 addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
-            }
-            return diag;
-        }
-        function createArrayLiteralError(node: ArrayLiteralExpression | SpreadElement) {
-            const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
-            const parentDeclaration = findNearestDeclaration(node);
-            if (parentDeclaration) {
-                const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
-                addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
-            }
-            return diag;
-        }
-        function createReturnTypeError(node: FunctionDeclaration | FunctionExpression | ArrowFunction | MethodDeclaration | ConstructSignatureDeclaration) {
-            const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
-            const parentDeclaration = findNearestDeclaration(node);
-            if (parentDeclaration) {
-                const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
-                addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
-            }
-            addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind]));
-            return diag;
-        }
-        function createBindingElementError(node: BindingElement) {
-            return createDiagnosticForNode(node, Diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations);
-        }
-        function createVariableOrPropertyError(node: VariableDeclaration | PropertyDeclaration | PropertySignature) {
-            const diag = createDiagnosticForNode(node, errorByDeclarationKind[node.kind]);
-            const targetStr = getTextOfNode(node.name, /*includeTrivia*/ false);
-            addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind], targetStr));
-            return diag;
-        }
-        function createParameterError(node: ParameterDeclaration) {
-            if (isSetAccessor(node.parent)) {
-                return createAccessorTypeError(node.parent);
-            }
-            if(node.initializer) {
-                return createExpressionError(node.initializer);
-            }
-            const message = resolver.requiresAddingImplicitUndefined(node) ?
-                Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations :
-                errorByDeclarationKind[node.kind];
-            const diag = createDiagnosticForNode(node, message);
-            const targetStr = getTextOfNode(node.name, /*includeTrivia*/ false);
-            addRelatedInfo(diag, createDiagnosticForNode(node, relatedSuggestionByDeclarationKind[node.kind], targetStr));
-            return diag;
-        }
-        function createExpressionError(node: Expression) {
-            const parentDeclaration = findNearestDeclaration(node);
-            let diag: DiagnosticWithLocation;
-            if (parentDeclaration) {
-                const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
-                const parent = findAncestor(node.parent, n => isExportAssignment(n) || (isStatement(n) ? "quit" : !isParenthesizedExpression(n) && !isTypeAssertionExpression(n) && !isAsExpression(n)));
-                if (parentDeclaration === parent) {
-                    diag = createDiagnosticForNode(node, errorByDeclarationKind[parentDeclaration.kind]);
-                    addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
-                }
-                else {
-                    diag = createDiagnosticForNode(node, Diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations);
-                    addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
-                    addRelatedInfo(diag, createDiagnosticForNode(node, Diagnostics.Add_a_type_assertion_to_this_expression_to_make_type_type_explicit));
-                }
             }
             else {
                 diag = createDiagnosticForNode(node, Diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations);
+                addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));
+                addRelatedInfo(diag, createDiagnosticForNode(node, Diagnostics.Add_a_type_assertion_to_this_expression_to_make_type_type_explicit));
             }
-            return diag;
         }
-        function inferVariableLikeType<T extends VariableLikeDeclaration>(node: T, diagMessage: undefined | ((node: T) => DiagnosticWithLocation), addUndefined?: boolean) {
-            const flags = node.kind === SyntaxKind.PropertyAssignment ? NodeBuilderFlags.InObjectTypeLiteral : NodeBuilderFlags.None;
-            return reportErrorAndFallback(node, diagMessage) ?? resolver.createTypeOfDeclaration(node, enclosingDeclaration, declarationEmitNodeBuilderFlags | flags, symbolTracker, addUndefined) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+        else {
+            diag = createDiagnosticForNode(node, Diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations);
         }
+        return diag;
+    }
+    function inferVariableLikeType<T extends VariableLikeDeclaration>(node: T, diagMessage: undefined | ((node: T) => DiagnosticWithLocation), addUndefined?: boolean) {
+        const flags = node.kind === SyntaxKind.PropertyAssignment ? NodeBuilderFlags.InObjectTypeLiteral : NodeBuilderFlags.None;
+        return reportErrorAndFallback(node, diagMessage) ?? resolver.createTypeOfDeclaration(node, enclosingDeclaration, declarationEmitNodeBuilderFlags | flags, symbolTracker, addUndefined) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+    }
 
-        function inferExpressionType<T extends Expression>(node: T, diagMessage: undefined | ((node: T) => DiagnosticWithLocation)) {
-            return reportErrorAndFallback(node, diagMessage) ?? resolver.createTypeOfExpression(node, enclosingDeclaration, declarationEmitNodeBuilderFlags, symbolTracker) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-        }
+    function inferExpressionType<T extends Expression>(node: T, diagMessage: undefined | ((node: T) => DiagnosticWithLocation)) {
+        return reportErrorAndFallback(node, diagMessage) ?? resolver.createTypeOfExpression(node, enclosingDeclaration, declarationEmitNodeBuilderFlags, symbolTracker) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+    }
 
-        function inferReturnTypeOfSignatureSignature<T extends SignatureDeclaration>(node: T, diagMessage: (node: T) => DiagnosticWithLocation) {
-            return reportErrorAndFallback(node, diagMessage) ?? resolver.createReturnTypeOfSignatureDeclaration(node, enclosingDeclaration, declarationEmitNodeBuilderFlags, symbolTracker) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+    function inferReturnTypeOfSignatureSignature<T extends SignatureDeclaration>(node: T, diagMessage?: (node: T) => DiagnosticWithLocation) {
+        return reportErrorAndFallback(node, diagMessage) ?? resolver.createReturnTypeOfSignatureDeclaration(node, enclosingDeclaration, declarationEmitNodeBuilderFlags, symbolTracker) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+    }
+    function inferAccessorType(node: GetAccessorDeclaration | SetAccessorDeclaration, allAccessors: AllAccessorDeclarations, diagMessage: (node: GetAccessorDeclaration | SetAccessorDeclaration) => DiagnosticWithLocation) {
+        if (node.kind === SyntaxKind.GetAccessor) {
+            return inferReturnTypeOfSignatureSignature(node, diagMessage);
         }
-        function inferAccessorType(node: GetAccessorDeclaration | SetAccessorDeclaration, diagMessage: (node: GetAccessorDeclaration | SetAccessorDeclaration) => DiagnosticWithLocation) {
-            if (node.kind === SyntaxKind.GetAccessor) {
-                return inferReturnTypeOfSignatureSignature(node, diagMessage);
-            }
-            else {
-                return reportErrorAndFallback(node, diagMessage) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-            }
+        else {
+            return reportErrorAndFallback(node, diagMessage)
+                ?? (allAccessors.getAccessor && inferReturnTypeOfSignatureSignature(allAccessors.getAccessor))
+                ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
         }
-        function typeFromDeclaration(node: HasInferredType | ExportAssignment) {
-            const savedErrorNameNode = errorNameNode;
-            const savedErrorFallbackNode = errorFallbackNode;
-            const savedReferenceRequestingNode = referenceRequestingNode;
-            errorNameNode = isNamedDeclaration(node) ? node.name : undefined;
-            errorFallbackNode = node;
-            referenceRequestingNode = node;
-            let typeNode: TypeNode | undefined;
-            let declaredType: TypeNode | undefined;
-            let oldDiag: typeof getSymbolAccessibilityDiagnostic | undefined;
-            if (!suppressNewDiagnosticContexts) {
-                oldDiag = getSymbolAccessibilityDiagnostic;
-                getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(node);
-            }
-            switch (node.kind) {
-                case SyntaxKind.Parameter:
-                    typeNode = typeFromParameter(node);
-                    break;
-                case SyntaxKind.VariableDeclaration:
-                    typeNode = typeFromVariable(node);
-                    break;
-                case SyntaxKind.PropertyDeclaration:
-                    typeNode = typeFromProperty(node);
-                    break;
-                case SyntaxKind.GetAccessor:
-                    typeNode = typeFromAccessor(node);
-                    break;
-                case SyntaxKind.BindingElement:
-                    typeNode = inferVariableLikeType(node, createBindingElementError);
-                    break;
-                case SyntaxKind.ConstructSignature:
-                case SyntaxKind.PropertySignature:
-                case SyntaxKind.MethodSignature:
-                case SyntaxKind.CallSignature:
-                    declaredType = node.type;
-                    typeNode = declaredType ? visitTypeNode(declaredType) : factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-                    break;
-                case SyntaxKind.MethodDeclaration:
-                case SyntaxKind.FunctionDeclaration:
-                    declaredType = node.type;
-                    typeNode = declaredType ? visitTypeNode(declaredType) : inferReturnTypeOfSignatureSignature(node, createReturnTypeError);
-                    break;
-                case SyntaxKind.ExportAssignment:
-                    typeNode = typeFromExpression(node.expression, InitializeTransformNarrowBehavior.KeepLiterals) ?? inferExpressionType(node.expression, createExpressionError);
-                    break;
-                default:
-                    Debug.assertNever(node, `Node needs to be an inferrable type found ${Debug.formatSyntaxKind((node as Node).kind)}`);
-            }
-            errorNameNode = savedErrorNameNode;
-            errorFallbackNode = savedErrorFallbackNode;
-            referenceRequestingNode = savedReferenceRequestingNode;
-            if (suppressNewDiagnosticContexts) {
-                getSymbolAccessibilityDiagnostic = oldDiag!;
-            }
-            return typeNode;
-        }
-        
-        function visitTypeNode(type: TypeNode) {
-            return visitNode(type, visitDeclarationSubtree, isTypeNode)!;
-        }
+    }
+    function typeFromDeclaration(node: HasInferredType | ExportAssignment) {
+        const savedErrorNameNode = errorNameNode;
+        const savedErrorFallbackNode = errorFallbackNode;
 
-        function addUndefinedInUnion(type: TypeNode) {
-            if (!strictNullChecks) return type;
-            if (isUnionTypeNode(type)) {
-                const hasUndefined = type.types.some(p => p.kind === SyntaxKind.UndefinedKeyword);
-                if (hasUndefined) return type;
+        errorNameNode = node.name;
+        errorFallbackNode = node;
+        let oldDiag;
+        if (!suppressNewDiagnosticContexts) {
+            oldDiag = getSymbolAccessibilityDiagnostic;
+            getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(node);
+        }
+        let typeNode: TypeNode | undefined;
+        switch (node.kind) {
+            case SyntaxKind.Parameter:
+                typeNode = typeFromParameter(node);
+                break;
+            case SyntaxKind.VariableDeclaration:
+                typeNode = typeFromVariable(node);
+                break;
+            case SyntaxKind.PropertyDeclaration:
+                typeNode = typeFromProperty(node);
+                break;
+            case SyntaxKind.GetAccessor:
+                typeNode = typeFromAccessor(node);
+                break;
+            case SyntaxKind.BindingElement:
+                typeNode = inferVariableLikeType(node, createBindingElementError);
+                break;
+            case SyntaxKind.ConstructSignature:
+            case SyntaxKind.PropertySignature:
+            case SyntaxKind.MethodSignature:
+            case SyntaxKind.CallSignature:
+                typeNode = visitTypeNode(node.type) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+                break;
+            case SyntaxKind.MethodDeclaration:
+            case SyntaxKind.FunctionDeclaration:
+                typeNode = visitTypeNode(node.type) ?? inferReturnTypeOfSignatureSignature(node, createReturnTypeError);
+                break;
+            case SyntaxKind.ExportAssignment:
+                typeNode = typeFromExpression(node.expression, /*isConstContext*/ undefined, /*requiresAddingUndefined*/ undefined, /*preserveLiterals*/ true) ?? inferExpressionType(node.expression, createExpressionError);
+                break;
+            default:
+                Debug.assertNever(node, `Node needs to be an inferrable node, found ${Debug.formatSyntaxKind((node as Node).kind)}`);
+        }
+        errorNameNode = savedErrorNameNode;
+        errorFallbackNode = savedErrorFallbackNode;
 
-                return factory.createUnionTypeNode([
-                    ...type.types,
-                    factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
-                ]);
-            }
+        if (!suppressNewDiagnosticContexts) {
+            getSymbolAccessibilityDiagnostic = oldDiag!;
+        }
+        return typeNode;
+    }
+
+    function visitTypeNode(type: TypeNode): TypeNode;
+    function visitTypeNode(type: TypeNode | undefined): TypeNode | undefined;
+    function visitTypeNode(type: TypeNode | undefined) {
+        return visitNode(type, visitDeclarationSubtree, isTypeNode);
+    }
+
+    function addUndefinedInUnion(type: TypeNode) {
+        if (!strictNullChecks) return type;
+        if (isUnionTypeNode(type)) {
+            const hasUndefined = type.types.some(p => p.kind === SyntaxKind.UndefinedKeyword);
+            if (hasUndefined) return type;
+
             return factory.createUnionTypeNode([
-                type,
+                ...type.types,
                 factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
             ]);
         }
+        return factory.createUnionTypeNode([
+            type,
+            factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
+        ]);
+    }
 
-        function canAddUndefined(node: TypeNode): boolean {
-            if (!strictNullChecks) return true;
-            if (
-                isKeyword(node.kind)
-                || node.kind === SyntaxKind.LiteralType
-                || node.kind === SyntaxKind.FunctionType
-                || node.kind === SyntaxKind.ConstructorType
-                || node.kind === SyntaxKind.ArrayType
-                || node.kind === SyntaxKind.TupleType
-                || node.kind === SyntaxKind.TypeLiteral
-                || node.kind === SyntaxKind.TemplateLiteralType
-                || node.kind === SyntaxKind.ThisType
-            ) {
-                return true;
-            }
-            if (node.kind === SyntaxKind.ParenthesizedType) {
-                return canAddUndefined((node as ParenthesizedTypeNode).type);
-            }
-            if (node.kind === SyntaxKind.UnionType || node.kind === SyntaxKind.IntersectionType) {
-                return (node as UnionTypeNode | IntersectionTypeNode).types.every(canAddUndefined);
-            }
-            return false;
-        }
-
-        function typeFromExpression(node: Expression, inferenceFlags: InitializeTransformNarrowBehavior = InitializeTransformNarrowBehavior.None): TypeNode | undefined {
-            switch (node.kind) {
-                case SyntaxKind.ParenthesizedExpression:
-                    return typeFromExpression((node as ParenthesizedExpression).expression, inferenceFlags & InitializeTransformNarrowBehavior.NotKeepLiterals);
-                case SyntaxKind.Identifier:
-                    if (resolver.isUndefinedIdentifier(node as Identifier)) {
-                        return createUndefinedTypeNode();
-                    }
-                    break;
-                case SyntaxKind.NullKeyword:
-                    if (strictNullChecks) {
-                        return factory.createLiteralTypeNode(factory.createNull());
-                    }
-                    else {
-                        return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-                    }
-                case SyntaxKind.ArrowFunction:
-                case SyntaxKind.FunctionExpression:
-                    return typeFromFunctionLikeExpression(node as ArrowFunction | FunctionExpression);
-                case SyntaxKind.TypeAssertionExpression:
-                case SyntaxKind.AsExpression:
-                    const asExpression = node as AsExpression | TypeAssertion;
-                    const type = asExpression.type;
-                    if((inferenceFlags & InitializeTransformNarrowBehavior.RequiresAddingUndefined && !canAddUndefined(type))){
-                        return undefined //inferExpressionType(node);
-                    }
-                    if (isConstTypeReference(asExpression.type)) {
-                        return typeFromExpression(asExpression.expression, InitializeTransformNarrowBehavior.AsConst);
-                    }
-                    else {
-                        return visitTypeNode(type);
-                    }
-                case SyntaxKind.PrefixUnaryExpression:
-                    const unaryExpression = node as PrefixUnaryExpression;
-                    if (isPrimitiveLiteralValue(unaryExpression)) {
-                        if (unaryExpression.operand.kind === SyntaxKind.BigIntLiteral) {
-                            return typeFromPrimitiveLiteral(unaryExpression, SyntaxKind.BigIntKeyword, inferenceFlags);
-                        }
-                        if (unaryExpression.operand.kind === SyntaxKind.NumericLiteral) {
-                            return typeFromPrimitiveLiteral(unaryExpression, SyntaxKind.NumberKeyword, inferenceFlags);
-                        }
-                    }
-                    break;
-                case SyntaxKind.NumericLiteral:
-                    return typeFromPrimitiveLiteral(node as NumericLiteral, SyntaxKind.NumberKeyword, inferenceFlags);
-                case SyntaxKind.TemplateExpression:
-                    if (!(inferenceFlags & InitializeTransformNarrowBehavior.AsConstOrKeepLiterals)) {
-                        return factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
-                    }
-                    break;
-                case SyntaxKind.NoSubstitutionTemplateLiteral:
-                case SyntaxKind.StringLiteral:
-                    return typeFromPrimitiveLiteral(node as StringLiteral | NoSubstitutionTemplateLiteral, SyntaxKind.StringKeyword, inferenceFlags);
-                case SyntaxKind.BigIntLiteral:
-                    return typeFromPrimitiveLiteral(node as BigIntLiteral, SyntaxKind.BigIntKeyword, inferenceFlags);
-                case SyntaxKind.TrueKeyword:
-                case SyntaxKind.FalseKeyword:
-                    return typeFromPrimitiveLiteral(node as TrueLiteral | FalseLiteral, SyntaxKind.BooleanKeyword, inferenceFlags);
-                case SyntaxKind.ArrayLiteralExpression:
-                    return typeFromArrayLiteral(node as ArrayLiteralExpression, inferenceFlags);
-                case SyntaxKind.ObjectLiteralExpression:
-                    return typeFromObjectLiteral(node as ObjectLiteralExpression, inferenceFlags);
-            }
-            return undefined;
-        }
-        function typeFromFunctionLikeExpression(fnNode: FunctionExpression | ArrowFunction) {
-            const oldEnclosingDeclaration = enclosingDeclaration;
-            enclosingDeclaration = fnNode;
-
-            const returnType = fnNode.type ? visitTypeNode(fnNode.type) : inferReturnTypeOfSignatureSignature(fnNode, createReturnTypeError);
-            const fnTypeNode = factory.createFunctionTypeNode(
-                visitNodes(fnNode.typeParameters, visitDeclarationSubtree, isTypeParameterDeclaration),
-                fnNode.parameters.map(p => ensureParameter(p)),
-                returnType,
-            );
-            enclosingDeclaration = oldEnclosingDeclaration;
-            return fnTypeNode;
-        }
-        function canGetTypeFromArrayLiteral(arrayLiteral: ArrayLiteralExpression) {
-            for (const element of arrayLiteral.elements) {
-                if (element.kind === SyntaxKind.SpreadElement) {
-                    reportIsolatedDeclarationError(element, createArrayLiteralError(element as SpreadElement));
-                    return false;
-                }
-            }
+    function canAddUndefined(node: TypeNode): boolean {
+        if (!strictNullChecks) return true;
+        if (
+            isKeyword(node.kind)
+            || node.kind === SyntaxKind.LiteralType
+            || node.kind === SyntaxKind.FunctionType
+            || node.kind === SyntaxKind.ConstructorType
+            || node.kind === SyntaxKind.ArrayType
+            || node.kind === SyntaxKind.TupleType
+            || node.kind === SyntaxKind.TypeLiteral
+            || node.kind === SyntaxKind.TemplateLiteralType
+            || node.kind === SyntaxKind.ThisType
+        ) {
             return true;
         }
-        function typeFromArrayLiteral(arrayLiteral: ArrayLiteralExpression, inferenceFlags: InitializeTransformNarrowBehavior) {
-            if (!(inferenceFlags & InitializeTransformNarrowBehavior.AsConst)) {
-                return inferExpressionType(arrayLiteral, createArrayLiteralError);
-            }
-            if (!canGetTypeFromArrayLiteral(arrayLiteral)) {
-                return inferExpressionType(arrayLiteral, /*diagMessage*/ undefined);
-            }
-            const elementTypesInfo: TypeNode[] = [];
-            for (const element of arrayLiteral.elements) {
-                Debug.assert(element.kind !== SyntaxKind.SpreadElement);
-                if (element.kind === SyntaxKind.OmittedExpression) {
-                    elementTypesInfo.push(
-                        createUndefinedTypeNode(),
-                    );
+        if (node.kind === SyntaxKind.ParenthesizedType) {
+            return canAddUndefined((node as ParenthesizedTypeNode).type);
+        }
+        if (node.kind === SyntaxKind.UnionType || node.kind === SyntaxKind.IntersectionType) {
+            return (node as UnionTypeNode | IntersectionTypeNode).types.every(canAddUndefined);
+        }
+        return false;
+    }
+
+    function typeFromExpression(node: Expression, isConstContext = false, requiresAddingUndefined = false, preserveLiterals = false): TypeNode | undefined {
+        switch (node.kind) {
+            case SyntaxKind.ParenthesizedExpression:
+                return typeFromExpression((node as ParenthesizedExpression).expression, isConstContext, requiresAddingUndefined);
+            case SyntaxKind.Identifier:
+                if (resolver.isUndefinedIdentifier(node as Identifier)) {
+                    return createUndefinedTypeNode();
+                }
+                break;
+            case SyntaxKind.NullKeyword:
+                if (strictNullChecks) {
+                    return factory.createLiteralTypeNode(factory.createNull());
                 }
                 else {
-                    const elementType = typeFromExpression(element, inferenceFlags & InitializeTransformNarrowBehavior.NotKeepLiterals) ?? inferExpressionType(element, createExpressionError);
-                    elementTypesInfo.push(elementType);
+                    return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
                 }
-            }
-            const tupleType = factory.createTupleTypeNode(elementTypesInfo);
-            tupleType.emitNode = { flags: 1, autoGenerate: undefined, internalFlags: 0 };
-            return factory.createTypeOperatorNode(SyntaxKind.ReadonlyKeyword, tupleType);
-        }
-        function canGetTypeFromObjectLiteral(objectLiteral: ObjectLiteralExpression) {
-            let result = true;
-            for (const prop of objectLiteral.properties) {
-                if (prop.flags & NodeFlags.ThisNodeHasError) {
-                    result = false;
-                    break; // Bail if parse errors
+            case SyntaxKind.ArrowFunction:
+            case SyntaxKind.FunctionExpression:
+                return typeFromFunctionLikeExpression(node as ArrowFunction | FunctionExpression);
+            case SyntaxKind.TypeAssertionExpression:
+            case SyntaxKind.AsExpression:
+                const asExpression = node as AsExpression | TypeAssertion;
+                const type = asExpression.type;
+                if (isConstTypeReference(asExpression.type)) {
+                    return typeFromExpression(asExpression.expression, /*isConstContext*/ true, requiresAddingUndefined);
                 }
-                if (prop.kind === SyntaxKind.ShorthandPropertyAssignment || prop.kind === SyntaxKind.SpreadAssignment) {
-                    reportIsolatedDeclarationError(prop, createObjectLiteralError(prop));
-                    result = false;
+                if (!requiresAddingUndefined || canAddUndefined(type)) {
+                    return visitTypeNode(type);
                 }
-                else if (prop.name.flags & NodeFlags.ThisNodeHasError) {
-                    result = false;
-                    break; // Bail if parse errors
-                }
-                else if (prop.name.kind === SyntaxKind.PrivateIdentifier) {
-                    // Not valid in object literals but the compiler will complain about this, we just ignore it here.
-                    result = false;
-                }
-                else if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
-                    const expression = prop.name.expression;
-                    if (!isPrimitiveLiteralValue(expression, /*includeBigInt*/ false) && !isEntityNameExpression(expression)) {
-                        reportIsolatedDeclarationError(prop, createObjectLiteralError(prop.name));
-                        result = false;
+                break;
+            case SyntaxKind.PrefixUnaryExpression:
+                const unaryExpression = node as PrefixUnaryExpression;
+                if (isPrimitiveLiteralValue(unaryExpression)) {
+                    if (unaryExpression.operand.kind === SyntaxKind.BigIntLiteral) {
+                        return typeFromPrimitiveLiteral(unaryExpression, SyntaxKind.BigIntKeyword, isConstContext || preserveLiterals);
+                    }
+                    if (unaryExpression.operand.kind === SyntaxKind.NumericLiteral) {
+                        return typeFromPrimitiveLiteral(unaryExpression, SyntaxKind.NumberKeyword, isConstContext || preserveLiterals);
                     }
                 }
-            }
-            return result;
+                break;
+            case SyntaxKind.NumericLiteral:
+                return typeFromPrimitiveLiteral(node as NumericLiteral, SyntaxKind.NumberKeyword, isConstContext || preserveLiterals);
+            case SyntaxKind.TemplateExpression:
+                if (!isConstContext && !preserveLiterals) {
+                    return factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
+                }
+                break;
+            case SyntaxKind.NoSubstitutionTemplateLiteral:
+            case SyntaxKind.StringLiteral:
+                return typeFromPrimitiveLiteral(node as StringLiteral | NoSubstitutionTemplateLiteral, SyntaxKind.StringKeyword, isConstContext || preserveLiterals);
+            case SyntaxKind.BigIntLiteral:
+                return typeFromPrimitiveLiteral(node as BigIntLiteral, SyntaxKind.BigIntKeyword, isConstContext || preserveLiterals);
+            case SyntaxKind.TrueKeyword:
+            case SyntaxKind.FalseKeyword:
+                return typeFromPrimitiveLiteral(node as TrueLiteral | FalseLiteral, SyntaxKind.BooleanKeyword, isConstContext || preserveLiterals);
+            case SyntaxKind.ArrayLiteralExpression:
+                return typeFromArrayLiteral(node as ArrayLiteralExpression, isConstContext);
+            case SyntaxKind.ObjectLiteralExpression:
+                return typeFromObjectLiteral(node as ObjectLiteralExpression, isConstContext);
         }
-        function typeFromObjectLiteral(objectLiteral: ObjectLiteralExpression, inferenceFlags: InitializeTransformNarrowBehavior) {
-            if (!canGetTypeFromObjectLiteral(objectLiteral)) return inferExpressionType(objectLiteral, /*diagMessage*/ undefined);
+        return undefined;
+    }
+    function typeFromFunctionLikeExpression(fnNode: FunctionExpression | ArrowFunction) {
+        const oldEnclosingDeclaration = enclosingDeclaration;
+        enclosingDeclaration = fnNode;
 
-            const properties: TypeElement[] = [];
-            for (const prop of objectLiteral.properties) {
-                Debug.assert(!isShorthandPropertyAssignment(prop) && !isSpreadAssignment(prop));
+        const returnType = fnNode.type ? visitTypeNode(fnNode.type) : inferReturnTypeOfSignatureSignature(fnNode, createReturnTypeError);
+        const fnTypeNode = factory.createFunctionTypeNode(
+            visitNodes(fnNode.typeParameters, visitDeclarationSubtree, isTypeParameterDeclaration),
+            fnNode.parameters.map(p => ensureParameter(p)),
+            returnType,
+        );
+        enclosingDeclaration = oldEnclosingDeclaration;
+        return fnTypeNode;
+    }
+    function canGetTypeFromArrayLiteral(arrayLiteral: ArrayLiteralExpression) {
+        for (const element of arrayLiteral.elements) {
+            if (element.kind === SyntaxKind.SpreadElement) {
+                reportIsolatedDeclarationError(element, createArrayLiteralError(element as SpreadElement));
+                return false;
+            }
+        }
+        return true;
+    }
+    function typeFromArrayLiteral(arrayLiteral: ArrayLiteralExpression, isConstContext: boolean) {
+        if (!isConstContext) {
+            return inferExpressionType(arrayLiteral, createArrayLiteralError);
+        }
+        if (!canGetTypeFromArrayLiteral(arrayLiteral)) {
+            return inferExpressionType(arrayLiteral, /*diagMessage*/ undefined);
+        }
+        const elementTypesInfo: TypeNode[] = [];
+        for (const element of arrayLiteral.elements) {
+            Debug.assert(element.kind !== SyntaxKind.SpreadElement);
+            if (element.kind === SyntaxKind.OmittedExpression) {
+                elementTypesInfo.push(
+                    createUndefinedTypeNode(),
+                );
+            }
+            else {
+                const elementType = typeFromExpression(element, isConstContext) ?? inferExpressionType(element, createExpressionError);
+                elementTypesInfo.push(elementType);
+            }
+        }
+        const tupleType = factory.createTupleTypeNode(elementTypesInfo);
+        tupleType.emitNode = { flags: 1, autoGenerate: undefined, internalFlags: 0 };
+        return factory.createTypeOperatorNode(SyntaxKind.ReadonlyKeyword, tupleType);
+    }
+    function canGetTypeFromObjectLiteral(objectLiteral: ObjectLiteralExpression) {
+        let result = true;
+        for (const prop of objectLiteral.properties) {
+            if (prop.flags & NodeFlags.ThisNodeHasError) {
+                result = false;
+                break; // Bail if parse errors
+            }
+            if (prop.kind === SyntaxKind.ShorthandPropertyAssignment || prop.kind === SyntaxKind.SpreadAssignment) {
+                reportIsolatedDeclarationError(prop, createObjectLiteralError(prop));
+                result = false;
+            }
+            else if (prop.name.flags & NodeFlags.ThisNodeHasError) {
+                result = false;
+                break; // Bail if parse errors
+            }
+            else if (prop.name.kind === SyntaxKind.PrivateIdentifier) {
+                // Not valid in object literals but the compiler will complain about this, we just ignore it here.
+                result = false;
+            }
+            else if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
+                const expression = prop.name.expression;
+                if (!isPrimitiveLiteralValue(expression, /*includeBigInt*/ false) && !isEntityNameExpression(expression)) {
+                    reportIsolatedDeclarationError(prop, createObjectLiteralError(prop.name));
+                    result = false;
+                }
+            }
+        }
+        return result;
+    }
+    function typeFromObjectLiteral(objectLiteral: ObjectLiteralExpression, isConstContext: boolean) {
+        if (!canGetTypeFromObjectLiteral(objectLiteral)) return inferExpressionType(objectLiteral, /*diagMessage*/ undefined);
 
-                let name = prop.name;
-                if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
-                    let computedNameExpressionType;
-                    if (isEntityNameExpression(prop.name.expression)) {
-                        // Check if the symbol is accessible. If not, don't report any errors on it, we'll fall back to the inferred type
-                        // If the symbol is accessible checkEntityNameVisibility will add the appropriate aliases to make visible
-                        const oldDiag = getSymbolAccessibilityDiagnostic;
-                        getSymbolAccessibilityDiagnostic = () => undefined;
-                        const isEntityNameAccessible = checkEntityNameVisibility(prop.name.expression, prop);
-                        getSymbolAccessibilityDiagnostic = oldDiag;
+        const properties: TypeElement[] = [];
+        for (const prop of objectLiteral.properties) {
+            Debug.assert(!isShorthandPropertyAssignment(prop) && !isSpreadAssignment(prop));
 
-                        if (!resolver.isLiteralComputedName(prop.name)) {
-                            reportIsolatedDeclarationError(prop.name, createObjectLiteralError(prop.name));
-                        }
-                        if (!isEntityNameAccessible) {
-                            computedNameExpressionType = inferExpressionType(prop.name.expression, n => createObjectLiteralError(n.parent as ComputedPropertyName));
-                            if (computedNameExpressionType) {
-                                if (
-                                    isTypeQueryNode(computedNameExpressionType) &&
-                                    (isIdentifier(computedNameExpressionType.exprName) || isEntityNameExpression(computedNameExpressionType.exprName))
-                                ) {
-                                    name = factory.createComputedPropertyName(computedNameExpressionType.exprName);
-                                }
-                                else if (isLiteralTypeNode(computedNameExpressionType)) {
-                                    name = factory.createComputedPropertyName(computedNameExpressionType.literal);
-                                }
+            let name = prop.name;
+            if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
+                let computedNameExpressionType;
+                if (isEntityNameExpression(prop.name.expression)) {
+                    // Check if the symbol is accessible. If not, don't report any errors on it, we'll fall back to the inferred type
+                    // If the symbol is accessible checkEntityNameVisibility will add the appropriate aliases to make visible
+                    const oldDiag = getSymbolAccessibilityDiagnostic;
+                    getSymbolAccessibilityDiagnostic = () => undefined;
+                    const isEntityNameAccessible = checkEntityNameVisibility(prop.name.expression, prop);
+                    getSymbolAccessibilityDiagnostic = oldDiag;
+
+                    if (!resolver.isLiteralComputedName(prop.name)) {
+                        reportIsolatedDeclarationError(prop.name, createObjectLiteralError(prop.name));
+                    }
+                    if (!isEntityNameAccessible) {
+                        computedNameExpressionType = inferExpressionType(prop.name.expression, n => createObjectLiteralError(n.parent as ComputedPropertyName));
+                        if (computedNameExpressionType) {
+                            if (
+                                isTypeQueryNode(computedNameExpressionType) &&
+                                (isIdentifier(computedNameExpressionType.exprName) || isEntityNameExpression(computedNameExpressionType.exprName))
+                            ) {
+                                name = factory.createComputedPropertyName(computedNameExpressionType.exprName);
+                            }
+                            else if (isLiteralTypeNode(computedNameExpressionType)) {
+                                name = factory.createComputedPropertyName(computedNameExpressionType.literal);
                             }
                         }
                     }
                 }
-                let newProp;
-                switch (prop.kind) {
-                    case SyntaxKind.MethodDeclaration:
-                        newProp = typeFromObjectLiteralMethod(prop, name, inferenceFlags);
-                        break;
-                    case SyntaxKind.PropertyAssignment:
-                        newProp = typeFromObjectLiteralPropertyAssignment(prop, name, inferenceFlags);
-                        break;
-                    case SyntaxKind.SetAccessor:
-                    case SyntaxKind.GetAccessor:
-                        newProp = typeFromObjectLiteralAccessor(prop, name);
-                        break;
-                }
-                if (newProp) {
-                    setCommentRange(newProp, prop);
-                    properties.push(newProp);
-                }
             }
-
-            return factory.createTypeLiteralNode(properties);
+            let newProp;
+            switch (prop.kind) {
+                case SyntaxKind.MethodDeclaration:
+                    newProp = typeFromObjectLiteralMethod(prop, name, isConstContext);
+                    break;
+                case SyntaxKind.PropertyAssignment:
+                    newProp = typeFromObjectLiteralPropertyAssignment(prop, name, isConstContext);
+                    break;
+                case SyntaxKind.SetAccessor:
+                case SyntaxKind.GetAccessor:
+                    newProp = typeFromObjectLiteralAccessor(prop, name);
+                    break;
+            }
+            if (newProp) {
+                setCommentRange(newProp, prop);
+                properties.push(newProp);
+            }
         }
 
-        function typeFromObjectLiteralPropertyAssignment(prop: PropertyAssignment, name: PropertyName, inferenceFlags: InitializeTransformNarrowBehavior) {
-            const modifiers = inferenceFlags & InitializeTransformNarrowBehavior.AsConst ?
-                [factory.createModifier(SyntaxKind.ReadonlyKeyword)] :
-                [];
-            const typeNode = typeFromExpression(prop.initializer, inferenceFlags & InitializeTransformNarrowBehavior.NotKeepLiterals) ?? inferVariableLikeType(prop, p => createExpressionError(p.initializer));
-            return factory.createPropertySignature(
-                modifiers,
-                name,
-                /*questionToken*/ undefined,
-                typeNode,
-            );
-        }
-        function typeFromObjectLiteralMethod(method: MethodDeclaration, name: PropertyName, inferenceFlags: InitializeTransformNarrowBehavior) {
-            const oldEnclosingDeclaration = enclosingDeclaration;
-            enclosingDeclaration = method;
-            try {
-                const returnType = method.type !== undefined ? visitTypeNode(method.type) : inferReturnTypeOfSignatureSignature(method, createReturnTypeError);
-                const typeParameters = visitNodes(method.typeParameters, visitDeclarationSubtree, isTypeParameterDeclaration);
-                const parameters = method.parameters.map(p => ensureParameter(p));
-                if (inferenceFlags & InitializeTransformNarrowBehavior.AsConst) {
-                    return factory.createPropertySignature(
-                        [factory.createModifier(SyntaxKind.ReadonlyKeyword)],
-                        name,
-                        method.questionToken,
-                        factory.createFunctionTypeNode(
-                            typeParameters,
-                            parameters,
-                            returnType,
-                        ),
-                    );
-                }
-                else {
-                    if (isIdentifier(name) && name.escapedText === "new") {
-                        name = factory.createStringLiteral("new");
-                    }
-                    return factory.createMethodSignature(
-                        [],
-                        name,
-                        method.questionToken,
+        return factory.createTypeLiteralNode(properties);
+    }
+
+    function typeFromObjectLiteralPropertyAssignment(prop: PropertyAssignment, name: PropertyName, isConstContext: boolean) {
+        const modifiers = isConstContext ?
+            [factory.createModifier(SyntaxKind.ReadonlyKeyword)] :
+            [];
+        const typeNode = typeFromExpression(prop.initializer, isConstContext) ?? inferVariableLikeType(prop, p => createExpressionError(p.initializer));
+        return factory.createPropertySignature(
+            modifiers,
+            name,
+            /*questionToken*/ undefined,
+            typeNode,
+        );
+    }
+    function typeFromObjectLiteralMethod(method: MethodDeclaration, name: PropertyName, isConstContext: boolean) {
+        const oldEnclosingDeclaration = enclosingDeclaration;
+        enclosingDeclaration = method;
+        try {
+            const returnType = method.type !== undefined ? visitTypeNode(method.type) : inferReturnTypeOfSignatureSignature(method, createReturnTypeError);
+            const typeParameters = visitNodes(method.typeParameters, visitDeclarationSubtree, isTypeParameterDeclaration);
+            const parameters = method.parameters.map(p => ensureParameter(p));
+            if (isConstContext) {
+                return factory.createPropertySignature(
+                    [factory.createModifier(SyntaxKind.ReadonlyKeyword)],
+                    name,
+                    method.questionToken,
+                    factory.createFunctionTypeNode(
                         typeParameters,
                         parameters,
                         returnType,
-                    );
-                }
-            }
-            finally {
-                enclosingDeclaration = oldEnclosingDeclaration;
-            }
-        }
-
-        function typeFromObjectLiteralAccessor(accessor: GetAccessorDeclaration | SetAccessorDeclaration, name: PropertyName) {
-            const allAccessors = resolver.getAllAccessorDeclarations(accessor);
-            const getAccessorType = allAccessors.getAccessor && getTypeAnnotationFromAccessor(allAccessors.getAccessor);
-            const setAccessorType = allAccessors.setAccessor && getTypeAnnotationFromAccessor(allAccessors.setAccessor);
-            // We have types for both accessors, we can't know if they are the same type so we keep both accessors
-            if (getAccessorType !== undefined && setAccessorType !== undefined) {
-                const parameters = accessor.parameters.map(p => ensureParameter(p));
-
-                if (isGetAccessor(accessor)) {
-                    return factory.updateGetAccessorDeclaration(
-                        accessor,
-                        [],
-                        name,
-                        parameters,
-                        visitTypeNode(getAccessorType),
-                        /*body*/ undefined,
-                    );
-                }
-                else {
-                    return factory.updateSetAccessorDeclaration(
-                        accessor,
-                        [],
-                        name,
-                        parameters,
-                        /*body*/ undefined,
-                    );
-                }
-            }
-            else if (allAccessors.firstAccessor === accessor) {
-                const foundType = getAccessorType ?? setAccessorType;
-                const propertyType = foundType ? visitTypeNode(foundType) : inferAccessorType(allAccessors.getAccessor ?? allAccessors.setAccessor!, createAccessorTypeError);
-
-                const propertySignature = factory.createPropertySignature(
-                    allAccessors.setAccessor === undefined ? [factory.createModifier(SyntaxKind.ReadonlyKeyword)] : [],
-                    name,
-                    /*questionToken*/ undefined,
-                    propertyType,
+                    ),
                 );
-                return propertySignature;
-            }
-        }
-        function createUndefinedTypeNode() {
-            if (strictNullChecks) {
-                return factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword);
             }
             else {
-                return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-            }
-        }
-        function typeFromPrimitiveLiteral(node: PrimitiveLiteral, baseType: string | KeywordTypeSyntaxKind, narrowBehavior: InitializeTransformNarrowBehavior) {
-            if (narrowBehavior & InitializeTransformNarrowBehavior.AsConstOrKeepLiterals) {
-                return factory.createLiteralTypeNode(clonePrimitiveLiteralValue(node));
-            }
-            else {
-                return typeof baseType === "number" ? factory.createKeywordTypeNode(baseType) : factory.createTypeReferenceNode(baseType);
-            }
-        }
-        
-        function typeFromAccessor(node: AccessorDeclaration) {
-            const accessorDeclarations = resolver.getAllAccessorDeclarations(node);
-            const accessorType = getTypeAnnotationFromAllAccessorDeclarations(node, accessorDeclarations);
-            return accessorType ?? inferAccessorType(accessorDeclarations.getAccessor ?? node, createAccessorTypeError);
-        }
-
-        function typeFromVariable(node: VariableDeclaration) {
-            const declaredType = node.type;
-            if (declaredType) {
-                return visitTypeNode(declaredType);
-            }
-            let resultType;
-            let isolatedDeclarationsDiagnostic: typeof createVariableOrPropertyError | undefined = createVariableOrPropertyError;
-            if (node.initializer) {
-                if (isClassExpression(node.initializer)) {
-                    isolatedDeclarationsDiagnostic = node => createDiagnosticForNode(node.initializer!, Diagnostics.Inference_from_class_expressions_is_not_supported_with_isolatedDeclarations);
+                if (isIdentifier(name) && name.escapedText === "new") {
+                    name = factory.createStringLiteral("new");
                 }
-                else if (resolver.isExpandoFunction(node)) {
-                    if (isolatedDeclarations) {
-                        resolver.getPropertiesOfContainerFunction(node)
-                            .forEach(p => {
-                                if (isExpandoPropertyDeclaration(p.valueDeclaration)) {
-                                    const errorTarget = isBinaryExpression(p.valueDeclaration) ?
-                                        p.valueDeclaration.left :
-                                        p.valueDeclaration;
+                return factory.createMethodSignature(
+                    [],
+                    name,
+                    method.questionToken,
+                    typeParameters,
+                    parameters,
+                    returnType,
+                );
+            }
+        }
+        finally {
+            enclosingDeclaration = oldEnclosingDeclaration;
+        }
+    }
 
-                                    reportIsolatedDeclarationError(
+    function typeFromObjectLiteralAccessor(accessor: GetAccessorDeclaration | SetAccessorDeclaration, name: PropertyName) {
+        const allAccessors = resolver.getAllAccessorDeclarations(accessor);
+        const getAccessorType = allAccessors.getAccessor && getTypeAnnotationFromAccessor(allAccessors.getAccessor);
+        const setAccessorType = allAccessors.setAccessor && getTypeAnnotationFromAccessor(allAccessors.setAccessor);
+        // We have types for both accessors, we can't know if they are the same type so we keep both accessors
+        if (getAccessorType !== undefined && setAccessorType !== undefined) {
+            const parameters = accessor.parameters.map(p => ensureParameter(p));
+
+            if (isGetAccessor(accessor)) {
+                return factory.updateGetAccessorDeclaration(
+                    accessor,
+                    [],
+                    name,
+                    parameters,
+                    visitTypeNode(getAccessorType),
+                    /*body*/ undefined,
+                );
+            }
+            else {
+                return factory.updateSetAccessorDeclaration(
+                    accessor,
+                    [],
+                    name,
+                    parameters,
+                    /*body*/ undefined,
+                );
+            }
+        }
+        else if (allAccessors.firstAccessor === accessor) {
+            const foundType = getAccessorType ?? setAccessorType;
+            const propertyType = foundType ? visitTypeNode(foundType) : inferAccessorType(accessor, allAccessors, createAccessorTypeError);
+
+            const propertySignature = factory.createPropertySignature(
+                allAccessors.setAccessor === undefined ? [factory.createModifier(SyntaxKind.ReadonlyKeyword)] : [],
+                name,
+                /*questionToken*/ undefined,
+                propertyType,
+            );
+            return propertySignature;
+        }
+    }
+    function createUndefinedTypeNode() {
+        if (strictNullChecks) {
+            return factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword);
+        }
+        else {
+            return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+        }
+    }
+    function typeFromPrimitiveLiteral(node: PrimitiveLiteral, baseType: string | KeywordTypeSyntaxKind, preserveLiterals = false) {
+        if (preserveLiterals) {
+            if (node.kind === SyntaxKind.PrefixUnaryExpression && node.operator === SyntaxKind.PlusToken) {
+                return factory.createLiteralTypeNode(node.operand);
+            }
+            return factory.createLiteralTypeNode(node);
+        }
+        else {
+            return typeof baseType === "number" ? factory.createKeywordTypeNode(baseType) : factory.createTypeReferenceNode(baseType);
+        }
+    }
+
+    function typeFromAccessor(node: AccessorDeclaration) {
+        const accessorDeclarations = resolver.getAllAccessorDeclarations(node);
+        const accessorType = getTypeAnnotationFromAllAccessorDeclarations(node, accessorDeclarations);
+        return visitTypeNode(accessorType) ?? inferAccessorType(node, accessorDeclarations, createAccessorTypeError);
+    }
+    function typeFromVariable(node: VariableDeclaration) {
+        const declaredType = node.type;
+        if (declaredType) {
+            return visitTypeNode(declaredType);
+        }
+        let resultType;
+        let isolatedDeclarationsDiagnostic: typeof createVariableOrPropertyError | undefined = createVariableOrPropertyError;
+        if (node.initializer) {
+            if (isClassExpression(node.initializer)) {
+                isolatedDeclarationsDiagnostic = node => createDiagnosticForNode(node.initializer!, Diagnostics.Inference_from_class_expressions_is_not_supported_with_isolatedDeclarations);
+            }
+            else if (resolver.isExpandoFunctionDeclaration(node)) {
+                if (isolatedDeclarations) {
+                    resolver.getPropertiesOfContainerFunction(node)
+                        .forEach(p => {
+                            if (isExpandoPropertyDeclaration(p.valueDeclaration)) {
+                                const errorTarget = isBinaryExpression(p.valueDeclaration) ?
+                                    p.valueDeclaration.left :
+                                    p.valueDeclaration;
+
+                                reportIsolatedDeclarationError(
+                                    errorTarget,
+                                    createDiagnosticForNode(
                                         errorTarget,
-                                        createDiagnosticForNode(
-                                            errorTarget,
-                                            Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
-                                        ),
-                                    );
-                                }
-                            });
-                    }
-                    isolatedDeclarationsDiagnostic = undefined;
+                                        Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
+                                    ),
+                                );
+                            }
+                        });
                 }
-                else {
-                    resultType = typeFromExpression(
-                        node.initializer,
-                        node.parent.flags & NodeFlags.Const ? InitializeTransformNarrowBehavior.KeepLiterals : InitializeTransformNarrowBehavior.None
-                    );
-                }
+                isolatedDeclarationsDiagnostic = undefined;
             }
-            return resultType ?? inferVariableLikeType(node, isolatedDeclarationsDiagnostic);
+            else {
+                resultType = typeFromExpression(node.initializer, /*isConstContext*/ undefined, /*requiresAddingUndefined*/ undefined, isVarConstLike(node));
+            }
         }
-        function typeFromParameter(node: ParameterDeclaration) {
-            const parent = node.parent;
-            if (parent.kind === SyntaxKind.SetAccessor) {
-                return typeFromAccessor(parent);
-            }
-            const declaredType = node.type;
-            const addUndefined = resolver.requiresAddingImplicitUndefined(node);
-            let resultType;
-            let diagnostic = createParameterError;
-            if (!addUndefined) {
-                if (declaredType) {
-                    return visitTypeNode(declaredType);
-                }
-                if (node.initializer && isIdentifier(node.name)) {
-                    resultType = typeFromExpression(node.initializer);
-                    diagnostic = n => createExpressionError(n.initializer!);
-                }
-            }
-            return resultType ?? inferVariableLikeType(node, diagnostic, addUndefined);
+        return resultType ?? inferVariableLikeType(node, isolatedDeclarationsDiagnostic);
+    }
+    function typeFromParameter(node: ParameterDeclaration) {
+        const parent = node.parent;
+        if (parent.kind === SyntaxKind.SetAccessor) {
+            return typeFromAccessor(parent);
         }
-        function typeFromProperty(node: PropertyDeclaration) {
-            const declaredType = node.type;
+        const declaredType = node.type;
+        const addUndefined = resolver.requiresAddingImplicitUndefined(node);
+        let resultType;
+        let diagnostic = createParameterError;
+        if (!addUndefined) {
             if (declaredType) {
                 return visitTypeNode(declaredType);
             }
-            let resultType;
-            if (node.initializer) {
-                const isOptional = isOptionalDeclaration(node);
-                const isOptionalFlags = isOptional? InitializeTransformNarrowBehavior.RequiresAddingUndefined: InitializeTransformNarrowBehavior.None;
-                const readonlyFlags = hasEffectiveReadonlyModifier(node) ? InitializeTransformNarrowBehavior.KeepLiterals : InitializeTransformNarrowBehavior.None;
-                resultType = typeFromExpression(node.initializer, readonlyFlags | isOptionalFlags) ?? inferVariableLikeType(node, createVariableOrPropertyError);
-                if (isOptional && resultType) {
-                    return addUndefinedInUnion(resultType);
-                }
+            if (node.initializer && isIdentifier(node.name)) {
+                resultType = typeFromExpression(node.initializer);
+                diagnostic = n => createExpressionError(n.initializer!);
             }
-            return resultType ?? inferVariableLikeType(node, createVariableOrPropertyError);
         }
+        return resultType ?? inferVariableLikeType(node, diagnostic, addUndefined);
+    }
+    function typeFromProperty(node: PropertyDeclaration) {
+        const declaredType = node.type;
+        if (declaredType) {
+            return visitTypeNode(declaredType);
+        }
+        let resultType;
+        if (node.initializer) {
+            const isOptional = isOptionalDeclaration(node);
+            resultType = typeFromExpression(node.initializer, /*isConstContext*/ undefined, isOptional, isDeclarationReadonly(node));
+            if (isOptional && resultType) {
+                return addUndefinedInUnion(resultType);
+            }
+        }
+        return resultType ?? inferVariableLikeType(node, createVariableOrPropertyError);
     }
 
     function isDeclarationAndNotVisible(node: NamedDeclaration) {
@@ -1562,7 +1524,7 @@ export function transformDeclarations(context: TransformationContext) {
     function checkEntityNameVisibility(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node) {
         const visibilityResult = resolver.isEntityNameVisible(entityName, enclosingDeclaration);
         handleSymbolAccessibilityError(visibilityResult);
-        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForEntityName(entityName), /*isPresentInSource*/ false, entityName);
+        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForEntityName(entityName));
         return visibilityResult.accessibility === SymbolAccessibility.Accessible;
     }
 
@@ -1578,7 +1540,7 @@ export function transformDeclarations(context: TransformationContext) {
         resultHasExternalModuleIndicator = resultHasExternalModuleIndicator || (parent.kind !== SyntaxKind.ModuleDeclaration && parent.kind !== SyntaxKind.ImportType);
         if (isStringLiteralLike(input)) {
             if (isBundledEmit) {
-                const newName = getExternalModuleNameFromDeclaration(host, resolver, parent);
+                const newName = getExternalModuleNameFromDeclaration(context.getEmitHost(), resolver, parent);
                 if (newName) {
                     return factory.createStringLiteral(newName);
                 }
@@ -1586,7 +1548,7 @@ export function transformDeclarations(context: TransformationContext) {
             else {
                 const symbol = resolver.getSymbolOfExternalModuleSpecifier(input);
                 if (symbol) {
-                    recordExportedModuleFromDeclarationEmit(symbol, /*isPresentInSource*/ true);
+                    (exportedModulesFromDeclarationEmit || (exportedModulesFromDeclarationEmit = [])).push(symbol);
                 }
             }
         }
@@ -2200,7 +2162,7 @@ export function transformDeclarations(context: TransformationContext) {
                     ensureType(input),
                     /*body*/ undefined,
                 ));
-                if (clean && resolver.isExpandoFunction(input) && shouldEmitFunctionProperties(input)) {
+                if (clean && resolver.isExpandoFunctionDeclaration(input) && shouldEmitFunctionProperties(input)) {
                     const props = resolver.getPropertiesOfContainerFunction(input);
 
                     if (isolatedDeclarations) {
@@ -2235,11 +2197,8 @@ export function transformDeclarations(context: TransformationContext) {
                             return undefined; // unique symbol or non-identifier name - omit, since there's no syntax that can preserve it
                         }
                         getSymbolAccessibilityDiagnostic = createGetSymbolAccessibilityDiagnosticForNode(p.valueDeclaration);
-                        const oldReferenceRequestingNode = referenceRequestingNode;
-                        referenceRequestingNode = p.valueDeclaration;
                         const type = isolatedDeclarationsNoFallback ? makeInvalidType() : resolver.createTypeOfDeclaration(p.valueDeclaration, fakespace, declarationEmitNodeBuilderFlags, symbolTracker);
                         getSymbolAccessibilityDiagnostic = oldDiag;
-                        referenceRequestingNode = oldReferenceRequestingNode;
                         const isNonContextualKeywordName = isStringANonContextualKeyword(nameStr);
                         const name = isNonContextualKeywordName ? factory.getGeneratedNameForNode(p.valueDeclaration) : factory.createIdentifier(nameStr);
                         if (isNonContextualKeywordName) {
@@ -2459,10 +2418,7 @@ export function transformDeclarations(context: TransformationContext) {
                         errorNode: extendsClause,
                         typeName: input.name,
                     });
-                    const oldReferenceRequestingNode = referenceRequestingNode;
-                    referenceRequestingNode = extendsClause;
                     const varDecl = factory.createVariableDeclaration(newId, /*exclamationToken*/ undefined, resolver.createTypeOfExpression(extendsClause.expression, input, declarationEmitNodeBuilderFlags, symbolTracker), /*initializer*/ undefined);
-                    referenceRequestingNode = oldReferenceRequestingNode;
                     const statement = factory.createVariableStatement(needsDeclare ? [factory.createModifier(SyntaxKind.DeclareKeyword)] : [], factory.createVariableDeclarationList([varDecl], NodeFlags.Const));
                     const heritageClauses = factory.createNodeArray(map(input.heritageClauses, clause => {
                         if (clause.token === SyntaxKind.ExtendsKeyword) {
@@ -2703,18 +2659,6 @@ function getTypeAnnotationFromAccessor(accessor: AccessorDeclaration): TypeNode 
     }
 }
 
-type ImportReferenceInformation =
-    | { symbol: Symbol; requestingNode: undefined; isPresentInSource: true; }
-    | { symbol: Symbol; requestingNode: Node; isPresentInSource: false; };
-
-type ModuleReferenceInformation =
-    | { sourceFile: SourceFile; requestingNode: undefined; isPresentInSource: true; }
-    | { sourceFile: SourceFile; requestingNode: Node; isPresentInSource: false; };
-
-type TypeReferenceInformation =
-    | { specifier: string; mode: ResolutionMode; requestingNode: undefined; isPresentInSource: true; }
-    | { specifier: string; mode: ResolutionMode; requestingNode: Node; isPresentInSource: false; };
-
 type CanHaveLiteralInitializer = VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration;
 function canHaveLiteralInitializer(node: Node): node is CanHaveLiteralInitializer {
     switch (node.kind) {
@@ -2802,15 +2746,6 @@ function isProcessedComponent(node: Node): node is ProcessedComponent {
             return true;
     }
     return false;
-}
-
-const enum InitializeTransformNarrowBehavior {
-    None = 0,
-    AsConst = 1,
-    KeepLiterals = 1 << 2,
-    RequiresAddingUndefined = 1 << 3,
-    AsConstOrKeepLiterals = AsConst | KeepLiterals,
-    NotKeepLiterals = ~KeepLiterals,
 }
 
 const relatedSuggestionByDeclarationKind = {

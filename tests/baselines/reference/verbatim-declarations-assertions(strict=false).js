@@ -92,17 +92,17 @@ export class C {
 //// [assertToTypeReferences.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.C = exports.fnWithRequiredDefaultParam = exports.fn = exports.vConst = exports.vLet = void 0;
+exports.C = exports.vConst = exports.vLet = void 0;
+exports.fn = fn;
+exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 exports.vLet = null;
 exports.vConst = null;
 function fn(p) {
     if (p === void 0) { p = null; }
 }
-exports.fn = fn;
 function fnWithRequiredDefaultParam(p, req) {
     if (p === void 0) { p = null; }
 }
-exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 var C = /** @class */ (function () {
     function C(ctorField) {
         if (ctorField === void 0) { ctorField = null; }
@@ -123,17 +123,17 @@ exports.default = null;
 //// [assertToTypeLiteral.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.C = exports.fnWithRequiredDefaultParam = exports.fn = exports.vConst = exports.vLet = void 0;
+exports.C = exports.vConst = exports.vLet = void 0;
+exports.fn = fn;
+exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 exports.vLet = null;
 exports.vConst = null;
 function fn(p) {
     if (p === void 0) { p = null; }
 }
-exports.fn = fn;
 function fnWithRequiredDefaultParam(p, req) {
     if (p === void 0) { p = null; }
 }
-exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 var C = /** @class */ (function () {
     function C(ctorField) {
         if (ctorField === void 0) { ctorField = null; }
@@ -188,17 +188,17 @@ exports.C = C;
 //// [angularAssertionToTypeReferences.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.C = exports.fnWithRequiredDefaultParam = exports.fn = exports.vConst = exports.vLet = void 0;
+exports.C = exports.vConst = exports.vLet = void 0;
+exports.fn = fn;
+exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 exports.vLet = null;
 exports.vConst = null;
 function fn(p) {
     if (p === void 0) { p = null; }
 }
-exports.fn = fn;
 function fnWithRequiredDefaultParam(p, req) {
     if (p === void 0) { p = null; }
 }
-exports.fnWithRequiredDefaultParam = fnWithRequiredDefaultParam;
 var C = /** @class */ (function () {
     function C(ctorField) {
         if (ctorField === void 0) { ctorField = null; }

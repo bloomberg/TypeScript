@@ -1383,7 +1383,8 @@ export type PrimitiveLiteral =
     | StringLiteral
     | NoSubstitutionTemplateLiteral
     | BigIntLiteral
-    | PrefixUnaryExpression;
+    | PrefixUnaryExpression & { operator: SyntaxKind.PlusToken; operand: NumericLiteral; }
+    | PrefixUnaryExpression & { operator: SyntaxKind.MinusToken; operand: NumericLiteral | BigIntLiteral; };
 
 /**
  * Declarations that can contain other declarations. Corresponds with `ContainerFlags.IsContainer` in binder.ts.

@@ -159,7 +159,6 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
     function createEmitHost(): EmitHost {
         const symlinkCache = createSymlinkCache(currentDirectory, getCanonicalFileName);
         return {
-            getPrependNodes: notImplemented,
             getCurrentDirectory: () => currentDirectory,
             getCanonicalFileName,
             useCaseSensitiveFileNames: () => !!compilerOptions.useCaseSensitiveFileNames,

@@ -2356,6 +2356,17 @@ export function isVarConst(node: VariableDeclaration | VariableDeclarationList):
 }
 
 /**
+ * Gets whether a bound `VariableDeclaration` or `VariableDeclarationList` is part of a `const`, `using` or `await using` declaration.
+ * @internal
+ */
+export function isVarConstLike(node: VariableDeclaration | VariableDeclarationList) {
+    const blockScopeKind = getCombinedNodeFlags(node) & NodeFlags.BlockScoped;
+    return blockScopeKind === NodeFlags.Const ||
+        blockScopeKind === NodeFlags.Using ||
+        blockScopeKind === NodeFlags.AwaitUsing;
+}
+
+/**
  * Gets whether a bound `VariableDeclaration` or `VariableDeclarationList` is part of a `let` declaration.
  * @internal
  */
@@ -11157,41 +11168,12 @@ export function isPrimitiveLiteralValue(node: Expression, includeBigInt = true):
     }
 }
 
-/**
- * @internal
- *
- * Clone literal value while normalizing it (converts octals/hex to base 10, uses double quotes strings)
- */
-export function clonePrimitiveLiteralValue<T extends PrimitiveLiteral>(node: T): T;
-export function clonePrimitiveLiteralValue(node: PrimitiveLiteral): PrimitiveLiteral {
-    switch (node.kind) {
-        case SyntaxKind.NumericLiteral:
-            return factory.createNumericLiteral(node.text);
-        case SyntaxKind.BigIntLiteral:
-            return factory.createBigIntLiteral({ negative: false, base10Value: parsePseudoBigInt(node.text) });
-        case SyntaxKind.StringLiteral:
-        case SyntaxKind.NoSubstitutionTemplateLiteral:
-            return factory.createStringLiteral(node.text);
-        case SyntaxKind.FalseKeyword:
-            return factory.createFalse();
-        case SyntaxKind.TrueKeyword:
-            return factory.createTrue();
-        case SyntaxKind.PrefixUnaryExpression:
-            Debug.assert(isNumericLiteral(node.operand) || isBigIntLiteral(node.operand));
-            if (node.operator === SyntaxKind.PlusToken) {
-                return clonePrimitiveLiteralValue(node.operand);
-            }
-            else if (node.operator === SyntaxKind.MinusToken) {
-                return factory.createPrefixUnaryExpression(
-                    node.operator,
-                    clonePrimitiveLiteralValue(node.operand),
-                );
-            }
-            Debug.fail(`Unable to clone prefixed unary expression with operator ${Debug.formatSyntaxKind(node.operator)}`);
-            break;
-        default:
-            Debug.assertNever(node, `Unable to clone unknown literal type.`);
+/** @internal */
+export function unwrapParenthesizedExpression(o: Expression) {
+    while (o.kind === SyntaxKind.ParenthesizedExpression) {
+        o = (o as ParenthesizedExpression).expression;
     }
+    return o;
 }
 
 /** @internal */
@@ -11509,7 +11491,7 @@ export function createNameResolver(
                                 Diagnostics.Cannot_access_0_from_another_file_without_qualification_when_1_is_enabled_Use_2_instead,
                                 unescapeLeadingUnderscores(name),
                                 isolatedModulesLikeFlagName,
-                                `${unescapeLeadingUnderscores(getSymbolOfDeclaration(location as EnumDeclaration)!.escapedName)}.${unescapeLeadingUnderscores(name)}`,
+                                `${unescapeLeadingUnderscores(getSymbolOfDeclaration(location as EnumDeclaration).escapedName)}.${unescapeLeadingUnderscores(name)}`,
                             );
                         }
                         break loop;

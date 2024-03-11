@@ -19,7 +19,7 @@
  
  /// [Errors] ////
  
- file1.ts(4,11): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
+ file1.ts(4,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
 -file2.ts(1,26): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
  
  

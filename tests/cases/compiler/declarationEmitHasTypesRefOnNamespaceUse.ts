@@ -4,7 +4,6 @@
 // @currentDirectory: /
 // @noImplicitReferences: true
 // @filename: /deps/dep/dep.d.ts
-// @isolatedDeclarationDiffReason: TSC preserves import due to augmentation
 declare namespace NS {
     interface Dep {
     }

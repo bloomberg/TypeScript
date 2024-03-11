@@ -1,7 +1,6 @@
 import {
     __String,
     bindSourceFile,
-    clonePrimitiveLiteralValue,
     CompilerOptions,
     ComputedPropertyName,
     createEntityVisibilityChecker,
@@ -21,7 +20,6 @@ import {
     EnumMember,
     ExportSpecifier,
     Expression,
-    factory,
     forEachChild,
     forEachEntry,
     FunctionDeclaration,
@@ -81,7 +79,6 @@ import {
     PropertyName,
     PropertySignature,
     resolveTripleslashReference,
-    setNodeFlags,
     skipParentheses,
     some,
     SourceFile,
@@ -111,7 +108,6 @@ interface EmitDeclarationNodeLinks {
 /** @internal */
 export function createEmitDeclarationResolver(file: SourceFile, options: CompilerOptions, host: EmitHost): EmitResolver {
     const nodeLinks: EmitDeclarationNodeLinks[] = [];
-
     const { isEntityNameVisible, collectLinkedAliases } = createEntityVisibilityChecker({
         defaultSymbolAccessibility: SymbolAccessibility.Accessible,
         isDeclarationVisible,
@@ -398,7 +394,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     }
 
     // Do a best effort to find expando functions
-    function isExpandoFunction(node: FunctionDeclaration | VariableDeclaration) {
+    function isExpandoFunctionDeclaration(node: FunctionDeclaration | VariableDeclaration) {
         const declaration = getParseTreeNode(node, (n): n is FunctionDeclaration | VariableDeclaration => isFunctionDeclaration(n) || isVariableDeclaration(n));
         if (!declaration) {
             return false;
@@ -418,11 +414,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         }
         const lateBoundSymbols = resolveAllLateBoundSymbols(symbol, /*isStatic*/ true);
         return !!forEachEntry(lateBoundSymbols, p => p.flags & SymbolFlags.Value && isExpandoPropertyDeclaration(p.valueDeclaration));
-    }
-    function makeInvalidType() {
-        const node = factory.createTypeReferenceNode("invalid");
-        setNodeFlags(node, node.flags | NodeFlags.ThisNodeHasError);
-        return node;
     }
 
     function requiresAddingImplicitUndefined(): boolean {
@@ -453,13 +444,13 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         isOptionalParameter,
         requiresAddingImplicitUndefined,
         createTypeOfDeclaration() {
-            return makeInvalidType();
+            return undefined;
         },
         createReturnTypeOfSignatureDeclaration() {
-            return makeInvalidType();
+            return undefined;
         },
         createTypeOfExpression() {
-            return makeInvalidType();
+            return undefined;
         },
         isDeclarationVisible,
         isLiteralConstDeclaration,
@@ -520,7 +511,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         },
         createLiteralConstValue(node) {
             Debug.assert(node.initializer && isPrimitiveLiteralValue(node.initializer));
-            return clonePrimitiveLiteralValue(node.initializer);
+            return node.initializer;
         },
         isLateBound(node): node is LateBoundDeclaration {
             const name = getNameOfDeclaration(node);
@@ -577,7 +568,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         getTypeReferenceDirectivesForEntityName() {
             return undefined;
         },
-        isExpandoFunction,
+        isExpandoFunctionDeclaration,
         getSymbolOfExternalModuleSpecifier(contextSpecifier) {
             const currentSourceFile = getSourceFileOfNode(contextSpecifier);
             const moduleSpecifier = contextSpecifier.text;
