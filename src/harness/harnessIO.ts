@@ -390,7 +390,6 @@ export namespace Compiler {
         symlinks?: vfs.FileSet,
     ): HarnessCompilerEnvironment {
         const options: ts.CompilerOptions & HarnessOptions = compilerOptions ? ts.cloneCompilerOptions(compilerOptions) : { noResolve: false };
-        options.target = ts.getEmitScriptTarget(options);
         options.newLine = options.newLine || ts.NewLineKind.CarriageReturnLineFeed;
         options.noErrorTruncation = true;
         options.skipDefaultLibCheck = typeof options.skipDefaultLibCheck === "undefined" ? true : options.skipDefaultLibCheck;
@@ -530,7 +529,7 @@ export namespace Compiler {
             assert(sourceFile, "Program has no source file with name '" + fileName + "'");
             // Is this file going to be emitted separately
             let sourceFileName: string;
-            const outFile = options.outFile || options.out;
+            const outFile = options.outFile;
             if (!outFile) {
                 if (options.outDir) {
                     let sourceFilePath = ts.getNormalizedAbsolutePath(sourceFile.fileName, result.vfs.cwd());
@@ -1519,6 +1518,10 @@ export namespace TestCaseParser {
                 else {
                     // First metadata marker in the file
                     currentFileName = testMetaData[2].trim();
+                    if (currentFileContent && ts.skipTrivia(currentFileContent, 0, /*stopAfterLineBreak*/ false, /*stopAtComments*/ false) !== currentFileContent.length) {
+                        throw new Error("Non-comment test content appears before the first '// @Filename' directive");
+                    }
+                    currentFileContent = "";
                 }
             }
             else {

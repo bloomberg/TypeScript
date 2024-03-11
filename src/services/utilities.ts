@@ -9,6 +9,7 @@ import {
     BinaryExpression,
     binarySearchKey,
     BindingElement,
+    BlockLike,
     BreakOrContinueStatement,
     CallExpression,
     canHaveModifiers,
@@ -1958,7 +1959,7 @@ export function isInsideJsxElement(sourceFile: SourceFile, position: number): bo
 /** @internal */
 export function findPrecedingMatchingToken(token: Node, matchingTokenKind: SyntaxKind.OpenBraceToken | SyntaxKind.OpenParenToken | SyntaxKind.OpenBracketToken, sourceFile: SourceFile) {
     const closeTokenText = tokenToString(token.kind)!;
-    const matchingTokenText = tokenToString(matchingTokenKind)!;
+    const matchingTokenText = tokenToString(matchingTokenKind);
     const tokenFullStart = token.getFullStart();
     // Text-scan based fast path - can be bamboozled by comments and other trivia, but often provides
     // a good, fast approximation without too much extra work in the cases where it fails.
@@ -4273,4 +4274,17 @@ export function fileShouldUseJavaScriptRequire(file: SourceFile | string, progra
         }
     }
     return preferRequire;
+}
+
+/** @internal */
+export function isBlockLike(node: Node): node is BlockLike {
+    switch (node.kind) {
+        case SyntaxKind.Block:
+        case SyntaxKind.SourceFile:
+        case SyntaxKind.ModuleBlock:
+        case SyntaxKind.CaseClause:
+            return true;
+        default:
+            return false;
+    }
 }

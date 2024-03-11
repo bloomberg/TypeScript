@@ -33,7 +33,6 @@ import {
     createGetSymbolAccessibilityDiagnosticForNode,
     createGetSymbolAccessibilityDiagnosticForNodeName,
     createSymbolTable,
-    createUnparsedSourceFile,
     Debug,
     Declaration,
     DeclarationDiagnosticProducing,
@@ -178,7 +177,6 @@ import {
     isTypeParameterDeclaration,
     isTypeQueryNode,
     isUnionTypeNode,
-    isUnparsedSource,
     isVarAwaitUsing,
     isVariableDeclaration,
     isVarUsing,
@@ -262,7 +260,6 @@ import {
     TypeReferenceNode,
     unescapeLeadingUnderscores,
     UnionTypeNode,
-    UnparsedSource,
     VariableDeclaration,
     VariableDeclarationList,
     VariableLikeDeclaration,
@@ -571,17 +568,6 @@ export function transformDeclarations(context: TransformationContext) {
                     const updated = isSourceFileJS(sourceFile) ? factory.createNodeArray(transformDeclarationsForJS(sourceFile)) : visitNodes(sourceFile.statements, visitDeclarationStatements, isStatement);
                     return factory.updateSourceFile(sourceFile, transformAndReplaceLatePaintedStatements(updated), /*isDeclarationFile*/ true, /*referencedFiles*/ [], /*typeReferences*/ [], /*hasNoDefaultLib*/ false, /*libReferences*/ []);
                 }),
-                mapDefined(node.prepends, prepend => {
-                    if (prepend.kind === SyntaxKind.InputFiles) {
-                        const sourceFile = createUnparsedSourceFile(prepend, "dts", stripInternal);
-                        hasNoDefaultLib = hasNoDefaultLib || !!sourceFile.hasNoDefaultLib;
-                        collectReferences(sourceFile, refs);
-                        recordTypeReferenceDirectivesIfNecessary(map(sourceFile.typeReferenceDirectives, ref => [ref.fileName, ref.resolutionMode]), /*isPresentInSource*/ true);
-                        collectLibs(sourceFile, libs);
-                        return sourceFile;
-                    }
-                    return prepend;
-                }),
             );
             bundle.syntheticFileReferences = [];
             bundle.syntheticTypeReferences = getFileReferencesForUsedTypeReferences();
@@ -733,20 +719,23 @@ export function transformDeclarations(context: TransformationContext) {
         }
     }
 
-    function collectReferences(sourceFile: SourceFile | UnparsedSource, ret: Map<NodeId, ModuleReferenceInformation>) {
-        if (noResolve || (!isUnparsedSource(sourceFile) && isSourceFileJS(sourceFile))) return ret;
+    function collectReferences(sourceFile: SourceFile, ret: Map<NodeId, SourceFile>) {
+        if (noResolve || isSourceFileJS(sourceFile)) return ret;
         forEach(sourceFile.referencedFiles, f => {
             const elem = host.getSourceFileFromReference(sourceFile, f);
             if (elem) {
-                ret.set(getOriginalNodeId(elem), { sourceFile: elem, isPresentInSource: true, requestingNode: undefined });
+                ret.set(getOriginalNodeId(elem), elem);
             }
         });
         return ret;
     }
 
-    function collectLibs(sourceFile: SourceFile | UnparsedSource, ret: Set<string>) {
+    function collectLibs(sourceFile: SourceFile, ret: Map<string, boolean>) {
         forEach(sourceFile.libReferenceDirectives, ref => {
-            ret.add(toFileNameLowerCase(ref.fileName));
+            const lib = host.getLibFileFromReference(ref);
+            if (lib) {
+                ret.set(toFileNameLowerCase(ref.fileName), true);
+            }
         });
         return ret;
     }
