@@ -23,13 +23,13 @@
 @@ -74,15 +70,16 @@
  typeFromPropertyAssignment29.ts(100,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
  typeFromPropertyAssignment29.ts(101,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
- typeFromPropertyAssignment29.ts(104,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
- typeFromPropertyAssignment29.ts(104,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
+ typeFromPropertyAssignment29.ts(104,30): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoClass'.
+ typeFromPropertyAssignment29.ts(104,50): error TS2339: Property 'm' does not exist on type 'typeof ExpandoClass'.
 +typeFromPropertyAssignment29.ts(107,20): error TS9022: Inference from class expressions is not supported with --isolatedDeclarations.
  typeFromPropertyAssignment29.ts(110,14): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
  typeFromPropertyAssignment29.ts(111,14): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
- typeFromPropertyAssignment29.ts(114,22): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
- typeFromPropertyAssignment29.ts(114,42): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
+ typeFromPropertyAssignment29.ts(114,30): error TS2339: Property 'prop' does not exist on type 'typeof ExpandoExpr3'.
+ typeFromPropertyAssignment29.ts(114,50): error TS2339: Property 'm' does not exist on type 'typeof ExpandoExpr3'.
  
  
 -==== typeFromPropertyAssignment29.ts (14 errors) ====

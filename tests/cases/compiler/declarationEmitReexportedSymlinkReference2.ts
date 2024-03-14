@@ -1,5 +1,4 @@
 // @filename: monorepo/pkg1/dist/index.d.ts
-// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 export * from './types';
 // @filename: monorepo/pkg1/dist/types.d.ts
 export declare type A = {

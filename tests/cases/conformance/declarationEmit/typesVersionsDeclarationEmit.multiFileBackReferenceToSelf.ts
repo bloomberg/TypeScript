@@ -2,7 +2,6 @@
 // @target: esnext
 // @module: commonjs
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 // @filename: node_modules/ext/package.json
 {
     "name": "ext",

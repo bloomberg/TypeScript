@@ -135,29 +135,29 @@ export class CompilerBaselineRunner extends RunnerBase {
             });
         });
 
-        // describe("isolated declarations fixed", () => {
-        //     let fixedIsolatedTest: FixedIsolatedDeclarationTest | undefined;
-        //     before(function () {
-        //         const fixedIsolatedTestEnv = FixedIsolatedDeclarationTest.fixTestProject(environment);
-        //         if (fixedIsolatedTestEnv) {
-        //             fixedIsolatedTest = new FixedIsolatedDeclarationTest(fixedIsolatedTestEnv);
-        //         }
-        //         else {
-        //             this.skip();
-        //         }
-        //     });
-        //     it(`Correct dte emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDteOutput());
-        //     it(`Correct tsc emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyTscOutput());
-        //     it(`Correct dte/tsc diff for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDiff());
-        //     it(`Correct dte map emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDteMapOutput());
-        //     it(`Correct tsc map emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyTscMapOutput());
-        //     it(`Correct dte/tsc map diff for fixed ${fileName}`, () => fixedIsolatedTest?.verifyMapDiff());
-        //     it(`Correct diff reason for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDiffReason());
+        describe("isolated declarations fixed", () => {
+            let fixedIsolatedTest: FixedIsolatedDeclarationTest | undefined;
+            before(function () {
+                const fixedIsolatedTestEnv = FixedIsolatedDeclarationTest.fixTestProject(environment);
+                if (fixedIsolatedTestEnv) {
+                    fixedIsolatedTest = new FixedIsolatedDeclarationTest(fixedIsolatedTestEnv);
+                }
+                else {
+                    this.skip();
+                }
+            });
+            it(`Correct dte emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDteOutput());
+            it(`Correct tsc emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyTscOutput());
+            it(`Correct dte/tsc diff for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDiff());
+            it(`Correct dte map emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDteMapOutput());
+            it(`Correct tsc map emit for fixed ${fileName}`, () => fixedIsolatedTest?.verifyTscMapOutput());
+            it(`Correct dte/tsc map diff for fixed ${fileName}`, () => fixedIsolatedTest?.verifyMapDiff());
+            it(`Correct diff reason for fixed ${fileName}`, () => fixedIsolatedTest?.verifyDiffReason());
 
-        //     after(() => {
-        //         fixedIsolatedTest = undefined!;
-        //     });
-        // });
+            after(() => {
+                fixedIsolatedTest = undefined!;
+            });
+        });
 
         after(() => {
             compilerTest = undefined!;
@@ -723,6 +723,7 @@ export class FixedIsolatedDeclarationTest extends IsolatedDeclarationTest {
 
         env.compilerOptions.isolatedDeclarations = false;
         env.compilerOptions.isolatedDeclarationsNoFallback = false;
+        env.compilerOptions.verbatimReferences = true;
         if (env.compilerOptions.declarationMap === undefined) {
             env.compilerOptions.declarationMap = true;
         }

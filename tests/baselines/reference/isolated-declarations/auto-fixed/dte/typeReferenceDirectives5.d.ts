@@ -18,7 +18,6 @@ declare let $: { x: number }
 
 
 //// [/app.d.ts]
-/// <reference types="lib" />
 import { $ } from "./ref";
 export interface A {
     x: typeof $;

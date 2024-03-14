@@ -1,5 +1,4 @@
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 
 // @Filename: /node_modules/.prisma/client/index.d.ts
 export interface PrismaClientOptions {

@@ -1,6 +1,5 @@
 // @useCaseSensitiveFilenames: true
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 // @filename: /cache/typescript-fsa/src/impl.d.ts
 export function getA(): A;
 export enum A {

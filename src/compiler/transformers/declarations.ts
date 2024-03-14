@@ -334,7 +334,7 @@ export function transformDeclarations(context: TransformationContext) {
     let emittedImports: readonly AnyImportSyntax[] | undefined; // must be declared in container so it can be `undefined` while transformer's first pass
     const resolver = context.getEmitResolver();
     const options = context.getCompilerOptions();
-    const { noResolve, stripInternal, isolatedDeclarations, isolatedDeclarationsNoFallback } = options;
+    const { noResolve, stripInternal, isolatedDeclarations, isolatedDeclarationsNoFallback, verbatimReferences } = options;
     const strictNullChecks = getStrictOptionValue(options, "strictNullChecks");
     return transformRoot;
 
@@ -587,10 +587,10 @@ export function transformDeclarations(context: TransformationContext) {
             }
         }
         const updated = factory.updateSourceFile(node, combinedStatements, /*isDeclarationFile*/ true, 
-            isolatedDeclarations ? []: references,
-            isolatedDeclarations ? []: getFileReferencesForUsedTypeReferences(), 
+            verbatimReferences || isolatedDeclarations ? []: references,
+            verbatimReferences || isolatedDeclarations ? []: getFileReferencesForUsedTypeReferences(), 
             node.hasNoDefaultLib, 
-            isolatedDeclarations ? []: getLibReferences());
+            verbatimReferences || isolatedDeclarations ? []: getLibReferences());
         updated.exportedModulesFromDeclarationEmit = exportedModulesFromDeclarationEmit;
         return updated;
 

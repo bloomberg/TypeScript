@@ -74,7 +74,6 @@ import {
     ModifierFlags,
     ModifierLike,
     Node,
-    NodeArray,
     NodeBuilderFlags,
     NodeFlags,
     ObjectBindingPattern,
@@ -96,6 +95,7 @@ import {
     TypeChecker,
     TypeFlags,
     TypeNode,
+    UnionReduction,
     VariableDeclaration,
     VariableStatement,
     walkUpParenthesizedExpressions,
@@ -131,6 +131,7 @@ const errorCodes = [
     Diagnostics.Default_exports_can_t_be_inferred_with_isolatedDeclarations,
     Diagnostics.Only_const_arrays_can_be_inferred_with_isolatedDeclarations,
     Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
+    Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations
 ].map(d => d.code);
 
 const canHaveExplicitTypeAnnotation = new Set<SyntaxKind>([
@@ -225,6 +226,7 @@ function withChanges<T>(
     const sourceFile: SourceFile = context.sourceFile;
     const program = context.program;
     const typeChecker: TypeChecker = program.getTypeChecker();
+    const emitResolver = typeChecker.getEmitResolver();
     const scriptTarget = getEmitScriptTarget(program.getCompilerOptions());
     const importAdder = createImportAdder(context.sourceFile, context.program, context.preferences, context.host);
     const fixedNodes = new Set<Node>();
@@ -643,7 +645,6 @@ function withChanges<T>(
             return;
         }
         const { typeNode } = inferNodeType(func);
-        addTypesToParametersArray(func.parameters);
         if (typeNode) {
             changeTracker.tryInsertTypeAnnotation(
                 sourceFile,
@@ -928,11 +929,14 @@ function withChanges<T>(
     }
     function inferNodeType(node: Node): InferenceResult {
         if (typePrinter === "full") {
-            const type = isValueSignatureDeclaration(node) ?
+            let type = isValueSignatureDeclaration(node) ?
                 tryGetReturnType(node) :
                 typeChecker.getTypeAtLocation(node);
             if (!type) {
                 return emptyInferenceResult;
+            }
+            if(isParameter(node) && emitResolver.requiresAddingImplicitUndefined(node)) {
+                 type = typeChecker.getUnionType([typeChecker.getUndefinedType(), type], UnionReduction.None);
             }
             const flags = (
                     isVariableDeclaration(node) ||
@@ -1113,7 +1117,17 @@ function withChanges<T>(
     }
 
     function typeToTypeNode(type: Type, enclosingDeclaration: Node, flags = NodeBuilderFlags.None) {
-        return typeToAutoImportableTypeNode(typeChecker, importAdder, type, enclosingDeclaration, scriptTarget, declarationEmitNodeBuilderFlags | flags);
+        let isTruncated = false;
+        const result = typeToAutoImportableTypeNode(typeChecker, importAdder, type, enclosingDeclaration, scriptTarget, declarationEmitNodeBuilderFlags | flags, {
+            moduleResolverHost: program,
+            trackSymbol() {
+                return true;
+            },
+            reportTruncationError() {
+                isTruncated = true;
+            },
+        });
+        return isTruncated ? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword) : result;
     }
 
     function tryGetReturnType(node: SignatureDeclaration): Type | undefined {
@@ -1123,17 +1137,14 @@ function withChanges<T>(
         }
     }
 
-    function addTypesToParametersArray(nodeArray: NodeArray<ParameterDeclaration> | undefined) {
-        if (nodeArray === undefined) return;
-        nodeArray.forEach(param => fixupForIsolatedDeclarations(param));
-    }
-
     function addTypeAnnotation(decl: ParameterDeclaration | VariableDeclaration | PropertyDeclaration): undefined | DiagnosticOrDiagnosticAndArguments {
-        if (decl.type) return undefined;
-
         const { typeNode } = inferNodeType(decl);
         if (typeNode) {
-            changeTracker.tryInsertTypeAnnotation(getSourceFileOfNode(decl), decl, typeNode);
+            if(decl.type) {
+                changeTracker.replaceNode(getSourceFileOfNode(decl), decl.type, typeNode);    
+            }else {
+                changeTracker.tryInsertTypeAnnotation(getSourceFileOfNode(decl), decl, typeNode);
+            }
             return [Diagnostics.Add_annotation_of_type_0, printTypeNode(typeNode)];
         }
     }

@@ -20,6 +20,7 @@ import {
     EnumMember,
     ExportSpecifier,
     Expression,
+    factory,
     forEachChild,
     forEachEntry,
     FunctionDeclaration,
@@ -435,6 +436,10 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         }
         return true;
     }
+    function makeInvalidType() {
+        return factory.createTypeReferenceNode("invalid");
+    }
+
     return {
         ...notImplementedResolver,
         isUndefinedIdentifier(identifier) {
@@ -444,13 +449,13 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         isOptionalParameter,
         requiresAddingImplicitUndefined,
         createTypeOfDeclaration() {
-            return undefined;
+            return makeInvalidType();
         },
         createReturnTypeOfSignatureDeclaration() {
-            return undefined;
+            return makeInvalidType();
         },
         createTypeOfExpression() {
-            return undefined;
+            return makeInvalidType();
         },
         isDeclarationVisible,
         isLiteralConstDeclaration,

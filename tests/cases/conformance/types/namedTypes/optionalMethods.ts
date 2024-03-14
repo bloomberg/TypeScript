@@ -1,6 +1,5 @@
 // @strictNullChecks: true
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: Implicit undefined not fixed by code mod yet
 // @isolatedDeclarationDiffReason: Implicit undefined in parameter can only be detected by TSC.
 
 interface Foo {

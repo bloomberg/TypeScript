@@ -5,11 +5,10 @@
 ===================================================================
 --- TSC	declarations
 +++ DTE	declarations
-@@ -1,8 +1,9 @@
+@@ -1,7 +1,8 @@
  
  
  //// [/app.d.ts]
- /// <reference types="lib" />
 +import { $ } from "./ref";
  export interface A {
      x: () => typeof $;

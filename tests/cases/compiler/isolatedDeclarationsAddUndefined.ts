@@ -1,7 +1,6 @@
 // @isolatedDeclarations: true
 // @declaration: true
 // @strict: true
-// @isolatedDeclarationFixedDiffReason: Implicit undefined not fixed by code mod yet
 // @isolatedDeclarationDiffReason: Implicit undefined in parameter can only be detected by TSC.
 // @filename: file1.ts
 

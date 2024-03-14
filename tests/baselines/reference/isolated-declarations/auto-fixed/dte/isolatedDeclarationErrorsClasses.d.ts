@@ -90,7 +90,7 @@ export declare class C {
     [noAnnotationLiteralName](): void;
     [noParamAnnotationLiteralName](v: string): void;
     get [noAnnotationStringName](): number;
-    set [noParamAnnotationStringName](value: invalid);
+    set [noParamAnnotationStringName](value: any);
 }
 export interface I {
     [noAnnotationStringName]: 10;

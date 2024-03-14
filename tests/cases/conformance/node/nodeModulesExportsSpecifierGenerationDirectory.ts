@@ -1,6 +1,5 @@
 // @module: node16,nodenext
 // @declaration: true
-// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 // @filename: index.ts
 // esm format file
 import { Thing } from "inner/other";
