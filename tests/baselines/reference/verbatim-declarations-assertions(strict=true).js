@@ -225,17 +225,13 @@ type P = {} & {
 export declare let vLet: P;
 export declare const vConst: P;
 export declare function fn(p?: P): void;
-export declare function fnWithRequiredDefaultParam(p: {
-    name: string;
-} | undefined, req: number): void;
+export declare function fnWithRequiredDefaultParam(p: P | undefined, req: number): void;
 export declare class C {
     ctorField: P;
     field: P;
     readonly roFiled: P;
     method(p?: P): void;
-    methodWithRequiredDefault(p: {
-        name: string;
-    } | undefined, req: number): void;
+    methodWithRequiredDefault(p: P | undefined, req: number): void;
     constructor(ctorField?: P);
 }
 declare const _default: P;
@@ -250,9 +246,9 @@ export declare const vConst: {} & {
 export declare function fn(p?: {} & {
     name: string;
 }): void;
-export declare function fnWithRequiredDefaultParam(p: {
+export declare function fnWithRequiredDefaultParam(p: ({} & {
     name: string;
-} | undefined, req: number): void;
+}) | undefined, req: number): void;
 export declare class C {
     ctorField: {} & {
         name: string;
@@ -266,16 +262,16 @@ export declare class C {
     method(p?: {} & {
         name: string;
     }): void;
-    methodWithRequiredDefault(p: {
+    methodWithRequiredDefault(p: ({} & {
         name: string;
-    } | undefined, req: number): void;
+    }) | undefined, req: number): void;
     constructor(ctorField?: {} & {
         name: string;
     });
-    get x(): {
+    get x(): {} & {
         name: string;
     };
-    set x(v: {
+    set x(v: {} & {
         name: string;
     });
 }
@@ -291,8 +287,8 @@ type R = {
     foo: string;
 };
 export declare class C {
-    tsResolve?: R | undefined;
-    tsResolve2?: string | R | undefined;
+    tsResolve?: R | R;
+    tsResolve2?: R | R | string;
     reuseType?: ((p: R) => void) | string | string | undefined;
     reuseType2?: (new (p: R) => R) | string | string | undefined;
     reuseType3?: string | number | bigint | symbol | unknown | any | never | symbol | undefined;
@@ -311,20 +307,14 @@ type P = {} & {
 export declare let vLet: P;
 export declare const vConst: P;
 export declare function fn(p?: P): void;
-export declare function fnWithRequiredDefaultParam(p: {
-    name: string;
-} | undefined, req: number): void;
+export declare function fnWithRequiredDefaultParam(p: P | undefined, req: number): void;
 export declare class C {
     ctorField: P;
     field: P;
-    optField?: {
-        name: string;
-    } | undefined;
+    optField?: P;
     readonly roFiled: P;
     method(p?: P): void;
-    methodWithRequiredDefault(p: {
-        name: string;
-    } | undefined, req: number): void;
+    methodWithRequiredDefault(p: P | undefined, req: number): void;
     constructor(ctorField?: P);
 }
 export {};

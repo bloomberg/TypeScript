@@ -29,7 +29,7 @@
 -==== r/entry.ts (1 errors) ====
 +==== r/entry.ts (2 errors) ====
      import { foo } from "foo";
-     import { RootProps, bar } from "root";
+     import { bar, RootProps } from "root";
      export const x = foo();
                   ~
  !!! error TS2742: The inferred type of 'x' cannot be named without a reference to 'foo/node_modules/nested'. This is likely not portable. A type annotation is necessary.

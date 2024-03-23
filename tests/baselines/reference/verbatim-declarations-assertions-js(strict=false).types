@@ -13,7 +13,7 @@ export const vConst = /** @type {string | string} */(null)
 >(null) : string
 
 export function fn(p = /** @type {string | string} */(null)) {}
->fn : (p?: string) => void
+>fn : (p?: string | string) => void
 >p : string
 >(null) : string
 
@@ -21,7 +21,7 @@ export function fn(p = /** @type {string | string} */(null)) {}
  * @param {number} req 
 */
 export function fnWithRequiredDefaultParam(p = /** @type {string | string} */(null), req) {}
->fnWithRequiredDefaultParam : (p: string, req: number) => void
+>fnWithRequiredDefaultParam : (p: string | string, req: number) => void
 >p : string
 >(null) : string
 >req : number
@@ -39,7 +39,7 @@ export class C {
 >(null) : string
 
     method(p = /** @type {string | string} */(null)) {}
->method : (p?: string) => void
+>method : (p?: string | string) => void
 >p : string
 >(null) : string
 
@@ -47,7 +47,7 @@ export class C {
      * @param {number} req 
     */
     methodWithRequiredDefault(p = /** @type {string | string} */(null), req) {}
->methodWithRequiredDefault : (p: string, req: number) => void
+>methodWithRequiredDefault : (p: string | string, req: number) => void
 >p : string
 >(null) : string
 >req : number

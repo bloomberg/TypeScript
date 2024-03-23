@@ -32,7 +32,7 @@ verify.codeFix({
     description: "Add inline type assertion to 'Person'",
     index: 1,
     newFileContent:
-`import { Person, getPerson } from "./person-code";
+`import { getPerson, Person } from "./person-code";
 export default {
   person: getPerson() as Person
 };`

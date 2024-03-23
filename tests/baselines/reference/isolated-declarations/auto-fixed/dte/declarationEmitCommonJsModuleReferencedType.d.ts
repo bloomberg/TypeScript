@@ -19,7 +19,7 @@ export interface RootProps {}
 export function bar(): RootProps;
 //// [entry.ts]
 import { foo } from "foo";
-import { RootProps, bar } from "root";
+import { bar, RootProps } from "root";
 export const x = foo();
 export const y: RootProps = bar();
 
@@ -58,7 +58,7 @@ r/entry.ts(3,14): error TS9010: Variable must have an explicit type annotation w
     export function bar(): RootProps;
 ==== r/entry.ts (2 errors) ====
     import { foo } from "foo";
-    import { RootProps, bar } from "root";
+    import { bar, RootProps } from "root";
     export const x = foo();
                  ~
 !!! error TS2742: The inferred type of 'x' cannot be named without a reference to 'foo/node_modules/nested'. This is likely not portable. A type annotation is necessary.

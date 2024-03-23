@@ -2,10 +2,8 @@ import {
     AccessorDeclaration,
     addRelatedInfo,
     AllAccessorDeclarations,
-    AnyImportSyntax,
     append,
     ArrayBindingElement,
-    arrayFrom,
     ArrayLiteralExpression,
     ArrowFunction,
     AsExpression,
@@ -71,7 +69,6 @@ import {
     getFirstConstructorWithBody,
     getLineAndCharacterOfPosition,
     getNameOfDeclaration,
-    getNormalizedAbsolutePath,
     getOriginalNodeId,
     getOutputPathsFor,
     getParseTreeNode,
@@ -86,7 +83,6 @@ import {
     getThisParameter,
     hasDynamicName,
     hasEffectiveModifier,
-    hasExtension,
     hasJSDocNodes,
     HasModifiers,
     hasSyntacticModifier,
@@ -100,7 +96,6 @@ import {
     InterfaceDeclaration,
     IntersectionTypeNode,
     isAmbientModule,
-    isAnyImportSyntax,
     isArray,
     isArrayBindingElement,
     isAsExpression,
@@ -123,7 +118,6 @@ import {
     isExternalModule,
     isExternalModuleAugmentation,
     isExternalModuleIndicator,
-    isExternalModuleReference,
     isExternalOrCommonJsModule,
     isFunctionDeclaration,
     isFunctionLike,
@@ -131,7 +125,6 @@ import {
     isGlobalScopeAugmentation,
     isIdentifier,
     isIdentifierText,
-    isImportDeclaration,
     isImportEqualsDeclaration,
     isIndexSignatureDeclaration,
     isInterfaceDeclaration,
@@ -164,7 +157,6 @@ import {
     isSpreadAssignment,
     isStatement,
     isStringANonContextualKeyword,
-    isStringLiteral,
     isStringLiteralLike,
     isTupleTypeNode,
     isTypeAliasDeclaration,
@@ -211,8 +203,6 @@ import {
     ParenthesizedExpression,
     ParenthesizedTypeNode,
     parseNodeFactory,
-    pathContainsNodeModules,
-    pathIsRelative,
     PrefixUnaryExpression,
     PrimitiveLiteral,
     PropertyAssignment,
@@ -221,7 +211,6 @@ import {
     PropertySignature,
     pushIfUnique,
     removeAllComments,
-    ResolutionMode,
     ScriptTarget,
     SetAccessorDeclaration,
     setCommentRange,
@@ -235,7 +224,6 @@ import {
     SourceFile,
     SpreadAssignment,
     SpreadElement,
-    startsWith,
     Statement,
     StringLiteral,
     Symbol,
@@ -244,12 +232,10 @@ import {
     SymbolFlags,
     SymbolTracker,
     SyntaxKind,
-    toFileNameLowerCase,
     TransformationContext,
     transformNodes,
     TrueLiteral,
     tryCast,
-    tryGetModuleSpecifierFromDeclaration,
     TypeAliasDeclaration,
     TypeAssertion,
     TypeElement,
@@ -269,7 +255,6 @@ import {
     visitNodes,
     VisitResult,
 } from "../_namespaces/ts";
-import * as moduleSpecifiers from "../_namespaces/ts.moduleSpecifiers";
 
 /** @internal */
 export function getDeclarationDiagnostics(host: EmitHost, resolver: EmitResolver, file: SourceFile | undefined): DiagnosticWithLocation[] | undefined {
@@ -303,11 +288,9 @@ export function transformDeclarations(context: TransformationContext) {
     let needsScopeFixMarker = false;
     let resultHasScopeMarker = false;
     let enclosingDeclaration: Node;
-    let necessaryTypeReferences: Set<[specifier: string, mode: ResolutionMode]> | undefined;
     let lateMarkedStatements: LateVisibilityPaintedStatement[] | undefined;
     let lateStatementReplacementMap: Map<NodeId, VisitResult<LateVisibilityPaintedStatement | ExportAssignment | undefined>>;
     let suppressNewDiagnosticContexts: boolean;
-    let exportedModulesFromDeclarationEmit: Symbol[] | undefined;
 
     const { factory } = context;
     const host = context.getEmitHost();
@@ -320,8 +303,6 @@ export function transformDeclarations(context: TransformationContext) {
         reportLikelyUnsafeImportRequiredError,
         reportTruncationError,
         moduleResolverHost: host,
-        trackReferencedAmbientModule,
-        trackExternalModuleSymbolOfImportTypeNode,
         reportNonlocalAugmentation,
         reportNonSerializableProperty,
     };
@@ -329,47 +310,14 @@ export function transformDeclarations(context: TransformationContext) {
     let errorFallbackNode: Declaration | undefined;
 
     let currentSourceFile: SourceFile;
-    let refs: Map<NodeId, SourceFile>;
-    let libs: Map<string, boolean>;
-    let emittedImports: readonly AnyImportSyntax[] | undefined; // must be declared in container so it can be `undefined` while transformer's first pass
+    let rawReferencedFiles: readonly [SourceFile, FileReference][];
+    let rawTypeReferenceDirectives: readonly FileReference[];
+    let rawLibReferenceDirectives: readonly FileReference[];
     const resolver = context.getEmitResolver();
     const options = context.getCompilerOptions();
-    const { noResolve, stripInternal, isolatedDeclarations, isolatedDeclarationsNoFallback, verbatimReferences } = options;
+    const { stripInternal, isolatedDeclarations, isolatedDeclarationsNoFallback } = options;
     const strictNullChecks = getStrictOptionValue(options, "strictNullChecks");
     return transformRoot;
-
-    function recordTypeReferenceDirectivesIfNecessary(typeReferenceDirectives: readonly [specifier: string, mode: ResolutionMode][] | undefined): void {
-        if (!typeReferenceDirectives) {
-            return;
-        }
-        necessaryTypeReferences = necessaryTypeReferences || new Set();
-        for (const ref of typeReferenceDirectives) {
-            necessaryTypeReferences.add(ref);
-        }
-    }
-
-    function trackReferencedAmbientModule(node: ModuleDeclaration, symbol: Symbol) {
-        // If it is visible via `// <reference types="..."/>`, then we should just use that
-        const directives = resolver.getTypeReferenceDirectivesForSymbol(symbol, SymbolFlags.All);
-        if (length(directives)) {
-            return recordTypeReferenceDirectivesIfNecessary(directives);
-        }
-        // Otherwise we should emit a path-based reference
-        const container = getSourceFileOfNode(node);
-        refs.set(getOriginalNodeId(container), container);
-    }
-
-    function trackReferencedAmbientModuleFromImport(node: ImportDeclaration | ExportDeclaration | ImportEqualsDeclaration | ImportTypeNode) {
-        const moduleSpecifier = tryGetModuleSpecifierFromDeclaration(node);
-        const symbol = moduleSpecifier && resolver.tryFindAmbientModule(moduleSpecifier);
-        if (symbol?.declarations) {
-            for (const decl of symbol.declarations) {
-                if (isAmbientModule(decl) && getSourceFileOfNode(decl) !== currentSourceFile) {
-                    trackReferencedAmbientModule(decl, symbol);
-                }
-            }
-        }
-    }
 
     function handleSymbolAccessibilityError(symbolAccessibilityResult: SymbolAccessibilityResult) {
         if (symbolAccessibilityResult.accessibility === SymbolAccessibility.Accessible) {
@@ -402,16 +350,9 @@ export function transformDeclarations(context: TransformationContext) {
         return false;
     }
 
-    function trackExternalModuleSymbolOfImportTypeNode(symbol: Symbol) {
-        if (!isBundledEmit) {
-            (exportedModulesFromDeclarationEmit || (exportedModulesFromDeclarationEmit = [])).push(symbol);
-        }
-    }
-
     function trackSymbol(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags) {
         if (symbol.flags & SymbolFlags.TypeParameter) return false;
         const issuedDiagnostic = handleSymbolAccessibilityError(resolver.isSymbolAccessible(symbol, enclosingDeclaration, meaning, /*shouldComputeAliasToMarkVisible*/ true));
-        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForSymbol(symbol, meaning));
         return issuedDiagnostic;
     }
 
@@ -502,8 +443,9 @@ export function transformDeclarations(context: TransformationContext) {
 
         if (node.kind === SyntaxKind.Bundle) {
             isBundledEmit = true;
-            refs = new Map();
-            libs = new Map();
+            rawReferencedFiles = [];
+            rawTypeReferenceDirectives = [];
+            rawLibReferenceDirectives = [];
             let hasNoDefaultLib = false;
             const bundle = factory.createBundle(
                 map(node.sourceFiles, sourceFile => {
@@ -517,8 +459,7 @@ export function transformDeclarations(context: TransformationContext) {
                     getSymbolAccessibilityDiagnostic = throwDiagnostic;
                     needsScopeFixMarker = false;
                     resultHasScopeMarker = false;
-                    collectReferences(sourceFile, refs);
-                    collectLibs(sourceFile, libs);
+                    collectFileReferences(sourceFile);
                     if (isExternalOrCommonJsModule(sourceFile) || isJsonSourceFile(sourceFile)) {
                         resultHasExternalModuleIndicator = false; // unused in external module bundle emit (all external modules are within module blocks, therefore are known to be modules)
                         needsDeclare = false;
@@ -543,13 +484,11 @@ export function transformDeclarations(context: TransformationContext) {
                     return factory.updateSourceFile(sourceFile, transformAndReplaceLatePaintedStatements(updated), /*isDeclarationFile*/ true, /*referencedFiles*/ [], /*typeReferences*/ [], /*hasNoDefaultLib*/ false, /*libReferences*/ []);
                 }),
             );
-            bundle.syntheticFileReferences = [];
-            bundle.syntheticTypeReferences = getFileReferencesForUsedTypeReferences();
+            const outputFilePath = getDirectoryPath(normalizeSlashes(getOutputPathsFor(node, host, /*forceDtsPaths*/ true).declarationFilePath!));
+            bundle.syntheticFileReferences = getReferencedFiles(outputFilePath);
+            bundle.syntheticTypeReferences = getTypeReferences();
             bundle.syntheticLibReferences = getLibReferences();
             bundle.hasNoDefaultLib = hasNoDefaultLib;
-            const outputFilePath = getDirectoryPath(normalizeSlashes(getOutputPathsFor(node, host, /*forceDtsPaths*/ true).declarationFilePath!));
-            const referenceVisitor = mapReferencesIntoArray(bundle.syntheticFileReferences as FileReference[], outputFilePath);
-            refs.forEach(referenceVisitor);
             return bundle;
         }
 
@@ -565,66 +504,58 @@ export function transformDeclarations(context: TransformationContext) {
         suppressNewDiagnosticContexts = false;
         lateMarkedStatements = undefined;
         lateStatementReplacementMap = new Map();
-        necessaryTypeReferences = undefined;
-        refs = collectReferences(currentSourceFile, new Map());
-        libs = collectLibs(currentSourceFile, new Map());
-        const references: FileReference[] = [];
-        const outputFilePath = getDirectoryPath(normalizeSlashes(getOutputPathsFor(node, host, /*forceDtsPaths*/ true).declarationFilePath!));
-        const referenceVisitor = mapReferencesIntoArray(references, outputFilePath);
+        rawReferencedFiles = [];
+        rawTypeReferenceDirectives = [];
+        rawLibReferenceDirectives = [];
+        collectFileReferences(currentSourceFile);
         let combinedStatements: NodeArray<Statement>;
         if (isSourceFileJS(currentSourceFile)) {
             combinedStatements = factory.createNodeArray(transformDeclarationsForJS(node));
-            refs.forEach(referenceVisitor);
-            emittedImports = filter(combinedStatements, isAnyImportSyntax);
         }
         else {
             const statements = visitNodes(node.statements, visitDeclarationStatements, isStatement);
             combinedStatements = setTextRange(factory.createNodeArray(transformAndReplaceLatePaintedStatements(statements)), node.statements);
-            refs.forEach(referenceVisitor);
-            emittedImports = filter(combinedStatements, isAnyImportSyntax);
             if (isExternalModule(node) && (!resultHasExternalModuleIndicator || (needsScopeFixMarker && !resultHasScopeMarker))) {
                 combinedStatements = setTextRange(factory.createNodeArray([...combinedStatements, createEmptyExports(factory)]), combinedStatements);
             }
         }
-        const updated = factory.updateSourceFile(node, combinedStatements, /*isDeclarationFile*/ true, 
-            verbatimReferences || isolatedDeclarations ? []: references,
-            verbatimReferences || isolatedDeclarations ? []: getFileReferencesForUsedTypeReferences(), 
-            node.hasNoDefaultLib, 
-            verbatimReferences || isolatedDeclarations ? []: getLibReferences());
-        updated.exportedModulesFromDeclarationEmit = exportedModulesFromDeclarationEmit;
-        return updated;
+        const outputFilePath = getDirectoryPath(normalizeSlashes(getOutputPathsFor(node, host, /*forceDtsPaths*/ true).declarationFilePath!));
+        return factory.updateSourceFile(node, combinedStatements, /*isDeclarationFile*/ true, getReferencedFiles(outputFilePath), getTypeReferences(), node.hasNoDefaultLib, getLibReferences());
 
-        function getLibReferences() {
-            return arrayFrom(libs.keys(), lib => ({ fileName: lib, pos: -1, end: -1 }));
+        function collectFileReferences(sourceFile: SourceFile) {
+            rawReferencedFiles = concatenate(rawReferencedFiles, map(sourceFile.referencedFiles, f => [sourceFile, f]));
+            rawTypeReferenceDirectives = concatenate(rawTypeReferenceDirectives, sourceFile.typeReferenceDirectives);
+            rawLibReferenceDirectives = concatenate(rawLibReferenceDirectives, sourceFile.libReferenceDirectives);
         }
 
-        function getFileReferencesForUsedTypeReferences() {
-            return necessaryTypeReferences ? mapDefined(arrayFrom(necessaryTypeReferences.keys()), getFileReferenceForSpecifierModeTuple) : [];
+        function copyFileReferenceAsSynthetic(ref: FileReference): FileReference {
+            const newRef: FileReference = { ...ref };
+            newRef.pos = -1;
+            newRef.end = -1;
+            return newRef;
         }
 
-        function getFileReferenceForSpecifierModeTuple([typeName, mode]: [specifier: string, mode: ResolutionMode]): FileReference | undefined {
-            // Elide type references for which we have imports
-            if (emittedImports) {
-                for (const importStatement of emittedImports) {
-                    if (isImportEqualsDeclaration(importStatement) && isExternalModuleReference(importStatement.moduleReference)) {
-                        const expr = importStatement.moduleReference.expression;
-                        if (isStringLiteralLike(expr) && expr.text === typeName) {
-                            return undefined;
-                        }
-                    }
-                    else if (isImportDeclaration(importStatement) && isStringLiteral(importStatement.moduleSpecifier) && importStatement.moduleSpecifier.text === typeName) {
-                        return undefined;
-                    }
-                }
-            }
-            return { fileName: typeName, pos: -1, end: -1, ...(mode ? { resolutionMode: mode } : undefined) };
+        function getTypeReferences(): readonly FileReference[] {
+            return mapDefined(rawTypeReferenceDirectives, ref => {
+                if (!ref.preserve) return undefined;
+                return copyFileReferenceAsSynthetic(ref);
+            });
         }
 
-        function mapReferencesIntoArray(references: FileReference[], outputFilePath: string): (file: SourceFile) => void {
-            return file => {
-                if (exportedModulesFromDeclarationEmit?.includes(file.symbol)) {
-                    // Already have an import declaration resolving to this file
-                    return;
+        function getLibReferences(): readonly FileReference[] {
+            return mapDefined(rawLibReferenceDirectives, ref => {
+                if (!ref.preserve) return undefined;
+                return copyFileReferenceAsSynthetic(ref);
+            });
+        }
+
+        function getReferencedFiles(outputFilePath: string): readonly FileReference[] {
+            return mapDefined(rawReferencedFiles, ([sourceFile, ref]) => {
+                if (!ref.preserve) return undefined;
+
+                const file = host.getSourceFileFromReference(sourceFile, ref);
+                if (!file) {
+                    return undefined;
                 }
 
                 let declFileName: string;
@@ -637,64 +568,21 @@ export function transformDeclarations(context: TransformationContext) {
                     declFileName = paths.declarationFilePath || paths.jsFilePath || file.fileName;
                 }
 
-                if (declFileName) {
-                    const specifier = moduleSpecifiers.getModuleSpecifier(
-                        options,
-                        currentSourceFile,
-                        getNormalizedAbsolutePath(outputFilePath, host.getCurrentDirectory()),
-                        getNormalizedAbsolutePath(declFileName, host.getCurrentDirectory()),
-                        host,
-                    );
-                    if (!pathIsRelative(specifier)) {
-                        // If some compiler option/symlink/whatever allows access to the file containing the ambient module declaration
-                        // via a non-relative name, emit a type reference directive to that non-relative name, rather than
-                        // a relative path to the declaration file
-                        recordTypeReferenceDirectivesIfNecessary([[specifier, /*mode*/ undefined]]);
-                        return;
-                    }
+                if (!declFileName) return undefined;
 
-                    let fileName = getRelativePathToDirectoryOrUrl(
-                        outputFilePath,
-                        declFileName,
-                        host.getCurrentDirectory(),
-                        host.getCanonicalFileName,
-                        /*isAbsolutePathAnUrl*/ false,
-                    );
-                    if (startsWith(fileName, "./") && hasExtension(fileName)) {
-                        fileName = fileName.substring(2);
-                    }
+                const fileName = getRelativePathToDirectoryOrUrl(
+                    outputFilePath,
+                    declFileName,
+                    host.getCurrentDirectory(),
+                    host.getCanonicalFileName,
+                    /*isAbsolutePathAnUrl*/ false,
+                );
 
-                    // omit references to files from node_modules (npm may disambiguate module
-                    // references when installing this package, making the path is unreliable).
-                    if (startsWith(fileName, "node_modules/") || pathContainsNodeModules(fileName)) {
-                        return;
-                    }
-
-                    references.push({ pos: -1, end: -1, fileName });
-                }
-            };
+                const newRef = copyFileReferenceAsSynthetic(ref);
+                newRef.fileName = fileName;
+                return newRef;
+            });
         }
-    }
-
-    function collectReferences(sourceFile: SourceFile, ret: Map<NodeId, SourceFile>) {
-        if (noResolve || isSourceFileJS(sourceFile)) return ret;
-        forEach(sourceFile.referencedFiles, f => {
-            const elem = host.getSourceFileFromReference(sourceFile, f);
-            if (elem) {
-                ret.set(getOriginalNodeId(elem), elem);
-            }
-        });
-        return ret;
-    }
-
-    function collectLibs(sourceFile: SourceFile, ret: Map<string, boolean>) {
-        forEach(sourceFile.libReferenceDirectives, ref => {
-            const lib = host.getLibFileFromReference(ref);
-            if (lib) {
-                ret.set(toFileNameLowerCase(ref.fileName), true);
-            }
-        });
-        return ret;
     }
 
     function filterBindingPatternInitializers(name: BindingName) {
@@ -1524,7 +1412,6 @@ export function transformDeclarations(context: TransformationContext) {
     function checkEntityNameVisibility(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node) {
         const visibilityResult = resolver.isEntityNameVisible(entityName, enclosingDeclaration);
         handleSymbolAccessibilityError(visibilityResult);
-        recordTypeReferenceDirectivesIfNecessary(resolver.getTypeReferenceDirectivesForEntityName(entityName));
         return visibilityResult.accessibility === SymbolAccessibility.Accessible;
     }
 
@@ -1543,12 +1430,6 @@ export function transformDeclarations(context: TransformationContext) {
                 const newName = getExternalModuleNameFromDeclaration(context.getEmitHost(), resolver, parent);
                 if (newName) {
                     return factory.createStringLiteral(newName);
-                }
-            }
-            else {
-                const symbol = resolver.getSymbolOfExternalModuleSpecifier(input);
-                if (symbol) {
-                    (exportedModulesFromDeclarationEmit || (exportedModulesFromDeclarationEmit = [])).push(symbol);
                 }
             }
         }
@@ -1948,7 +1829,6 @@ export function transformDeclarations(context: TransformationContext) {
                 }
                 case SyntaxKind.ImportType: {
                     if (!isLiteralImportTypeNode(input)) return cleanup(input);
-                    trackReferencedAmbientModuleFromImport(input);
                     return cleanup(factory.updateImportTypeNode(
                         input,
                         factory.updateLiteralTypeNode(input.argument, rewriteModuleSpecifier(input, input.argument.literal)),
@@ -2006,8 +1886,6 @@ export function transformDeclarations(context: TransformationContext) {
                     resultHasExternalModuleIndicator = true;
                 }
                 resultHasScopeMarker = true;
-                // Always visible if the parent node isn't dropped for being not visible
-                trackReferencedAmbientModuleFromImport(input);
                 // Rewrite external module names if necessary
                 return factory.updateExportDeclaration(
                     input,
@@ -2095,18 +1973,10 @@ export function transformDeclarations(context: TransformationContext) {
         if (shouldStripInternal(input)) return;
         switch (input.kind) {
             case SyntaxKind.ImportEqualsDeclaration: {
-                const transformed = transformImportEqualsDeclaration(input);
-                if (transformed) {
-                    trackReferencedAmbientModuleFromImport(input);
-                }
-                return transformed;
+                return transformImportEqualsDeclaration(input);
             }
             case SyntaxKind.ImportDeclaration: {
-                const transformed = transformImportDeclaration(input);
-                if (transformed) {
-                    trackReferencedAmbientModuleFromImport(input);
-                }
-                return transformed;
+                return transformImportDeclaration(input);
             }
         }
         if (isDeclaration(input) && isDeclarationAndNotVisible(input)) return;

@@ -24,7 +24,6 @@ import {
     getSupportedExtensions,
     getSupportedExtensionsWithJsonIfResolveJsonModule,
     hasExtension,
-    libMap as tsLibMap,
     NodeFlags,
     normalizeSlashes,
     notImplemented,
@@ -59,7 +58,7 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
     const commonSourceDirectory = normalizeSlashes(ensureTrailingDirectorySeparator(transpileOptions.commonSourceDirectory ?? "."));
     const emitHost = createEmitHost();
 
-    const emitResolver = createEmitDeclarationResolver(sourceFile, compilerOptions, emitHost);
+    const emitResolver = createEmitDeclarationResolver(sourceFile, compilerOptions);
     const diagnostics: Diagnostic[] = [];
     const transformationContext: TransformationContext = {
         ...nullTransformationContext,
@@ -177,15 +176,6 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
             readFile: returnUndefined,
             fileExists: returnFalse,
             getBuildInfo: notImplemented,
-            getLibFileFromReference(ref) {
-                if (compilerOptions.noLib) {
-                    return undefined;
-                }
-                if (!tsLibMap.has(ref.fileName)) {
-                    return;
-                }
-                return getSourceFile(ref.fileName);
-            },
             getSourceFileFromReference(file, ref) {
                 const referencedFile = resolveTripleslashReference(ref.fileName, file.fileName);
                 if (hasExtension(referencedFile)) {

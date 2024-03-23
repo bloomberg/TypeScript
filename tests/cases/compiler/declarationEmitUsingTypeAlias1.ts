@@ -1,6 +1,7 @@
 // @strict: true
 // @declaration: true
 // @module: nodenext
+// @isolatedDeclarationFixedDiffReason: checker.typeToTypeNode deliberately fails on types that originate from node_modules.
 
 // @filename: node_modules/some-dep/dist/inner.d.ts
 export declare type Other = { other: string };

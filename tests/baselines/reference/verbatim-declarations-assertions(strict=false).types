@@ -16,13 +16,13 @@ export const vConst = null! as P
 >null! : null
 
 export function fn(p = null! as P) {}
->fn : (p?: { name: string; }) => void
+>fn : (p?: P) => void
 >p : { name: string; }
 >null! as P : { name: string; }
 >null! : null
 
 export function fnWithRequiredDefaultParam(p = null! as P, req: number) {}
->fnWithRequiredDefaultParam : (p: { name: string; }, req: number) => void
+>fnWithRequiredDefaultParam : (p: P, req: number) => void
 >p : { name: string; }
 >null! as P : { name: string; }
 >null! : null
@@ -42,13 +42,13 @@ export class C {
 >null! : null
 
     method(p = null! as P) {}
->method : (p?: { name: string; }) => void
+>method : (p?: P) => void
 >p : { name: string; }
 >null! as P : { name: string; }
 >null! : null
 
     methodWithRequiredDefault(p = null! as P, req: number) {}
->methodWithRequiredDefault : (p: { name: string; }, req: number) => void
+>methodWithRequiredDefault : (p: P, req: number) => void
 >p : { name: string; }
 >null! as P : { name: string; }
 >null! : null
@@ -78,14 +78,14 @@ export const vConst = null! as {} & { name: string }
 >name : string
 
 export function fn(p = null! as {} & { name: string }) {}
->fn : (p?: { name: string; }) => void
+>fn : (p?: {} & {    name: string;}) => void
 >p : { name: string; }
 >null! as {} & { name: string } : { name: string; }
 >null! : null
 >name : string
 
 export function fnWithRequiredDefaultParam(p = null! as {} & { name: string }, req: number) {}
->fnWithRequiredDefaultParam : (p: { name: string; }, req: number) => void
+>fnWithRequiredDefaultParam : (p: {} & {    name: string;}, req: number) => void
 >p : { name: string; }
 >null! as {} & { name: string } : { name: string; }
 >null! : null
@@ -108,14 +108,14 @@ export class C {
 >name : string
 
     method(p = null! as {} & { name: string }) {}
->method : (p?: { name: string; }) => void
+>method : (p?: {} & {    name: string;}) => void
 >p : { name: string; }
 >null! as {} & { name: string } : { name: string; }
 >null! : null
 >name : string
 
     methodWithRequiredDefault(p = null! as {} & { name: string }, req: number) {}
->methodWithRequiredDefault : (p: { name: string; }, req: number) => void
+>methodWithRequiredDefault : (p: {} & {    name: string;}, req: number) => void
 >p : { name: string; }
 >null! as {} & { name: string } : { name: string; }
 >null! : null
@@ -246,13 +246,13 @@ export const vConst = <P>null!
 >null! : null
 
 export function fn(p = <P>null!) {}
->fn : (p?: { name: string; }) => void
+>fn : (p?: P) => void
 >p : { name: string; }
 ><P>null! : { name: string; }
 >null! : null
 
 export function fnWithRequiredDefaultParam(p = <P>null!, req: number) {}
->fnWithRequiredDefaultParam : (p: { name: string; }, req: number) => void
+>fnWithRequiredDefaultParam : (p: P, req: number) => void
 >p : { name: string; }
 ><P>null! : { name: string; }
 >null! : null
@@ -277,13 +277,13 @@ export class C {
 >null! : null
 
     method(p = <P>null!) {}
->method : (p?: { name: string; }) => void
+>method : (p?: P) => void
 >p : { name: string; }
 ><P>null! : { name: string; }
 >null! : null
 
     methodWithRequiredDefault(p = <P>null!, req: number) {}
->methodWithRequiredDefault : (p: { name: string; }, req: number) => void
+>methodWithRequiredDefault : (p: P, req: number) => void
 >p : { name: string; }
 ><P>null! : { name: string; }
 >null! : null

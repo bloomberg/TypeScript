@@ -12,7 +12,6 @@ import {
     DeclarationName,
     determineIfDeclarationIsVisible,
     ElementAccessExpression,
-    EmitHost,
     EmitResolver,
     emptyArray,
     entityNameToString,
@@ -30,9 +29,7 @@ import {
     getNodeId,
     getParseTreeNode,
     getPropertyNameForPropertyNameNode,
-    getSourceFileOfNode,
     hasDynamicName,
-    hasExtension,
     hasProperty,
     hasStaticModifier,
     hasSyntacticModifier,
@@ -74,12 +71,10 @@ import {
     notImplementedResolver,
     objectAllocator,
     ParameterDeclaration,
-    pathIsRelative,
     PropertyAccessExpression,
     PropertyDeclaration,
     PropertyName,
     PropertySignature,
-    resolveTripleslashReference,
     skipParentheses,
     some,
     SourceFile,
@@ -107,7 +102,7 @@ interface EmitDeclarationNodeLinks {
 }
 
 /** @internal */
-export function createEmitDeclarationResolver(file: SourceFile, options: CompilerOptions, host: EmitHost): EmitResolver {
+export function createEmitDeclarationResolver(file: SourceFile, options: CompilerOptions): EmitResolver {
     const nodeLinks: EmitDeclarationNodeLinks[] = [];
     const { isEntityNameVisible, collectLinkedAliases } = createEntityVisibilityChecker({
         defaultSymbolAccessibility: SymbolAccessibility.Accessible,
@@ -460,9 +455,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         isDeclarationVisible,
         isLiteralConstDeclaration,
         isLiteralComputedName,
-        tryFindAmbientModule() {
-            return undefined;
-        },
         getPropertiesOfContainerFunction(node: FunctionDeclaration | VariableDeclaration) {
             const symbol = getSymbolOfDeclaration(node);
             return [...symbol.exports?.values() ?? [], ...resolveAllLateBoundSymbols(symbol, /*isStatic*/ true).values()];
@@ -570,19 +562,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
             return false;
         },
         isEntityNameVisible,
-        getTypeReferenceDirectivesForEntityName() {
-            return undefined;
-        },
         isExpandoFunctionDeclaration,
-        getSymbolOfExternalModuleSpecifier(contextSpecifier) {
-            const currentSourceFile = getSourceFileOfNode(contextSpecifier);
-            const moduleSpecifier = contextSpecifier.text;
-            const resolvedFileName = resolveTripleslashReference(
-                pathIsRelative(moduleSpecifier) && !hasExtension(moduleSpecifier) ? moduleSpecifier + ".ts" : moduleSpecifier,
-                currentSourceFile.fileName,
-            );
-            return host.getSourceFile(resolvedFileName)?.symbol;
-        },
         isImportRequiredByAugmentation() {
             return false;
         },

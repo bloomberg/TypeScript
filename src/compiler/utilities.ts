@@ -371,7 +371,6 @@ import {
     JSDocMemberName,
     JSDocOverloadTag,
     JSDocParameterTag,
-    JSDocPropertyLikeTag,
     JSDocSatisfiesExpression,
     JSDocSatisfiesTag,
     JSDocSignature,
@@ -1358,6 +1357,9 @@ export const getScriptTargetFeatures = /* @__PURE__ */ memoize((): ScriptTargetF
             es2015: [
                 "from",
                 "of",
+            ],
+            esnext: [
+                "fromAsync",
             ],
         })),
         ObjectConstructor: new Map(Object.entries({
@@ -6571,7 +6573,7 @@ export function identifierIsThisKeyword(id: Identifier): boolean {
 }
 
 /** @internal */
-export function getAllAccessorDeclarations(declarations: readonly Declaration[], accessor: AccessorDeclaration): AllAccessorDeclarations {
+export function getAllAccessorDeclarations(declarations: readonly Declaration[] | undefined, accessor: AccessorDeclaration): AllAccessorDeclarations {
     // TODO: GH#18217
     let firstAccessor!: AccessorDeclaration;
     let secondAccessor!: AccessorDeclaration;
@@ -10538,7 +10540,7 @@ export function canHaveExportModifier(node: Node): node is Extract<HasModifiers,
 }
 
 /** @internal */
-export function isOptionalJSDocPropertyLikeTag(node: Node): node is JSDocPropertyLikeTag {
+export function isOptionalJSDocPropertyLikeTag(node: Node): boolean {
     if (!isJSDocPropertyLikeTag(node)) {
         return false;
     }
@@ -10567,7 +10569,7 @@ export function isJSDocOptionalParameter(node: ParameterDeclaration) {
     return isInJSFile(node) && (
         // node.type should only be a JSDocOptionalType when node is a parameter of a JSDocFunctionType
         node.type && node.type.kind === SyntaxKind.JSDocOptionalType
-        || getJSDocParameterTags(node).some(({ isBracketed, typeExpression }) => isBracketed || !!typeExpression && typeExpression.type.kind === SyntaxKind.JSDocOptionalType)
+        || getJSDocParameterTags(node).some(isOptionalJSDocPropertyLikeTag)
     );
 }
 
@@ -10691,6 +10693,25 @@ export function replaceFirstStar(s: string, replacement: string): string {
 /** @internal */
 export function getNameFromImportAttribute(node: ImportAttribute) {
     return isIdentifier(node.name) ? node.name.escapedText : escapeLeadingUnderscores(node.name.text);
+}
+
+/** @internal */
+export function isSyntacticallyString(expr: Expression): boolean {
+    expr = skipOuterExpressions(expr);
+    switch (expr.kind) {
+        case SyntaxKind.BinaryExpression:
+            const left = (expr as BinaryExpression).left;
+            const right = (expr as BinaryExpression).right;
+            return (
+                (expr as BinaryExpression).operatorToken.kind === SyntaxKind.PlusToken &&
+                (isSyntacticallyString(left) || isSyntacticallyString(right))
+            );
+        case SyntaxKind.TemplateExpression:
+        case SyntaxKind.StringLiteral:
+        case SyntaxKind.NoSubstitutionTemplateLiteral:
+            return true;
+    }
+    return false;
 }
 
 /** @internal */
@@ -10948,6 +10969,36 @@ export function getModuleSpecifierForImportOrExport(node: ImportEqualsDeclaratio
 }
 
 /** @internal */
+export function getMeaningOfEntityNameReference(entityName: EntityNameOrEntityNameExpression): SymbolFlags {
+    // get symbol of the first identifier of the entityName
+    let meaning: SymbolFlags;
+    if (
+        entityName.parent.kind === SyntaxKind.TypeQuery ||
+        entityName.parent.kind === SyntaxKind.ExpressionWithTypeArguments && !isPartOfTypeNode(entityName.parent) ||
+        entityName.parent.kind === SyntaxKind.ComputedPropertyName
+    ) {
+        // Typeof value
+        meaning = SymbolFlags.Value | SymbolFlags.ExportValue;
+    }
+    else if (
+        entityName.kind === SyntaxKind.QualifiedName || entityName.kind === SyntaxKind.PropertyAccessExpression ||
+        entityName.parent.kind === SyntaxKind.ImportEqualsDeclaration ||
+        (entityName.parent.kind === SyntaxKind.QualifiedName && (entityName.parent as QualifiedName).left === entityName) ||
+        (entityName.parent.kind === SyntaxKind.PropertyAccessExpression && (entityName.parent as PropertyAccessExpression).expression === entityName) ||
+        (entityName.parent.kind === SyntaxKind.ElementAccessExpression && (entityName.parent as ElementAccessExpression).expression === entityName)
+    ) {
+        // Left identifier from type reference or TypeAlias
+        // Entity name of the import declaration
+        meaning = SymbolFlags.Namespace;
+    }
+    else {
+        // Type Reference or TypeAlias entity = Identifier
+        meaning = SymbolFlags.Type;
+    }
+    return meaning;
+}
+
+/** @internal */
 export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAccessible, markDeclarationAsVisible, resolveName, defaultSymbolAccessibility, getTargetOfExportSpecifier }: {
     defaultSymbolAccessibility: SymbolAccessibility;
     isDeclarationVisible(node: Node): boolean;
@@ -11085,35 +11136,13 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
     }
 
     function isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node): SymbolVisibilityResult {
-        // get symbol of the first identifier of the entityName
-        let meaning: SymbolFlags;
-        if (
-            entityName.parent.kind === SyntaxKind.TypeQuery ||
-            entityName.parent.kind === SyntaxKind.ExpressionWithTypeArguments && !isPartOfTypeNode(entityName.parent) ||
-            entityName.parent.kind === SyntaxKind.ComputedPropertyName
-        ) {
-            // Typeof value
-            meaning = SymbolFlags.Value | SymbolFlags.ExportValue;
-        }
-        else if (
-            entityName.kind === SyntaxKind.QualifiedName || entityName.kind === SyntaxKind.PropertyAccessExpression ||
-            entityName.parent.kind === SyntaxKind.ImportEqualsDeclaration
-        ) {
-            // Left identifier from type reference or TypeAlias
-            // Entity name of the import declaration
-            meaning = SymbolFlags.Namespace;
-        }
-        else {
-            // Type Reference or TypeAlias entity = Identifier
-            meaning = SymbolFlags.Type;
-        }
-
+        const meaning = getMeaningOfEntityNameReference(entityName);
         const firstIdentifier = getFirstIdentifier(entityName);
         const symbol = resolveName(enclosingDeclaration, firstIdentifier.escapedText, meaning, /*nameNotFoundMessage*/ undefined, /*nameArg*/ undefined, /*isUse*/ false);
         if (symbol && symbol.flags & SymbolFlags.TypeParameter && meaning & SymbolFlags.Type) {
             return { accessibility: SymbolAccessibility.Accessible };
         }
-
+        
         if (
             symbol
             && (isFunctionExpressionOrArrowFunction(enclosingDeclaration) || isMethodDeclaration(enclosingDeclaration))
@@ -11127,6 +11156,7 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
             }
         }
 
+        
         if (!symbol && isThisIdentifier(firstIdentifier) && isThisAccessible(firstIdentifier, meaning).accessibility === SymbolAccessibility.Accessible) {
             return { accessibility: SymbolAccessibility.Accessible };
         }
@@ -11138,7 +11168,7 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
             errorNode: firstIdentifier,
         };
     }
-
+    
     return { hasVisibleDeclarations, isEntityNameVisible, collectLinkedAliases };
 }
 

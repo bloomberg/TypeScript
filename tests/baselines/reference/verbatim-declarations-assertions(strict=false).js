@@ -268,10 +268,10 @@ export declare class C {
     constructor(ctorField?: {} & {
         name: string;
     });
-    get x(): {
+    get x(): {} & {
         name: string;
     };
-    set x(v: {
+    set x(v: {} & {
         name: string;
     });
 }
