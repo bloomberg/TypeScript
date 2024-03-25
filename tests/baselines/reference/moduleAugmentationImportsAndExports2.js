@@ -88,7 +88,6 @@ declare namespace N {
     }
 }
 declare module "./f1" {
-    import { B } from "./f2";
     export { B } from "./f2";
     import I = N.Ifc;
     import C = N.Cls;

@@ -56,6 +56,7 @@ import {
     FunctionTypeNode,
     GeneratedIdentifierFlags,
     GetAccessorDeclaration,
+    getAllAccessorDeclarations,
     getCommentRange,
     getDirectoryPath,
     getEffectiveBaseTypeNode,
@@ -344,7 +345,7 @@ export function transformDeclarations(context: TransformationContext) {
         }
     
         function createAccessorTypeError(node: GetAccessorDeclaration | SetAccessorDeclaration) {
-            const { getAccessor, setAccessor } = resolver.getAllAccessorDeclarations(node);
+            const { getAccessor, setAccessor } = getAllAccessorDeclarations(node.symbol.declarations, node);
     
             const targetNode = (isSetAccessor(node) ? node.parameters[0] : node) ?? node;
             const diag = createDiagnosticForNode(targetNode, errorByDeclarationKind[node.kind]);
@@ -398,12 +399,14 @@ export function transformDeclarations(context: TransformationContext) {
             if (isSetAccessor(node.parent)) {
                 return createAccessorTypeError(node.parent);
             }
-            const addUndefined = resolver.requiresAddingImplicitUndefined(node);
-            if (!addUndefined && node.initializer) {
-                return createExpressionError(node.initializer);
-            }
-            const message = addUndefined ?
-                Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations :
+            // TODO: Maybe add this error back? 
+            // const addUndefined = resolver.requiresAddingImplicitUndefined(node);
+            // if (!addUndefined && node.initializer) {
+            //     return createExpressionError(node.initializer);
+            // }
+            const message = 
+                // addUndefined ?
+                // Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations :
                 errorByDeclarationKind[node.kind];
             const diag = createDiagnosticForNode(node, message);
             const targetStr = getTextOfNode(node.name, /*includeTrivia*/ false);
@@ -533,7 +536,7 @@ export function transformDeclarations(context: TransformationContext) {
         }
     }
 
-    function transformDeclarationsForJS(sourceFile: SourceFile, bundled?: boolean) {
+    function transformDeclarationsForJS(sourceFile: SourceFile) {
         const oldDiag = getSymbolAccessibilityDiagnostic;
         getSymbolAccessibilityDiagnostic = s => (s.errorNode && canProduceDiagnostics(s.errorNode) ? createGetSymbolAccessibilityDiagnosticForNode(s.errorNode)(s) : ({
             diagnosticMessage: s.errorModuleName
@@ -541,7 +544,7 @@ export function transformDeclarations(context: TransformationContext) {
                 : Diagnostics.Declaration_emit_for_this_file_requires_using_private_name_0_An_explicit_type_annotation_may_unblock_declaration_emit,
             errorNode: s.errorNode || sourceFile,
         }));
-        const result = resolver.getDeclarationStatementsForSourceFile(sourceFile, declarationEmitNodeBuilderFlags, symbolTracker, bundled);
+        const result = resolver.getDeclarationStatementsForSourceFile(sourceFile, declarationEmitNodeBuilderFlags, symbolTracker);
         getSymbolAccessibilityDiagnostic = oldDiag;
         return result;
     }
@@ -576,7 +579,7 @@ export function transformDeclarations(context: TransformationContext) {
                     if (isExternalOrCommonJsModule(sourceFile) || isJsonSourceFile(sourceFile)) {
                         resultHasExternalModuleIndicator = false; // unused in external module bundle emit (all external modules are within module blocks, therefore are known to be modules)
                         needsDeclare = false;
-                        const statements = isSourceFileJS(sourceFile) ? factory.createNodeArray(transformDeclarationsForJS(sourceFile, /*bundled*/ true)) : visitNodes(sourceFile.statements, visitDeclarationStatements, isStatement);
+                        const statements = isSourceFileJS(sourceFile) ? factory.createNodeArray(transformDeclarationsForJS(sourceFile)) : visitNodes(sourceFile.statements, visitDeclarationStatements, isStatement);
                         const newFile = factory.updateSourceFile(
                             sourceFile,
                             [factory.createModuleDeclaration(
@@ -869,7 +872,7 @@ export function transformDeclarations(context: TransformationContext) {
             if (!isPrivate) {
                 const valueParameter = getSetAccessorValueParameter(input);
                 if (valueParameter) {
-                    newValueParameter = ensureParameter(valueParameter, /*modifierMask*/ undefined);
+                    newValueParameter = ensureParameter(valueParameter);
                 }
             }
             if (!newValueParameter) {

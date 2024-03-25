@@ -35,7 +35,6 @@ import {
     hasSyntacticModifier,
     Identifier,
     InternalSymbolName,
-    isAccessor,
     isBinaryExpression,
     isComputedPropertyName,
     isDeclarationReadonly,
@@ -50,7 +49,6 @@ import {
     isFunctionExpressionOrArrowFunction,
     isFunctionLike,
     isGetAccessor,
-    isGetAccessorDeclaration,
     isIdentifier,
     isInfinityOrNaNString,
     isModuleDeclaration,
@@ -58,7 +56,6 @@ import {
     isPropertyAccessExpression,
     isPropertyName,
     isSetAccessor,
-    isSetAccessorDeclaration,
     isStringLiteralLike,
     isVarConst,
     isVariableDeclaration,
@@ -411,11 +408,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         const lateBoundSymbols = resolveAllLateBoundSymbols(symbol, /*isStatic*/ true);
         return !!forEachEntry(lateBoundSymbols, p => p.flags & SymbolFlags.Value && isExpandoPropertyDeclaration(p.valueDeclaration));
     }
-
-    function requiresAddingImplicitUndefined(): boolean {
-        return false;
-    }
-
     function isOptionalParameter(parameter: ParameterDeclaration) {
         const signature = parameter.parent;
         const paramIndex = signature.parameters.indexOf(parameter);
@@ -442,7 +434,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
             return identifier.escapedText === "undefined" && resolveName(identifier, identifier.escapedText, SymbolFlags.Value) === undefined;
         },
         isOptionalParameter,
-        requiresAddingImplicitUndefined,
         createTypeOfDeclaration() {
             return makeInvalidType();
         },
@@ -459,17 +450,17 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
             const symbol = getSymbolOfDeclaration(node);
             return [...symbol.exports?.values() ?? [], ...resolveAllLateBoundSymbols(symbol, /*isStatic*/ true).values()];
         },
-        getAllAccessorDeclarations(declaration) {
-            const symbol = getSymbolOfDeclaration(declaration);
-            const declaredAccessors = symbol?.declarations?.filter(isAccessor);
-            const declarations = declaredAccessors?.length ? declaredAccessors : [declaration];
-            return {
-                firstAccessor: declarations[0],
-                secondAccessor: declarations[1],
-                getAccessor: declarations.find(isGetAccessorDeclaration),
-                setAccessor: declarations.find(isSetAccessorDeclaration),
-            };
-        },
+        // getAllAccessorDeclarations(declaration) {
+        //     const symbol = getSymbolOfDeclaration(declaration);
+        //     const declaredAccessors = symbol?.declarations?.filter(isAccessor);
+        //     const declarations = declaredAccessors?.length ? declaredAccessors : [declaration];
+        //     return {
+        //         firstAccessor: declarations[0],
+        //         secondAccessor: declarations[1],
+        //         getAccessor: declarations.find(isGetAccessorDeclaration),
+        //         setAccessor: declarations.find(isSetAccessorDeclaration),
+        //     };
+        // },
         getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): string | number | undefined {
             function updateEnumValues(node: EnumDeclaration) {
                 let prevEnumValueLinks: EmitDeclarationNodeLinks | undefined;

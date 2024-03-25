@@ -89,15 +89,9 @@ type ItemMap<T> = {
     [P in keyof T]: Item;
 };
 declare let x0: keyof any;
-declare let x1: {
-    [P in any]: Item;
-};
-declare let x2: {
-    [P in string]: Item;
-};
-declare let x3: {
-    [P in keyof any]: Item;
-};
+declare let x1: { [P in any]: Item; };
+declare let x2: { [P in string]: Item; };
+declare let x3: { [P in keyof any]: Item; };
 declare let x4: ItemMap<any>;
 type Data = {
     value: string;
@@ -114,13 +108,9 @@ type Objectish<T extends unknown> = {
 };
 type IndirectArrayish<U extends unknown[]> = Objectish<U>;
 declare function bar(arrayish: Arrayish<any>, objectish: Objectish<any>, indirectArrayish: IndirectArrayish<any>): void;
-declare function stringifyArray<T extends readonly any[]>(arr: T): {
-    -readonly [K in keyof T]: string;
-};
+declare function stringifyArray<T extends readonly any[]>(arr: T): { -readonly [K in keyof T]: string; };
 declare let abc: any[];
-declare function stringifyPair<T extends readonly [any, any]>(arr: T): {
-    -readonly [K in keyof T]: string;
-};
+declare function stringifyPair<T extends readonly [any, any]>(arr: T): { -readonly [K in keyof T]: string; };
 declare let def: [any, any];
 type Evolvable<E extends Evolver> = {
     [P in keyof E]: never;

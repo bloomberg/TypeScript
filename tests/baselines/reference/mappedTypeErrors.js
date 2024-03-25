@@ -302,16 +302,10 @@ type T2 = {
 };
 declare let x1: T2;
 declare let x2: Partial<T2>;
-declare let x3: {
-    [P in keyof T2]: T2[P];
-};
+declare let x3: { [P in keyof T2]: T2[P]; };
 type Foo2<T, F extends keyof T> = {
-    pf: {
-        [P in F]?: T[P];
-    };
-    pt: {
-        [P in T]?: T[P];
-    };
+    pf: { [P in F]?: T[P]; };
+    pt: { [P in T]?: T[P]; };
 };
 type O = {
     x: number;

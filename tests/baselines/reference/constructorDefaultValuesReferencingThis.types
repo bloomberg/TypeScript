@@ -3,24 +3,33 @@
 === constructorDefaultValuesReferencingThis.ts ===
 class C {
 >C : C
+>  : ^
 
     constructor(x = this) { }
 >x : this
+>  : ^^^^
 >this : this
+>     : ^^^^
 }
 
 class D<T> {
 >D : D<T>
+>  : ^^^^
 
     constructor(x = this) { }
 >x : this
+>  : ^^^^
 >this : this
+>     : ^^^^
 }
 
 class E<T> {
 >E : E<T>
+>  : ^^^^
 
     constructor(public x = this) { }
 >x : this
+>  : ^^^^
 >this : this
+>     : ^^^^
 }

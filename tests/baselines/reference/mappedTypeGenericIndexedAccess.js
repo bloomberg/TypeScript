@@ -83,9 +83,7 @@ type Types = {
     };
 };
 declare class Test {
-    entries: {
-        [T in keyof Types]?: Types[T][];
-    };
+    entries: { [T in keyof Types]?: Types[T][]; };
     constructor();
     addEntry<T extends keyof Types>(name: T, entry: Types[T]): void;
 }

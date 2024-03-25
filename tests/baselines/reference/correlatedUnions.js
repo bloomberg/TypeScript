@@ -528,12 +528,12 @@ declare function processEvents<K extends keyof DocumentEventMap>(events: Ev<K>[]
 declare function createEventListener<K extends keyof DocumentEventMap>({ name, once, callback }: Ev<K>): Ev<K>;
 declare const clickEvent: {
     readonly name: "click";
-    readonly once?: boolean | undefined;
+    readonly once?: boolean;
     readonly callback: (ev: MouseEvent) => void;
 };
 declare const scrollEvent: {
     readonly name: "scroll";
-    readonly once?: boolean | undefined;
+    readonly once?: boolean;
     readonly callback: (ev: Event) => void;
 };
 declare function ff1(): void;
@@ -564,9 +564,7 @@ interface Foo {
 }
 declare function foo<T extends keyof Foo>(prop: T, f: Required<Foo>): void;
 declare function bar(t: string): void;
-declare function makeCompleteLookupMapping<T extends ReadonlyArray<any>, Attr extends keyof T[number]>(ops: T, attr: Attr): {
-    [Item in T[number] as Item[Attr]]: Item;
-};
+declare function makeCompleteLookupMapping<T extends ReadonlyArray<any>, Attr extends keyof T[number]>(ops: T, attr: Attr): { [Item in T[number] as Item[Attr]]: Item; };
 declare const ALL_BARS: readonly [{
     readonly name: 'a';
 }, {

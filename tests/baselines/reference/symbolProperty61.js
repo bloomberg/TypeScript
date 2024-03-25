@@ -54,7 +54,7 @@ from(new MyObservable(42));
 //// [symbolProperty61.d.ts]
 declare global {
     interface SymbolConstructor {
-        readonly obs: symbol;
+        readonly obs: unique symbol;
     }
 }
 declare const observable: typeof Symbol.obs;

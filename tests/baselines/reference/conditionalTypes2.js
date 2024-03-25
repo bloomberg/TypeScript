@@ -491,8 +491,6 @@ type Wat<K extends string> = {
         z: 1;
     };
 } extends {
-    x: {
-        [P in K]: 0;
-    };
+    x: { [P in K]: 0; };
 } ? true : false;
 type Huh = Wat<"y">;

@@ -390,41 +390,13 @@ type Identity<T> = {
 };
 declare function f61<U>(x: Identity<U>, y: Partial<U>): void;
 declare function f62<U>(x: Identity<U>, y: Readonly<U>): void;
-declare function f70<T>(x: {
-    [P in keyof T]: T[P];
-}, y: {
-    [P in keyof T]: T[P];
-}): void;
-declare function f71<T, U extends T>(x: {
-    [P in keyof T]: T[P];
-}, y: {
-    [P in keyof T]: U[P];
-}): void;
-declare function f72<T, U extends T>(x: {
-    [P in keyof T]: T[P];
-}, y: {
-    [P in keyof U]: U[P];
-}): void;
-declare function f73<T, K extends keyof T>(x: {
-    [P in K]: T[P];
-}, y: {
-    [P in keyof T]: T[P];
-}): void;
-declare function f74<T, U extends T, K extends keyof T>(x: {
-    [P in K]: T[P];
-}, y: {
-    [P in keyof U]: U[P];
-}): void;
-declare function f75<T, U extends T, K extends keyof T>(x: {
-    [P in K]: T[P];
-}, y: {
-    [P in keyof T]: U[P];
-}): void;
-declare function f76<T, U extends T, K extends keyof T>(x: {
-    [P in K]: T[P];
-}, y: {
-    [P in K]: U[P];
-}): void;
+declare function f70<T>(x: { [P in keyof T]: T[P]; }, y: { [P in keyof T]: T[P]; }): void;
+declare function f71<T, U extends T>(x: { [P in keyof T]: T[P]; }, y: { [P in keyof T]: U[P]; }): void;
+declare function f72<T, U extends T>(x: { [P in keyof T]: T[P]; }, y: { [P in keyof U]: U[P]; }): void;
+declare function f73<T, K extends keyof T>(x: { [P in K]: T[P]; }, y: { [P in keyof T]: T[P]; }): void;
+declare function f74<T, U extends T, K extends keyof T>(x: { [P in K]: T[P]; }, y: { [P in keyof U]: U[P]; }): void;
+declare function f75<T, U extends T, K extends keyof T>(x: { [P in K]: T[P]; }, y: { [P in keyof T]: U[P]; }): void;
+declare function f76<T, U extends T, K extends keyof T>(x: { [P in K]: T[P]; }, y: { [P in K]: U[P]; }): void;
 declare function f80<T>(t: T): Partial<T>;
 declare function f81<T, K extends keyof T>(t: T, k: K): Partial<T[K]>;
 declare function f82<T, K1 extends keyof T, K2 extends keyof T[K1]>(t: T, k1: K1, k2: K2): Partial<T[K1][K2]>;

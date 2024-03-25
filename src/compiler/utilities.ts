@@ -2693,8 +2693,8 @@ export function isVariableLike(node: Node): node is VariableLikeDeclaration {
 }
 
 /** @internal */
-export function isVariableLikeOrAccessor(node: Node): node is AccessorDeclaration | VariableLikeDeclaration {
-    return isVariableLike(node) || isAccessor(node);
+export function isVariableLikeOrExport(node: Node): node is VariableLikeDeclaration | ExportAssignment {
+    return isVariableLike(node) || isExportAssignment(node);
 }
 
 /** @internal */
@@ -11769,7 +11769,7 @@ export function createNameResolver(
 
 
 /** @internal */
-export function hasInferredType(node: Node) {
+export function hasInferredType(node: Node): node is HasInferredType {
     Debug.type<HasInferredType>(node);
     switch(node.kind) {
         case SyntaxKind.Parameter:

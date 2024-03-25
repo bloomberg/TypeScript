@@ -41,12 +41,8 @@ var b = (0, api_1.dropPrivateProps2)({ foo: 42, _bar: 'secret' }); // type is {f
 
 
 //// [internal.d.ts]
-export declare function excludePrivateKeys1<Obj>(obj: Obj): {
-    [K in PublicKeys1<keyof Obj>]: Obj[K];
-};
-export declare function excludePrivateKeys2<Obj>(obj: Obj): {
-    [K in PublicKeys2<keyof Obj>]: Obj[K];
-};
+export declare function excludePrivateKeys1<Obj>(obj: Obj): { [K in PublicKeys1<keyof Obj>]: Obj[K]; };
+export declare function excludePrivateKeys2<Obj>(obj: Obj): { [K in PublicKeys2<keyof Obj>]: Obj[K]; };
 export type PublicKeys1<T> = T extends `_${string}` ? never : T;
 type PublicKeys2<T> = T extends `_${string}` ? never : T;
 export {};

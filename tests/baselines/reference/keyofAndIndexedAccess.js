@@ -1315,9 +1315,7 @@ type SomeMethodDescriptor = {
 };
 declare let result: string[];
 type KeyTypes = "a" | "b";
-declare let MyThingy: {
-    [key in KeyTypes]: string[];
-};
+declare let MyThingy: { [key in KeyTypes]: string[]; };
 declare function addToMyThingy<S extends KeyTypes>(key: S): void;
 type Handler<T> = {
     onChange: (name: keyof T) => void;

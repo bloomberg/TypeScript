@@ -629,9 +629,7 @@ declare const plugins: {
 declare var theAnswer: symbol;
 declare var obj: Record<symbol, number>;
 declare const directive: unique symbol;
-declare function foo<TArg, TRet, TDir>(options: {
-    [x in string]: (arg: TArg) => TRet;
-} & {
+declare function foo<TArg, TRet, TDir>(options: { [x in string]: (arg: TArg) => TRet; } & {
     [directive]?: TDir;
 }): void;
 declare let case1: void;

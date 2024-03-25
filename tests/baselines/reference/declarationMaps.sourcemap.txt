@@ -201,73 +201,64 @@ sourceFile:declarationMaps.ts
 >>>    (): m2.connectExport;
 1->^^^^
 2 >    ^^^^
-3 >        ^^
-4 >          ^
-5 >           ^^^^^^^^^^^^^
-6 >                        ^
-7 >                         ^^^^->
+3 >        ^^^
+4 >           ^^^^^^^^^^^^^
+5 >                        ^
+6 >                         ^^^^->
 1->{
   >    
 2 >    (): 
-3 >        m2
-4 >          .
-5 >           connectExport
-6 >                        ;
+3 >        m2.
+4 >           connectExport
+5 >                        ;
 1->Emitted(11, 5) Source(13, 5) + SourceIndex(0)
 2 >Emitted(11, 9) Source(13, 9) + SourceIndex(0)
-3 >Emitted(11, 11) Source(13, 11) + SourceIndex(0)
-4 >Emitted(11, 12) Source(13, 12) + SourceIndex(0)
-5 >Emitted(11, 25) Source(13, 25) + SourceIndex(0)
-6 >Emitted(11, 26) Source(13, 26) + SourceIndex(0)
+3 >Emitted(11, 12) Source(13, 12) + SourceIndex(0)
+4 >Emitted(11, 25) Source(13, 25) + SourceIndex(0)
+5 >Emitted(11, 26) Source(13, 26) + SourceIndex(0)
 ---
 >>>    test1: m2.connectModule;
 1->^^^^
 2 >    ^^^^^
 3 >         ^^
-4 >           ^^
-5 >             ^
-6 >              ^^^^^^^^^^^^^
-7 >                           ^
-8 >                            ^^^->
+4 >           ^^^
+5 >              ^^^^^^^^^^^^^
+6 >                           ^
+7 >                            ^^^->
 1->
   >    
 2 >    test1
 3 >         : 
-4 >           m2
-5 >             .
-6 >              connectModule
-7 >                           ;
+4 >           m2.
+5 >              connectModule
+6 >                           ;
 1->Emitted(12, 5) Source(14, 5) + SourceIndex(0)
 2 >Emitted(12, 10) Source(14, 10) + SourceIndex(0)
 3 >Emitted(12, 12) Source(14, 12) + SourceIndex(0)
-4 >Emitted(12, 14) Source(14, 14) + SourceIndex(0)
-5 >Emitted(12, 15) Source(14, 15) + SourceIndex(0)
-6 >Emitted(12, 28) Source(14, 28) + SourceIndex(0)
-7 >Emitted(12, 29) Source(14, 29) + SourceIndex(0)
+4 >Emitted(12, 15) Source(14, 15) + SourceIndex(0)
+5 >Emitted(12, 28) Source(14, 28) + SourceIndex(0)
+6 >Emitted(12, 29) Source(14, 29) + SourceIndex(0)
 ---
 >>>    test2(): m2.connectModule;
 1->^^^^
 2 >    ^^^^^
 3 >         ^^^^
-4 >             ^^
-5 >               ^
-6 >                ^^^^^^^^^^^^^
-7 >                             ^
+4 >             ^^^
+5 >                ^^^^^^^^^^^^^
+6 >                             ^
 1->
   >    
 2 >    test2
 3 >         (): 
-4 >             m2
-5 >               .
-6 >                connectModule
-7 >                             ;
+4 >             m2.
+5 >                connectModule
+6 >                             ;
 1->Emitted(13, 5) Source(15, 5) + SourceIndex(0)
 2 >Emitted(13, 10) Source(15, 10) + SourceIndex(0)
 3 >Emitted(13, 14) Source(15, 14) + SourceIndex(0)
-4 >Emitted(13, 16) Source(15, 16) + SourceIndex(0)
-5 >Emitted(13, 17) Source(15, 17) + SourceIndex(0)
-6 >Emitted(13, 30) Source(15, 30) + SourceIndex(0)
-7 >Emitted(13, 31) Source(15, 31) + SourceIndex(0)
+4 >Emitted(13, 17) Source(15, 17) + SourceIndex(0)
+5 >Emitted(13, 30) Source(15, 30) + SourceIndex(0)
+6 >Emitted(13, 31) Source(15, 31) + SourceIndex(0)
 ---
 >>>};
 1 >^

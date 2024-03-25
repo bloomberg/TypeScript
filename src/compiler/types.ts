@@ -5607,11 +5607,10 @@ export interface EmitResolver {
     isLateBound(node: Declaration): node is LateBoundDeclaration;
     collectLinkedAliases(node: Identifier, setVisibility?: boolean): Node[] | undefined;
     isImplementationOfOverload(node: SignatureDeclaration): boolean | undefined;
-    requiresAddingImplicitUndefined(node: ParameterDeclaration): boolean;
     isUndefinedIdentifier(node: Identifier): boolean;
     isExpandoFunctionDeclaration(node: VariableDeclaration | FunctionDeclaration): boolean;
     getPropertiesOfContainerFunction(node: Declaration): Symbol[];
-    createTypeOfDeclaration(declaration: PropertyAccessExpression | BinaryExpression | ElementAccessExpression| VariableDeclaration | ParameterDeclaration | BindingElement | PropertyDeclaration | PropertySignature | ExportAssignment, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, addUndefined?: boolean): TypeNode | undefined;
+    createTypeOfDeclaration(declaration: HasInferredType, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
     createReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
     createTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, addUndefined?: boolean): TypeNode | undefined;
     createLiteralConstValue(node: VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration, tracker: SymbolTracker): Expression;
@@ -5628,9 +5627,9 @@ export interface EmitResolver {
     isLiteralConstDeclaration(node: VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration): boolean;
     getJsxFactoryEntity(location?: Node): EntityName | undefined;
     getJsxFragmentFactoryEntity(location?: Node): EntityName | undefined;
-    getAllAccessorDeclarations(declaration: AccessorDeclaration): AllAccessorDeclarations;
+    getSymbolOfExternalModuleSpecifier(node: StringLiteralLike): Symbol | undefined;
     isBindingCapturedByNode(node: Node, decl: VariableDeclaration | BindingElement): boolean;
-    getDeclarationStatementsForSourceFile(node: SourceFile, flags: NodeBuilderFlags, tracker: SymbolTracker, bundled?: boolean): Statement[] | undefined;
+    getDeclarationStatementsForSourceFile(node: SourceFile, flags: NodeBuilderFlags, tracker: SymbolTracker): Statement[] | undefined;
     isImportRequiredByAugmentation(decl: ImportDeclaration): boolean;
 }
 

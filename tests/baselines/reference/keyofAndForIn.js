@@ -71,12 +71,6 @@ function f3(obj, k) {
 
 
 //// [keyofAndForIn.d.ts]
-declare function f1<K extends string, T>(obj: {
-    [P in K]: T;
-}, k: K): void;
-declare function f2<T>(obj: {
-    [P in keyof T]: T[P];
-}, k: keyof T): void;
-declare function f3<T, K extends keyof T>(obj: {
-    [P in K]: T[P];
-}, k: K): void;
+declare function f1<K extends string, T>(obj: { [P in K]: T; }, k: K): void;
+declare function f2<T>(obj: { [P in keyof T]: T[P]; }, k: keyof T): void;
+declare function f3<T, K extends keyof T>(obj: { [P in K]: T[P]; }, k: K): void;

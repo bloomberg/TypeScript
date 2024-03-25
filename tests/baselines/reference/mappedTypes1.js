@@ -123,18 +123,10 @@ type T44 = {
 type T47 = {
     [P in string | "a" | "b" | "0" | "1"]: void;
 };
-declare function f1<T1>(): {
-    [P in keyof T1]: void;
-};
-declare function f2<T1 extends string>(): {
-    [P in keyof T1]: void;
-};
-declare function f3<T1 extends number>(): {
-    [P in keyof T1]: void;
-};
-declare function f4<T1 extends Number>(): {
-    [P in keyof T1]: void;
-};
+declare function f1<T1>(): { [P in keyof T1]: void; };
+declare function f2<T1 extends string>(): { [P in keyof T1]: void; };
+declare function f3<T1 extends number>(): { [P in keyof T1]: void; };
+declare function f4<T1 extends Number>(): { [P in keyof T1]: void; };
 declare let x1: {};
 declare let x2: string;
 declare let x3: number;

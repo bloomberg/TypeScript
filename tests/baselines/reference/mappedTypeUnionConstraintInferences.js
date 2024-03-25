@@ -43,9 +43,7 @@ export declare function doSomething_Actual<T extends {
 }>(a: T): { [P in keyof PartialProperties<T, "prop">]: PartialProperties<T, "prop">[P]; };
 export declare function doSomething_Expected<T extends {
     prop: string;
-}>(a: T): {
-    [P in keyof PartialProperties<T, "prop">]: PartialProperties<T, "prop">[P];
-};
+}>(a: T): { [P in keyof PartialProperties<T, "prop">]: PartialProperties<T, "prop">[P]; };
 export declare let a: {
     prop?: string;
 };

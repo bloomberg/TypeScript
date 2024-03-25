@@ -315,9 +315,7 @@ declare function f1(): void;
 declare function f2(): void;
 declare function f3(): void;
 declare function f4(): void;
-declare function makeRecord<T, K extends string>(obj: {
-    [P in K]: T;
-}): { [P in K]: T; };
+declare function makeRecord<T, K extends string>(obj: { [P in K]: T; }): { [P in K]: T; };
 declare function f5(s: string): void;
 declare function makeDictionary<T>(obj: {
     [x: string]: T;
@@ -325,15 +323,9 @@ declare function makeDictionary<T>(obj: {
     [x: string]: T;
 };
 declare function f6(s: string): void;
-declare function validate<T>(obj: {
-    [P in keyof T]?: T[P];
-}): T;
-declare function clone<T>(obj: {
-    readonly [P in keyof T]: T[P];
-}): T;
-declare function validateAndClone<T>(obj: {
-    readonly [P in keyof T]?: T[P];
-}): T;
+declare function validate<T>(obj: { [P in keyof T]?: T[P]; }): T;
+declare function clone<T>(obj: { readonly [P in keyof T]: T[P]; }): T;
+declare function validateAndClone<T>(obj: { readonly [P in keyof T]?: T[P]; }): T;
 type Foo = {
     a?: number;
     readonly b: string;

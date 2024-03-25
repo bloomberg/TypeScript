@@ -47,9 +47,7 @@ type Action = {
 declare const ab: Action;
 declare function f<T extends {
     type: string | symbol;
-}>(action: T, blah: {
-    [K in T['type']]: (p: K) => void;
-}): any;
+}>(action: T, blah: { [K in T['type']]: (p: K) => void; }): any;
 declare const x: {
     [sym: symbol]: (p: string) => void;
 };

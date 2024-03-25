@@ -901,43 +901,19 @@ type ReducerArgs = ["add", {
 }];
 declare const reducer: (...args: ReducerArgs) => void;
 type FooMethod = {
-    method(...args: [
-        type: "str",
-        cb: (e: string) => void
-    ] | [
-        type: "num",
-        cb: (e: number) => void
-    ]): void;
+    method(...args: [type: "str", cb: (e: string) => void] | [type: "num", cb: (e: number) => void]): void;
 };
 declare let fooM: FooMethod;
 type FooAsyncMethod = {
-    method(...args: [
-        type: "str",
-        cb: (e: string) => void
-    ] | [
-        type: "num",
-        cb: (e: number) => void
-    ]): Promise<any>;
+    method(...args: [type: "str", cb: (e: string) => void] | [type: "num", cb: (e: number) => void]): Promise<any>;
 };
 declare let fooAsyncM: FooAsyncMethod;
 type FooGenMethod = {
-    method(...args: [
-        type: "str",
-        cb: (e: string) => void
-    ] | [
-        type: "num",
-        cb: (e: number) => void
-    ]): Generator<any, any, any>;
+    method(...args: [type: "str", cb: (e: string) => void] | [type: "num", cb: (e: number) => void]): Generator<any, any, any>;
 };
 declare let fooGenM: FooGenMethod;
 type FooAsyncGenMethod = {
-    method(...args: [
-        type: "str",
-        cb: (e: string) => void
-    ] | [
-        type: "num",
-        cb: (e: number) => void
-    ]): AsyncGenerator<any, any, any>;
+    method(...args: [type: "str", cb: (e: string) => void] | [type: "num", cb: (e: number) => void]): AsyncGenerator<any, any, any>;
 };
 declare let fooAsyncGenM: FooAsyncGenMethod;
 type Func = <T extends ["a", number] | ["b", string]>(...args: T) => void;

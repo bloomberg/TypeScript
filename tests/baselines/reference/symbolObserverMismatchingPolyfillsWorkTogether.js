@@ -20,7 +20,7 @@ const obj = {
 
 //// [symbolObserverMismatchingPolyfillsWorkTogether.d.ts]
 interface SymbolConstructor {
-    readonly observer: symbol;
+    readonly observer: unique symbol;
 }
 interface SymbolConstructor {
     readonly observer: unique symbol;

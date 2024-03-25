@@ -935,9 +935,9 @@ function withChanges<T>(
             if (!type) {
                 return emptyInferenceResult;
             }
-            if(isParameter(node) && emitResolver.requiresAddingImplicitUndefined(node)) {
-                 type = typeChecker.getUnionType([typeChecker.getUndefinedType(), type], UnionReduction.None);
-            }
+            // if(isParameter(node) && emitResolver.requiresAddingImplicitUndefined(node)) {
+            //      type = typeChecker.getUnionType([typeChecker.getUndefinedType(), type], UnionReduction.None);
+            // }
             const flags = (
                     isVariableDeclaration(node) ||
                     (isPropertyDeclaration(node) && hasSyntacticModifier(node, ModifierFlags.Static | ModifierFlags.Readonly))
