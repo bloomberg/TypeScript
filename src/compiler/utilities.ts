@@ -205,6 +205,7 @@ import {
     HasExpressionInitializer,
     hasExtension,
     HasFlowNode,
+    HasInferredType,
     HasInitializer,
     hasInitializer,
     HasJSDoc,
@@ -4645,16 +4646,7 @@ export function isNodeWithPossibleHoistedDeclaration(node: Node): node is NodeWi
 }
 
 /** @internal */
-export type ValueSignatureDeclaration =
-    | FunctionDeclaration
-    | MethodDeclaration
-    | ConstructorDeclaration
-    | AccessorDeclaration
-    | FunctionExpression
-    | ArrowFunction;
-
-/** @internal */
-export function isValueSignatureDeclaration(node: Node): node is ValueSignatureDeclaration {
+export function isValueSignatureDeclaration(node: Node): node is FunctionLikeDeclaration {
     return isFunctionExpression(node) || isArrowFunction(node) || isMethodOrAccessor(node) || isFunctionDeclaration(node) || isConstructorDeclaration(node);
 }
 
@@ -11135,7 +11127,7 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
         }
     }
 
-    function isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node): SymbolVisibilityResult {
+    function isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node, shouldComputeAliasToMakeVisible = true): SymbolVisibilityResult {
         const meaning = getMeaningOfEntityNameReference(entityName);
         const firstIdentifier = getFirstIdentifier(entityName);
         const symbol = resolveName(enclosingDeclaration, firstIdentifier.escapedText, meaning, /*nameNotFoundMessage*/ undefined, /*nameArg*/ undefined, /*isUse*/ false);
@@ -11162,7 +11154,7 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
         }
 
         // Verify if the symbol is accessible
-        return (symbol && hasVisibleDeclarations(symbol, /*shouldComputeAliasToMakeVisible*/ true)) || {
+        return (symbol && hasVisibleDeclarations(symbol, shouldComputeAliasToMakeVisible)) || {
             accessibility: defaultSymbolAccessibility,
             errorSymbolName: getTextOfNode(firstIdentifier),
             errorNode: firstIdentifier,
@@ -11772,5 +11764,27 @@ export function createNameResolver(
             withinDeferredContext,
             isInExternalModule,
         );
+    }
+}
+
+
+/** @internal */
+export function hasInferredType(node: Node) {
+    Debug.type<HasInferredType>(node);
+    switch(node.kind) {
+        case SyntaxKind.Parameter:
+        case SyntaxKind.PropertySignature:
+        case SyntaxKind.PropertyDeclaration:
+        case SyntaxKind.BindingElement:
+        case SyntaxKind.PropertyAccessExpression:
+        case SyntaxKind.ElementAccessExpression:
+        case SyntaxKind.BinaryExpression:
+        case SyntaxKind.VariableDeclaration:
+        case SyntaxKind.ExportAssignment:
+        case SyntaxKind.PropertyAssignment:
+            return true;
+        default:
+            assertType<never>(node);
+            return false
     }
 }

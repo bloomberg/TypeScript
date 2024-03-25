@@ -5611,9 +5611,9 @@ export interface EmitResolver {
     isUndefinedIdentifier(node: Identifier): boolean;
     isExpandoFunctionDeclaration(node: VariableDeclaration | FunctionDeclaration): boolean;
     getPropertiesOfContainerFunction(node: Declaration): Symbol[];
-    createTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration | PropertyAccessExpression | ElementAccessExpression | BinaryExpression, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, addUndefined?: boolean): TypeNode | undefined;
+    createTypeOfDeclaration(declaration: PropertyAccessExpression | BinaryExpression | ElementAccessExpression| VariableDeclaration | ParameterDeclaration | BindingElement | PropertyDeclaration | PropertySignature | ExportAssignment, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, addUndefined?: boolean): TypeNode | undefined;
     createReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
-    createTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
+    createTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, addUndefined?: boolean): TypeNode | undefined;
     createLiteralConstValue(node: VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration, tracker: SymbolTracker): Expression;
     isSymbolAccessible(symbol: Symbol, enclosingDeclaration: Node | undefined, meaning: SymbolFlags | undefined, shouldComputeAliasToMarkVisible: boolean): SymbolAccessibilityResult;
     isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, enclosingDeclaration: Node): SymbolVisibilityResult;
@@ -9620,6 +9620,7 @@ export interface SymbolTracker {
     // with import statements it previously saw (but chose not to emit).
     trackSymbol?(symbol: Symbol, enclosingDeclaration: Node | undefined, meaning: SymbolFlags): boolean;
     reportInaccessibleThisError?(): void;
+    reportMissingSymbol?(node: EntityNameOrEntityNameExpression): void;
     reportPrivateInBaseOfClassExpression?(propertyName: string): void;
     reportInaccessibleUniqueSymbolError?(): void;
     reportCyclicStructureError?(): void;
@@ -9628,6 +9629,7 @@ export interface SymbolTracker {
     moduleResolverHost?: ModuleSpecifierResolutionHost & { getCommonSourceDirectory(): string; };
     reportNonlocalAugmentation?(containingFile: SourceFile, parentSymbol: Symbol, augmentingSymbol: Symbol): void;
     reportNonSerializableProperty?(propertyName: string): void;
+    reportInferenceFallback?(node: Node): void;
 }
 
 export interface TextSpan {
@@ -10081,3 +10083,16 @@ export interface Queue<T> {
     dequeue(): T;
     isEmpty(): boolean;
 }
+
+/** @internal */
+export type HasInferredType =
+    | PropertyAssignment 
+    | PropertyAccessExpression 
+    | BinaryExpression 
+    | ElementAccessExpression 
+    | VariableDeclaration 
+    | ParameterDeclaration 
+    | BindingElement 
+    | PropertyDeclaration 
+    | PropertySignature 
+    | ExportAssignment;
