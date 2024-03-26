@@ -566,6 +566,7 @@ import {
     TypeParameterDeclaration,
     TypePredicate,
     TypePredicateKind,
+    TypePredicateNode,
     TypeReferenceNode,
     unescapeLeadingUnderscores,
     UnionOrIntersectionTypeNode,
@@ -10967,7 +10968,8 @@ export function getMeaningOfEntityNameReference(entityName: EntityNameOrEntityNa
     if (
         entityName.parent.kind === SyntaxKind.TypeQuery ||
         entityName.parent.kind === SyntaxKind.ExpressionWithTypeArguments && !isPartOfTypeNode(entityName.parent) ||
-        entityName.parent.kind === SyntaxKind.ComputedPropertyName
+        entityName.parent.kind === SyntaxKind.ComputedPropertyName ||
+        entityName.parent.kind === SyntaxKind.TypePredicate && (entityName.parent as TypePredicateNode).parameterName === entityName
     ) {
         // Typeof value
         meaning = SymbolFlags.Value | SymbolFlags.ExportValue;

@@ -289,8 +289,8 @@ export function transformDeclarations(context: TransformationContext) {
     const { stripInternal, isolatedDeclarations, isolatedDeclarationsNoFallback } = options;
     return transformRoot;
 
-    function reportMissingSymbol(node: EntityNameOrEntityNameExpression) {
-        handleSymbolAccessibilityError({ accessibility: SymbolAccessibility.CannotBeNamed, errorNode: node, errorSymbolName: getTextOfNode(node) });
+    function reportMissingSymbol(_node: EntityNameOrEntityNameExpression) {
+        // handleSymbolAccessibilityError({ accessibility: SymbolAccessibility.CannotBeNamed, errorNode: node, errorSymbolName: getTextOfNode(node) });
     }
     function reportInferenceFallback(node: Node) {
         if (!isolatedDeclarations) return;
