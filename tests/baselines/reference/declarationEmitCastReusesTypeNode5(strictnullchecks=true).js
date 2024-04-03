@@ -35,8 +35,8 @@ type R = {
     foo: string;
 };
 export declare class C {
-    tsResolve?: R | R;
-    tsResolve2?: R | R | string;
+    tsResolve?: R | undefined;
+    tsResolve2?: string | R | undefined;
     reuseType?: ((p: R) => void) | string | string | undefined;
     reuseType2?: (new (p: R) => R) | string | string | undefined;
     reuseType3?: string | number | bigint | symbol | unknown | any | never | symbol | undefined;

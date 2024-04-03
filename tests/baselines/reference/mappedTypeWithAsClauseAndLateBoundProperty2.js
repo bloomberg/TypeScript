@@ -9,6 +9,4 @@ export const thing = null;
 
 
 //// [mappedTypeWithAsClauseAndLateBoundProperty2.d.ts]
-export declare const thing: {
-    [K in keyof number[] as Exclude<K, "length">]: (number[])[K];
-};
+export declare const thing: { [K in keyof number[] as Exclude<K, "length">]: (number[])[K]; };

@@ -117,12 +117,7 @@
       "text": ": "
     },
     {
-      "text": "Exclude",
-      "span": {
-        "start": -1,
-        "length": 7
-      },
-      "file": "lib.d.ts"
+      "text": "Exclude"
     },
     {
       "text": "<"
@@ -264,12 +259,7 @@
       "text": ": "
     },
     {
-      "text": "X",
-      "span": {
-        "start": 599,
-        "length": 1
-      },
-      "file": "/tests/cases/fourslash/inlayHintsInteractiveFunctionParameterTypes1.ts"
+      "text": "X"
     },
     {
       "text": ")"
@@ -486,12 +476,7 @@
       "text": ": "
     },
     {
-      "text": "X",
-      "span": {
-        "start": 578,
-        "length": 1
-      },
-      "file": "/tests/cases/fourslash/inlayHintsInteractiveFunctionParameterTypes1.ts"
+      "text": "X"
     },
     {
       "text": ")"

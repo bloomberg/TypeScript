@@ -64,7 +64,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -80,7 +80,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -190,7 +190,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -206,7 +206,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -317,7 +317,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -333,7 +333,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -444,7 +444,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -460,7 +460,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -572,7 +572,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -588,7 +588,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -700,7 +700,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -716,7 +716,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -845,7 +845,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -861,7 +861,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -989,7 +989,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -1005,7 +1005,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -1132,7 +1132,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -1148,7 +1148,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -1274,7 +1274,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -1290,7 +1290,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -1415,7 +1415,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -1431,7 +1431,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",
@@ -1555,7 +1555,7 @@
      },
      {
       "text": "ButtonProps",
-      "kind": "interfaceName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -1571,7 +1571,7 @@
      },
      {
       "text": "JSX",
-      "kind": "moduleName"
+      "kind": "text"
      },
      {
       "text": ".",

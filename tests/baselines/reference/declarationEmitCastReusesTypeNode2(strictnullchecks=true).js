@@ -38,9 +38,9 @@ export declare const vConst: {} & {
 export declare function fn(p?: {} & {
     name: string;
 }): void;
-export declare function fnWithRequiredDefaultParam(p: ({} & {
+export declare function fnWithRequiredDefaultParam(p: {
     name: string;
-}) | undefined, req: number): void;
+}, req: number): void;
 export declare class C {
     ctorField: {} & {
         name: string;
@@ -57,9 +57,9 @@ export declare class C {
     method(p?: {} & {
         name: string;
     }): void;
-    methodWithRequiredDefault(p: ({} & {
+    methodWithRequiredDefault(p: {
         name: string;
-    }) | undefined, req: number): void;
+    }, req: number): void;
     constructor(ctorField?: {} & {
         name: string;
     });

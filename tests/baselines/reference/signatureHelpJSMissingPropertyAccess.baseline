@@ -142,7 +142,7 @@
                 },
                 {
                   "text": "T",
-                  "kind": "typeParameterName"
+                  "kind": "text"
                 },
                 {
                   "text": ",",
@@ -198,7 +198,7 @@
                 },
                 {
                   "text": "T",
-                  "kind": "typeParameterName"
+                  "kind": "text"
                 },
                 {
                   "text": "[",
@@ -242,7 +242,7 @@
                 },
                 {
                   "text": "S",
-                  "kind": "typeParameterName"
+                  "kind": "text"
                 }
               ],
               "isOptional": false,
@@ -421,7 +421,7 @@
                 },
                 {
                   "text": "T",
-                  "kind": "typeParameterName"
+                  "kind": "text"
                 },
                 {
                   "text": ",",
@@ -477,7 +477,7 @@
                 },
                 {
                   "text": "T",
-                  "kind": "typeParameterName"
+                  "kind": "text"
                 },
                 {
                   "text": "[",

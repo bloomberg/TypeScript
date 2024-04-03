@@ -78,12 +78,7 @@
       "text": ": "
     },
     {
-      "text": "Foo",
-      "span": {
-        "start": 57,
-        "length": 3
-      },
-      "file": "/tests/cases/fourslash/inlayHintsInteractiveVariableTypes1.ts"
+      "text": "Foo"
     },
     {
       "text": "[]"
@@ -150,12 +145,7 @@
       "text": ": "
     },
     {
-      "text": "Foo",
-      "span": {
-        "start": 57,
-        "length": 3
-      },
-      "file": "/tests/cases/fourslash/inlayHintsInteractiveVariableTypes1.ts"
+      "text": "Foo"
     },
     {
       "text": " "

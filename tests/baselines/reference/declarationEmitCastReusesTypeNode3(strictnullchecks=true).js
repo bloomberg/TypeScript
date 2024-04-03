@@ -37,14 +37,20 @@ type P = {} & {
 export declare let vLet: P;
 export declare const vConst: P;
 export declare function fn(p?: P): void;
-export declare function fnWithRequiredDefaultParam(p: P | undefined, req: number): void;
+export declare function fnWithRequiredDefaultParam(p: {
+    name: string;
+}, req: number): void;
 export declare class C {
     ctorField: P;
     field: P;
-    optField?: P;
+    optField?: {
+        name: string;
+    } | undefined;
     readonly roFiled: P;
     method(p?: P): void;
-    methodWithRequiredDefault(p: P | undefined, req: number): void;
+    methodWithRequiredDefault(p: {
+        name: string;
+    }, req: number): void;
     constructor(ctorField?: P);
     get x(): P;
     set x(v: P);

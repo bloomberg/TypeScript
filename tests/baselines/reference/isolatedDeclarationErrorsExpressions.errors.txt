@@ -41,13 +41,13 @@ isolatedDeclarationErrorsExpressions.ts(93,14): error TS9012: Property must have
 isolatedDeclarationErrorsExpressions.ts(102,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsExpressions.ts(103,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsExpressions.ts(104,5): error TS9012: Property must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(109,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(110,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(111,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(114,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(115,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(116,37): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsExpressions.ts(119,36): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(109,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(110,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(111,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(114,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(115,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(116,33): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsExpressions.ts(119,32): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsExpressions.ts(127,16): error TS9019: Binding elements can't be exported directly with --isolatedDeclarations.
 isolatedDeclarationErrorsExpressions.ts(128,19): error TS9019: Binding elements can't be exported directly with --isolatedDeclarations.
 
@@ -291,35 +291,35 @@ isolatedDeclarationErrorsExpressions.ts(128,19): error TS9019: Binding elements 
     
     export function numberParam(p = 1): void { }
     export function numberParamBad1(p = 1 + 1): void { }
-                                        ~~~~~
+                                    ~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:109:33: Add a type annotation to the parameter p.
     export function numberParamBad2(p = Math.random()): void { }
-                                        ~~~~~~~~~~~~~
+                                    ~~~~~~~~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:110:33: Add a type annotation to the parameter p.
     export function numberParamBad3(p = numberParam): void { }
-                                        ~~~~~~~~~~~
+                                    ~~~~~~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:111:33: Add a type annotation to the parameter p.
     
     export function bigIntParam(p = 1n): void { }
     export function bigIntParamBad1(p = 1n + 1n): void { }
-                                        ~~~~~~~
+                                    ~~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:114:33: Add a type annotation to the parameter p.
     export function bigIntParamBad2(p = time()): void { }
-                                        ~~~~~~
+                                    ~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:115:33: Add a type annotation to the parameter p.
     export function bigIntParamBad3(p = bigIntParam): void { }
-                                        ~~~~~~~~~~~
+                                    ~~~~~~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:116:33: Add a type annotation to the parameter p.
     
     export function stringParam(p = "s"): void { }
     export function stringParamBad(p = "s" + "s"): void { }
-                                       ~~~~~~~~~
+                                   ~~~~~~~~~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsExpressions.ts:119:32: Add a type annotation to the parameter p.
     

@@ -90,10 +90,10 @@ type Json = boolean | number | string | null | JsonRecord | JsonArray | readonly
  */
 type XMLObject<T> = {
     $A: { [K in keyof T]?: XMLObject<T[K]>[]; };
-    $O: { [K_2 in keyof T]?: {
+    $O: { [K in keyof T]?: {
         $$?: Record<string, string>;
-    } & (T[K_2] extends string ? {
+    } & (T[K] extends string ? {
         $: string;
-    } : XMLObject<T[K_2]>); };
+    } : XMLObject<T[K]>); };
     $$?: Record<string, string>;
-} & { [K_3 in keyof T]?: T[K_3] extends string ? string : XMLObject<T[K_3]>; };
+} & { [K in keyof T]?: (T[K] extends string ? string : XMLObject<T[K]>); };

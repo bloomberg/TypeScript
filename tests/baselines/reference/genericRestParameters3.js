@@ -167,4 +167,4 @@ type Signature = (x: string, ...rest: RestParams) => void;
 type MergedParams = Parameters<Signature>;
 declare let ff1: (...rest: [string, string] | [string, number]) => void;
 declare let ff2: (x: string, ...rest: [string] | [number]) => void;
-declare function ff3<A extends unknown[]>(s1: (...args: [x: string, ...rest: A | [number]]) => void, s2: (x: string, ...rest: A | [number]) => void): void;
+declare function ff3<A extends unknown[]>(s1: (...args: [x: string, number] | [x: string, ...rest: A]) => void, s2: (x: string, ...rest: A | [number]) => void): void;

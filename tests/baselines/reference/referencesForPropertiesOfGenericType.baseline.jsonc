@@ -85,7 +85,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -101,7 +101,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      }
     ]
    }
@@ -199,7 +199,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -215,7 +215,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      }
     ]
    }
@@ -313,7 +313,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      },
      {
       "text": ")",
@@ -329,7 +329,7 @@
      },
      {
       "text": "T",
-      "kind": "typeParameterName"
+      "kind": "text"
      }
     ]
    }

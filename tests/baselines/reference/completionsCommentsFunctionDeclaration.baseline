@@ -959,7 +959,7 @@
             },
             {
               "text": "T",
-              "kind": "typeParameterName"
+              "kind": "text"
             },
             {
               "text": ")",
@@ -3600,7 +3600,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "localName"
+              "kind": "text"
             },
             {
               "text": " ",
@@ -8819,7 +8819,7 @@
             },
             {
               "text": "T",
-              "kind": "typeParameterName"
+              "kind": "text"
             },
             {
               "text": ")",
@@ -11460,7 +11460,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "localName"
+              "kind": "text"
             },
             {
               "text": " ",

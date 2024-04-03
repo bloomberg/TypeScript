@@ -33,23 +33,23 @@ export default /** @type {string | string} */(null);
 
 
 //// [jsFile.d.ts]
-export function fn(p?: string | string): void;
+export function fn(p?: string): void;
 /**
  * @param {number} req
 */
-export function fnWithRequiredDefaultParam(p: string | string, req: number): void;
-export let vLet: string | string;
-export const vConst: string | string;
+export function fnWithRequiredDefaultParam(p: string, req: number): void;
+export let vLet: string;
+export const vConst: string;
 export class C {
-    constructor(ctorField?: string | string);
-    field: string | string;
+    constructor(ctorField?: string);
+    field: string;
     /** @readonly */
-    readonly roFiled: string | string;
-    method(p?: string | string): void;
+    readonly roFiled: string;
+    method(p?: string): void;
     /**
      * @param {number} req
     */
-    methodWithRequiredDefault(p: string | string, req: number): void;
+    methodWithRequiredDefault(p: string, req: number): void;
 }
-declare const _default: string | string;
+declare const _default: string;
 export default _default;
