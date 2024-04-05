@@ -4,7 +4,7 @@
 interface f {
     groupBy<T>(): { [key: string]: T[]; };
 >groupBy : <T>() => { [key: string]: T[]; }
->        : ^^^^^^^^^                 ^     
+>        : ^ ^^^^^^^                       
 >key : string
 >    : ^^^^^^
 }
@@ -16,7 +16,7 @@ var r = a.groupBy();
 >r : { [key: string]: unknown[]; }
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a.groupBy() : { [key: string]: unknown[]; }
->            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>            :                              
 >a.groupBy : <T>() => { [key: string]: T[]; }
 >          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a : f
@@ -30,7 +30,7 @@ class c {
 
     groupBy<T>(): { [key: string]: T[]; } {
 >groupBy : <T>() => { [key: string]: T[]; }
->        : ^^^^^^^^^                 ^     
+>        : ^ ^^^^^^^                       
 >key : string
 >    : ^^^^^^
 
@@ -45,7 +45,7 @@ var r2 = a2.groupBy();
 >r2 : { [key: string]: unknown[]; }
 >   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a2.groupBy() : { [key: string]: unknown[]; }
->             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>             :                              
 >a2.groupBy : <T>() => { [key: string]: T[]; }
 >           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a2 : c

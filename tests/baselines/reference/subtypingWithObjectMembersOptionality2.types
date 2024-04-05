@@ -50,13 +50,13 @@ interface S3 extends T3 {
 // object literal case
 var a: { Foo: Base; }
 >a : { Foo: Base; }
->  : ^^^^^^^^^^^^^^
+>  : ^^^^^^^    ^^^
 >Foo : Base
 >    : ^^^^
 
 var b: { Foo?: Derived; }
 >b : { Foo?: Derived; }
->  : ^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^       ^^^
 >Foo : Derived
 >    : ^^^^^^^
 
@@ -64,7 +64,7 @@ var r = true ? a : b; // ok
 >r : { Foo: Base; } | { Foo?: Derived; }
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >true ? a : b : { Foo: Base; } | { Foo?: Derived; }
->             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>             :               ^^^     ^            
 >true : true
 >     : ^^^^
 >a : { Foo: Base; }

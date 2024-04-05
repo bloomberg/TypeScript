@@ -1,5 +1,9 @@
 import * as ts from "./_namespaces/ts";
-import { createPrinter, createTextWriter, memoize } from "./_namespaces/ts";
+import {
+    createPrinter,
+    createTextWriter,
+    memoize,
+} from "./_namespaces/ts";
 
 export interface TypeWriterTypeResult {
     line: number;
@@ -40,17 +44,25 @@ function* forEachASTNode(node: ts.Node) {
     }
 }
 
-const createSyntheticNodeUnderliningPrinter = memoize((): {printer: ts.Printer, writer: ts.EmitTextWriter, underliner: ts.EmitTextWriter, reset(): void} => {
+function nodeIsFullySynthetic(node: ts.Node) {
+    return ts.nodeIsSynthesized(node) && !node.original;
+}
+
+const createSyntheticNodeUnderliningPrinter = memoize((): { printer: ts.Printer; writer: ts.EmitTextWriter; underliner: ts.EmitTextWriter; reset(): void; } => {
     let underlining = false;
     const printer = createPrinter({ removeComments: true }, {
         onEmitNode: (hint, node, cb) => {
-            const noPositions = ts.nodeIsSynthesized(node);
-            const wasUnderlining = underlining;
-            underlining = noPositions;
-            const result = cb(hint, node);
-            underlining = wasUnderlining;
-            return result;
-        }
+            if (nodeIsFullySynthetic(node) !== underlining) {
+                // either node is synthetic and underlining needs to be enabled, or node is not synthetic and
+                // underlining needs to be disabled
+                underlining = !underlining;
+                const result = cb(hint, node);
+                underlining = !underlining;
+                return result;
+            }
+            // underlining does not need to change
+            return cb(hint, node);
+        },
     });
     const baseWriter = createTextWriter("");
     const underliner = createTextWriter("");
@@ -149,20 +161,20 @@ const createSyntheticNodeUnderliningPrinter = memoize((): {printer: ts.Printer, 
             clear(): void {
                 baseWriter.clear();
                 underliner.clear();
-            }
+            },
         },
         underliner,
         reset() {
             underlining = false;
             baseWriter.clear();
             underliner.clear();
-        }
+        },
     };
 
     function underlineFor(s: string) {
         return s.length === 0 ? s : (underlining ? "^" : " ").repeat(s.length);
     }
-})
+});
 
 export class TypeWriterWalker {
     currentSourceFile!: ts.SourceFile;
@@ -276,17 +288,16 @@ export class TypeWriterWalker {
 
                 const { printer, writer, underliner, reset } = createSyntheticNodeUnderliningPrinter();
                 printer.writeNode(ts.EmitHint.Unspecified, typeNode, this.currentSourceFile, writer);
-                const result = writer.getText();
+                typeString = writer.getText();
                 underline = underliner.getText();
                 reset();
-                typeString = result;
             }
             return {
                 line: lineAndCharacter.line,
                 syntaxKind: node.kind,
                 sourceText,
                 type: typeString,
-                underline
+                underline,
             };
         }
         const symbol = this.checker.getSymbolAtLocation(node);

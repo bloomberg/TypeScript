@@ -19,19 +19,19 @@ interface Container<T> {
 }
 declare function foo(x: () => Container<Ref<number>>): void;
 >foo : (x: () => Container<Ref<number>>) => void
->    : ^^^^      ^^^^^^^^^ ^^^         ^^^^^    
+>    : ^ ^^                            ^^^^^    
 >x : () => Container<Ref<number>>
->  : ^^^^^^^^^^^^^^^ ^^^         
+>  : ^^^^^^                      
 
 let a: () => Container<Ref<string>>;
 >a : () => Container<Ref<string>>
->  : ^^^^^^^^^^^^^^^ ^^^         
+>  : ^^^^^^                      
 
 foo(a);
 >foo(a) : void
 >       : ^^^^
 >foo : (x: () => Container<Ref<number>>) => void
->    : ^^^^      ^^^^^^^^^ ^^^         ^^^^^^^^^
+>    : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a : () => Container<Ref<string>>
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -39,7 +39,7 @@ foo(a);
 
 function test(): {[A in "foo"]: A} {
 >test : () => { [A in "foo"]: A; }
->     : ^^^^^^   ^            ^   
+>     : ^^^^^^                    
 
   return {foo: "bar"};
 >{foo: "bar"} : { foo: "bar"; }
@@ -64,13 +64,13 @@ const foo = { bar: 'a' };
 
 const x = ({ [foo.bar]: c }) => undefined;
 >x : ({ [foo.bar]: c }: {}) => any
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^                ^^^^^^^^^^^^
 >({ [foo.bar]: c }) => undefined : ({ [foo.bar]: c }: {}) => any
->                                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                :                              
 >foo.bar : any
 >        : ^^^
 >foo : (x: () => Container<Ref<number>>) => void
->    : ^^^^      ^^^^^^^^^ ^^^         ^^^^^^^^^
+>    : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >bar : any
 >    : ^^^
 >c : any

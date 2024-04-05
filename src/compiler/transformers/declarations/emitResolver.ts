@@ -17,6 +17,7 @@ import {
     entityNameToString,
     EnumDeclaration,
     EnumMember,
+    evaluatorResult,
     ExportSpecifier,
     Expression,
     factory,
@@ -317,36 +318,35 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     const evaluate = createEvaluator({
         evaluateElementAccessExpression(expr, location) {
             // We only resolve names in the current enum declaration
-            if (!location || !isEnumDeclaration(location)) return undefined;
+            if (!location || !isEnumDeclaration(location)) return evaluatorResult(/*value*/ undefined);
             if (
                 isExpressionMemberOfEnum(expr.expression, location)
                 && isStringLiteralLike(expr.argumentExpression)
             ) {
-                return getEnumValueFromName(expr.argumentExpression, location);
+                return evaluatorResult(getEnumValueFromName(expr.argumentExpression, location));
             }
-            return undefined;
+            return evaluatorResult(/*value*/ undefined);
         },
         evaluateEntityNameExpression(expr, location) {
             if (
                 isIdentifier(expr) && isInfinityOrNaNString(expr.escapedText) &&
                 (resolveName(location ?? expr.parent, expr.escapedText, SymbolFlags.Value) === undefined)
             ) {
-                return +(expr.escapedText);
+                return evaluatorResult(+(expr.escapedText));
             }
             // We only resolve names in the current enum declaration
-            if (!location || !isEnumDeclaration(location)) return undefined;
+            if (!location || !isEnumDeclaration(location)) return evaluatorResult(/*value*/ undefined);
             if (isIdentifier(expr)) {
-                return getEnumValueFromName(expr, location);
+                return evaluatorResult(getEnumValueFromName(expr, location));
             }
             if (
                 isEntityNameExpression(expr.expression)
                 && isExpressionMemberOfEnum(expr.expression, location)
             ) {
-                return getEnumValueFromName(expr.name, location);
+                return evaluatorResult(getEnumValueFromName(expr.name, location));
             }
-            return undefined;
+            return evaluatorResult(/*value*/ undefined);
         },
-        onNumericLiteral() {},
     });
 
     function isLiteralConstDeclaration(node: VariableDeclaration | PropertyDeclaration | PropertySignature | ParameterDeclaration): boolean {
@@ -450,17 +450,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
             const symbol = getSymbolOfDeclaration(node);
             return [...symbol.exports?.values() ?? [], ...resolveAllLateBoundSymbols(symbol, /*isStatic*/ true).values()];
         },
-        // getAllAccessorDeclarations(declaration) {
-        //     const symbol = getSymbolOfDeclaration(declaration);
-        //     const declaredAccessors = symbol?.declarations?.filter(isAccessor);
-        //     const declarations = declaredAccessors?.length ? declaredAccessors : [declaration];
-        //     return {
-        //         firstAccessor: declarations[0],
-        //         secondAccessor: declarations[1],
-        //         getAccessor: declarations.find(isGetAccessorDeclaration),
-        //         setAccessor: declarations.find(isSetAccessorDeclaration),
-        //     };
-        // },
         getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): string | number | undefined {
             function updateEnumValues(node: EnumDeclaration) {
                 let prevEnumValueLinks: EmitDeclarationNodeLinks | undefined;
@@ -468,9 +457,9 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
                 for (const enumValue of node.members) {
                     const links = getNodeLinks(enumValue);
                     if (enumValue.initializer) {
-                        const value = enumValue.initializer && evaluate(enumValue.initializer, node);
-                        if (value !== undefined) {
-                            links.enumValue = value;
+                        const result = enumValue.initializer && evaluate(enumValue.initializer, node);
+                        if (result !== undefined) {
+                            links.enumValue = result.value;
                         }
                         else {
                             links.enumValue = undefined;

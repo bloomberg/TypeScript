@@ -15,7 +15,7 @@ type Data<T> = {
 
     get: <K extends keyof T>(prop: K) => T[K];
 >get : <K extends keyof T>(prop: K) => T[K]
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^ 
+>    : ^ ^^^^^^^^^^^^^^^^^^    ^^ ^^^^^    
 >prop : K
 >     : ^
 
@@ -31,7 +31,7 @@ class Parent<M> {
 
     getData(): Data<M> {
 >getData : () => Data<M>
->        : ^^^^^^^^^^ ^ 
+>        : ^^^^^^       
 
         return this.data;
 >this.data : Data<M>
@@ -51,13 +51,13 @@ export class Foo<C> extends Parent<IData<C>> {
 
     getContent(): C {
 >getContent : () => C
->           : ^^^^^^^
+>           : ^^^^^^ 
 
         return this.getData().get('content');
 >this.getData().get('content') : C
 >                              : ^
 >this.getData().get : <K extends "content">(prop: K) => IData<C>[K]
->                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                   : ^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^
 >this.getData() : Data<IData<C>>
 >               : ^^^^^^^^^^^^^^
 >this.getData : () => Data<IData<C>>
@@ -67,7 +67,7 @@ export class Foo<C> extends Parent<IData<C>> {
 >getData : () => Data<IData<C>>
 >        : ^^^^^^^^^^^^^^^^^^^^
 >get : <K extends "content">(prop: K) => IData<C>[K]
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^
 >'content' : "content"
 >          : ^^^^^^^^^
     }
@@ -81,13 +81,13 @@ export class Bar<C, T extends IData<C>> extends Parent<T> {
 
     getContent(): C {
 >getContent : () => C
->           : ^^^^^^^
+>           : ^^^^^^ 
 
         return this.getData().get('content');
 >this.getData().get('content') : T["content"]
 >                              : ^^^^^^^^^^^^
 >this.getData().get : <K extends keyof T>(prop: K) => T[K]
->                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                   : ^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^
 >this.getData() : Data<T>
 >               : ^^^^^^^
 >this.getData : () => Data<T>
@@ -97,7 +97,7 @@ export class Bar<C, T extends IData<C>> extends Parent<T> {
 >getData : () => Data<T>
 >        : ^^^^^^^^^^^^^
 >get : <K extends keyof T>(prop: K) => T[K]
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^
 >'content' : "content"
 >          : ^^^^^^^^^
     }
@@ -107,7 +107,7 @@ export class Bar<C, T extends IData<C>> extends Parent<T> {
 
 function foo<C, T extends { content: C }>(x: C, y: T['content']) {
 >foo : <C, T extends { content: C; }>(x: C, y: T['content']) => void
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^           ^^^^^^^^^
+>    : ^ ^^ ^^^^^^^^^^^^^^^^^^^^ ^^^^^ ^^ ^^ ^^            ^^^^^^^^^
 >content : C
 >        : ^
 >x : C

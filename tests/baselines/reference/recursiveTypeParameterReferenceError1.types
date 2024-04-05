@@ -36,7 +36,7 @@ class C2<T> {
 interface Foo2<T> {
     ofC4: C2<{ x: T }> // ok
 >ofC4 : C2<{ x: T; }>
->     : ^^^^^^^^^^^^^
+>     : ^^^^^^^^ ^^^^
 >x : T
 >  : ^
 }
@@ -48,7 +48,7 @@ var r2 = f2.ofC4;
 >r2 : C2<{ x: number; }>
 >   : ^^^^^^^^^^^^^^^^^^
 >f2.ofC4 : C2<{ x: number; }>
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^^^              ^
 >f2 : Foo2<number>
 >   : ^^^^^^^^^^^^
 >ofC4 : C2<{ x: number; }>

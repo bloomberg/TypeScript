@@ -11,7 +11,6 @@ import {
     FlowFlags,
     FlowLabel,
     FlowNode,
-    FlowNodeBase,
     FlowSwitchClause,
     getEffectiveModifierFlagsNoCache,
     getEmitFlags,
@@ -510,14 +509,14 @@ export namespace Debug {
 
     let isDebugInfoEnabled = false;
 
-    let flowNodeProto: FlowNodeBase | undefined;
+    let flowNodeProto: FlowNode | undefined;
 
-    function attachFlowNodeDebugInfoWorker(flowNode: FlowNodeBase) {
+    function attachFlowNodeDebugInfoWorker(flowNode: FlowNode) {
         if (!("__debugFlowFlags" in flowNode)) { // eslint-disable-line local/no-in-operator
             Object.defineProperties(flowNode, {
                 // for use with vscode-js-debug's new customDescriptionGenerator in launch.json
                 __tsDebuggerDisplay: {
-                    value(this: FlowNodeBase) {
+                    value(this: FlowNode) {
                         const flowHeader = this.flags & FlowFlags.Start ? "FlowStart" :
                             this.flags & FlowFlags.BranchLabel ? "FlowBranchLabel" :
                             this.flags & FlowFlags.LoopLabel ? "FlowLoopLabel" :
@@ -535,12 +534,12 @@ export namespace Debug {
                     },
                 },
                 __debugFlowFlags: {
-                    get(this: FlowNodeBase) {
+                    get(this: FlowNode) {
                         return formatEnum(this.flags, (ts as any).FlowFlags, /*isFlags*/ true);
                     },
                 },
                 __debugToString: {
-                    value(this: FlowNodeBase) {
+                    value(this: FlowNode) {
                         return formatControlFlowGraph(this);
                     },
                 },
@@ -548,13 +547,13 @@ export namespace Debug {
         }
     }
 
-    export function attachFlowNodeDebugInfo(flowNode: FlowNodeBase) {
+    export function attachFlowNodeDebugInfo(flowNode: FlowNode) {
         if (isDebugInfoEnabled) {
             if (typeof Object.setPrototypeOf === "function") {
                 // if we're in es2015, attach the method to a shared prototype for `FlowNode`
                 // so the method doesn't show up in the watch window.
                 if (!flowNodeProto) {
-                    flowNodeProto = Object.create(Object.prototype) as FlowNodeBase;
+                    flowNodeProto = Object.create(Object.prototype) as FlowNode;
                     attachFlowNodeDebugInfoWorker(flowNodeProto);
                 }
                 Object.setPrototypeOf(flowNode, flowNodeProto);
@@ -564,6 +563,7 @@ export namespace Debug {
                 attachFlowNodeDebugInfoWorker(flowNode);
             }
         }
+        return flowNode;
     }
 
     let nodeArrayProto: NodeArray<Node> | undefined;
@@ -957,8 +957,8 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
             return !!(f.flags & FlowFlags.SwitchClause);
         }
 
-        function hasAntecedents(f: FlowNode): f is FlowLabel & { antecedents: FlowNode[]; } {
-            return !!(f.flags & FlowFlags.Label) && !!(f as FlowLabel).antecedents;
+        function hasAntecedents(f: FlowNode): f is FlowLabel & { antecedent: FlowNode[]; } {
+            return !!(f.flags & FlowFlags.Label) && !!(f as FlowLabel).antecedent;
         }
 
         function hasAntecedent(f: FlowNode): f is Extract<FlowNode, { antecedent: FlowNode; }> {
@@ -1012,7 +1012,7 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
                 links[id] = graphNode = { id, flowNode, edges: [], text: "", lane: -1, endLane: -1, level: -1, circular: false };
                 nodes.push(graphNode);
                 if (hasAntecedents(flowNode)) {
-                    for (const antecedent of flowNode.antecedents) {
+                    for (const antecedent of flowNode.antecedent) {
                         buildGraphEdge(graphNode, antecedent, seen);
                     }
                 }
@@ -1101,15 +1101,11 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
             if (circular) {
                 text = `${text}#${getDebugFlowNodeId(flowNode)}`;
             }
-            if (hasNode(flowNode)) {
-                if (flowNode.node) {
-                    text += ` (${getNodeText(flowNode.node)})`;
-                }
-            }
-            else if (isFlowSwitchClause(flowNode)) {
+            if (isFlowSwitchClause(flowNode)) {
                 const clauses: string[] = [];
-                for (let i = flowNode.clauseStart; i < flowNode.clauseEnd; i++) {
-                    const clause = flowNode.switchStatement.caseBlock.clauses[i];
+                const { switchStatement, clauseStart, clauseEnd } = flowNode.node;
+                for (let i = clauseStart; i < clauseEnd; i++) {
+                    const clause = switchStatement.caseBlock.clauses[i];
                     if (isDefaultClause(clause)) {
                         clauses.push("default");
                     }
@@ -1118,6 +1114,11 @@ m2: ${(this.mapper2 as unknown as DebugTypeMapper).__debugToString().split("\n")
                     }
                 }
                 text += ` (${clauses.join(", ")})`;
+            }
+            else if (hasNode(flowNode)) {
+                if (flowNode.node) {
+                    text += ` (${getNodeText(flowNode.node)})`;
+                }
             }
             return circular === "circularity" ? `Circular(${text})` : text;
         }

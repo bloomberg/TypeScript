@@ -15,20 +15,20 @@ declare module 'connect' {
     interface connectExport {
         use: (mod: connectModule) => connectExport;
 >use : (mod: connectModule) => connectExport
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^   ^^             ^^^^^             
 >mod : connectModule
 >    : ^^^^^^^^^^^^^
 
         listen: (port: number) => void;
 >listen : (port: number) => void
->       : ^^^^^^^      ^^^^^    
+>       : ^    ^^      ^^^^^    
 >port : number
 >     : ^^^^^^
     }
 
     var server: {
 >server : { (): connectExport; test1: connectModule; test2(): connectModule; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^             ^^^^^^^^^             ^^^^^^^^^^^             ^^^
 
         (): connectExport;
         test1: connectModule;
@@ -37,7 +37,7 @@ declare module 'connect' {
 
         test2(): connectModule;
 >test2 : () => connectModule
->      : ^^^^^^^^^^^^^^^^^^^
+>      : ^^^^^^             
 
     };
     export = server;

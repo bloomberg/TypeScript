@@ -119,6 +119,7 @@ import {
     isIndexSignatureDeclaration,
     isInterfaceDeclaration,
     isInternalDeclaration,
+    isJSDocImportTag,
     isJsonSourceFile,
     isLateVisibilityPaintedStatement,
     isLiteralExpression,
@@ -128,6 +129,7 @@ import {
     isMethodSignature,
     isModifier,
     isModuleDeclaration,
+    isObjectLiteralExpression,
     isOmittedExpression,
     isParameter,
     isParenthesizedExpression,
@@ -1473,6 +1475,8 @@ export function transformDeclarations(context: TransformationContext) {
             }
         }
         if (isDeclaration(input) && isDeclarationAndNotVisible(input)) return;
+
+        if (isJSDocImportTag(input)) return;
 
         // Elide implementation signatures from overload sets
         if (isFunctionLike(input) && resolver.isImplementationOfOverload(input)) return;

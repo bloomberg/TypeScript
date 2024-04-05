@@ -9,7 +9,7 @@ import { fa as fa2 } from "ext/other";
 >fa : () => import("node_modules/ext/other").A2
 >   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >fa2 : () => import("node_modules/ext/other").A2
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>    :                                                
 
 export const va = fa();
 >va : import("node_modules/ext/other").A2
@@ -31,7 +31,7 @@ export const va2 = fa2();
 export interface A2 {}
 export function fa(): A2;
 >fa : () => A2
->   : ^^^^^^^^
+>   : ^^^^^^  
 
 === node_modules/ext/ts3.1/index.d.ts ===
 

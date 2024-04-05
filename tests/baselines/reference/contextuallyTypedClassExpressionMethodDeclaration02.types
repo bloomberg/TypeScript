@@ -20,20 +20,20 @@ interface Foo {
 interface Bar {
     method1(arg: A): void;
 >method1 : (arg: A) => void
->        : ^^^^^^^^^^^^    
+>        : ^   ^^ ^^^^^    
 >arg : A
 >    : ^
 
     method2(arg: B): void;
 >method2 : (arg: B) => void
->        : ^^^^^^^^^^^^    
+>        : ^   ^^ ^^^^^    
 >arg : B
 >    : ^
 }
 
 function getFoo1(): Foo {
 >getFoo1 : () => Foo
->        : ^^^^^^^^^
+>        : ^^^^^^   
 
     return class {
 >class {        method1(arg) {            arg.numProp = 10;        }        method2(arg) {            arg.strProp = "hello";        }    } : typeof (Anonymous class)
@@ -41,7 +41,7 @@ function getFoo1(): Foo {
 
         method1(arg) {
 >method1 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >arg : any
 >    : ^^^
 
@@ -59,7 +59,7 @@ function getFoo1(): Foo {
         }
         method2(arg) {
 >method2 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >arg : any
 >    : ^^^
 
@@ -80,7 +80,7 @@ function getFoo1(): Foo {
 
 function getFoo2(): Foo {
 >getFoo2 : () => Foo
->        : ^^^^^^^^^
+>        : ^^^^^^   
 
     return class {
 >class {        method1 = (arg) => {            arg.numProp = 10;        }        method2 = (arg) => {            arg.strProp = "hello";        }    } : typeof (Anonymous class)
@@ -88,9 +88,9 @@ function getFoo2(): Foo {
 
         method1 = (arg) => {
 >method1 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >(arg) => {            arg.numProp = 10;        } : (arg: any) => void
->                                                 : ^^^^^^^^^^^^^^^^^^
+>                                                 :                   
 >arg : any
 >    : ^^^
 
@@ -108,9 +108,9 @@ function getFoo2(): Foo {
         }
         method2 = (arg) => {
 >method2 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >(arg) => {            arg.strProp = "hello";        } : (arg: any) => void
->                                                      : ^^^^^^^^^^^^^^^^^^
+>                                                      :                   
 >arg : any
 >    : ^^^
 
@@ -131,7 +131,7 @@ function getFoo2(): Foo {
 
 function getFoo3(): Foo {
 >getFoo3 : () => Foo
->        : ^^^^^^^^^
+>        : ^^^^^^   
 
     return class {
 >class {        method1 = function (arg) {            arg.numProp = 10;        }        method2 = function (arg) {            arg.strProp = "hello";        }    } : typeof (Anonymous class)
@@ -139,9 +139,9 @@ function getFoo3(): Foo {
 
         method1 = function (arg) {
 >method1 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >function (arg) {            arg.numProp = 10;        } : (arg: any) => void
->                                                       : ^^^^^^^^^^^^^^^^^^
+>                                                       :                   
 >arg : any
 >    : ^^^
 
@@ -159,9 +159,9 @@ function getFoo3(): Foo {
         }
         method2 = function (arg) {
 >method2 : (arg: any) => void
->        : ^^^^^^^^^^^^^^^^^^
+>        : ^   ^^^^^^^^^^^^^^
 >function (arg) {            arg.strProp = "hello";        } : (arg: any) => void
->                                                            : ^^^^^^^^^^^^^^^^^^
+>                                                            :                   
 >arg : any
 >    : ^^^
 

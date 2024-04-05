@@ -7,15 +7,15 @@ var before: typeof func = func();
 >func : () => typeof func
 >     : ^^^^^^^^^^^^^^^^^
 >func() : () => typeof func
->       : ^^^^^^^^^^^^^^^^^
+>       :                  
 >func : () => typeof func
 >     : ^^^^^^^^^^^^^^^^^
 
 export default function func(): typeof func {
 >func : () => typeof func
->     : ^^^^^^       ^^^^
+>     : ^^^^^^           
 >func : () => typeof func
->     : ^^^^^^       ^^^^
+>     : ^^^^^^           
 
     return func;
 >func : () => typeof func
@@ -28,7 +28,7 @@ var after: typeof func = func();
 >func : () => typeof func
 >     : ^^^^^^^^^^^^^^^^^
 >func() : () => typeof func
->       : ^^^^^^^^^^^^^^^^^
+>       :                  
 >func : () => typeof func
 >     : ^^^^^^^^^^^^^^^^^
 

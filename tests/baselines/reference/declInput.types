@@ -17,9 +17,9 @@ class bar {
 
   public g() { return {a: <bar>null, b: undefined, c: void 4 }; }
 >g : () => { a: bar; b: any; c: any; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^
 >{a: <bar>null, b: undefined, c: void 4 } : { a: bar; b: undefined; c: undefined; }
->                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                         : ^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >a : bar
 >  : ^^^
 ><bar>null : bar
@@ -37,7 +37,7 @@ class bar {
 
   public h(x = 4, y = null, z = '') { x++; }
 >h : (x?: number, y?: any, z?: string) => void
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^ ^^^^^^^^^^^ ^^^^^^^^ ^^^^^^^^^^^^^^^^^^
 >x : number
 >  : ^^^^^^
 >4 : 4

@@ -75,7 +75,7 @@ function f<T>() {
 
 	let optional: { k1?: T } = undefined!;
 >optional : { k1?: T; }
->         : ^^^^^^^^^^^
+>         : ^^^^^^^ ^^^
 >k1 : T | undefined
 >   : ^^^^^^^^^^^^^
 >undefined! : never

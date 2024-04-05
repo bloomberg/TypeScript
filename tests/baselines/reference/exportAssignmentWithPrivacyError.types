@@ -10,20 +10,20 @@ interface connectmodule {
 interface connectexport {
     use: (mod: connectmodule) => connectexport;
 >use : (mod: connectmodule) => connectexport
->    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^   ^^             ^^^^^             
 >mod : connectmodule
 >    : ^^^^^^^^^^^^^
 
     listen: (port: number) => void;
 >listen : (port: number) => void
->       : ^^^^^^^      ^^^^^    
+>       : ^    ^^      ^^^^^    
 >port : number
 >     : ^^^^^^
 }
 
 var server: {
 >server : { (): connectexport; test1: connectmodule; test2(): connectmodule; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^             ^^^^^^^^^             ^^^^^^^^^^^             ^^^
 
     (): connectexport;
     test1: connectmodule;
@@ -32,7 +32,7 @@ var server: {
 
     test2(): connectmodule;
 >test2 : () => connectmodule
->      : ^^^^^^^^^^^^^^^^^^^
+>      : ^^^^^^             
 
 };
 

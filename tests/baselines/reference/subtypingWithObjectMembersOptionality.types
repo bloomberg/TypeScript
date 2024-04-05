@@ -62,15 +62,15 @@ interface S3 extends T3 {
 // object literal case
 var a: { Foo?: Base; };
 >a : { Foo?: Base; }
->  : ^^^^^^^^^^^^^^^
+>  : ^^^^^^^^    ^^^
 >Foo : Base
 >    : ^^^^
 
 var b = { Foo: <Derived>null };
 >b : { Foo: Derived; }
->  : ^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^       ^^^
 >{ Foo: <Derived>null } : { Foo: Derived; }
->                       : ^^^^^^^^^^^^^^^^^
+>                       : ^^^^^^^       ^^^
 >Foo : Derived
 >    : ^^^^^^^
 ><Derived>null : Derived
@@ -80,13 +80,13 @@ var r = true ? a : b;
 >r : { Foo?: Base; }
 >  : ^^^^^^^^^^^^^^^
 >true ? a : b : { Foo?: Base; }
->             : ^^^^^^^^^^^^^^^
+>             :      ^         
 >true : true
 >     : ^^^^
 >a : { Foo?: Base; }
 >  : ^^^^^^^^^^^^^^^
 >b : { Foo: Derived; }
->  : ^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^       ^^^
 
 module TwoLevels {
 >TwoLevels : typeof TwoLevels
@@ -131,15 +131,15 @@ module TwoLevels {
     // object literal case
     var a: { Foo?: Base; };
 >a : { Foo?: Base; }
->  : ^^^^^^^^^^^^^^^
+>  : ^^^^^^^^    ^^^
 >Foo : Base
 >    : ^^^^
 
     var b = { Foo: <Derived2>null };
 >b : { Foo: Derived2; }
->  : ^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^        ^^^
 >{ Foo: <Derived2>null } : { Foo: Derived2; }
->                        : ^^^^^^^^^^^^^^^^^^
+>                        : ^^^^^^^        ^^^
 >Foo : Derived2
 >    : ^^^^^^^^
 ><Derived2>null : Derived2
@@ -149,11 +149,11 @@ module TwoLevels {
 >r : { Foo?: Base; }
 >  : ^^^^^^^^^^^^^^^
 >true ? a : b : { Foo?: Base; }
->             : ^^^^^^^^^^^^^^^
+>             :      ^         
 >true : true
 >     : ^^^^
 >a : { Foo?: Base; }
 >  : ^^^^^^^^^^^^^^^
 >b : { Foo: Derived2; }
->  : ^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^        ^^^
 }

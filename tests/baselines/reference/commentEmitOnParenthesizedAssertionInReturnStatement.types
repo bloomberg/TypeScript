@@ -9,28 +9,28 @@ export class Foo {
 >client : { getThing: () => Promise<string>; }
 >       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{    getThing: () => Promise.resolve('')  } : { getThing: () => Promise<string>; }
->                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                            : ^^^^^^^^^^^^                     ^^^
 
     getThing: () => Promise.resolve('')
 >getThing : () => Promise<string>
 >         : ^^^^^^^^^^^^^^^^^^^^^
 >() => Promise.resolve('') : () => Promise<string>
->                          : ^^^^^^^^^^^^^^^^^^^^^
+>                          :                      
 >Promise.resolve('') : Promise<string>
 >                    : ^^^^^^^^^^^^^^^
 >Promise.resolve : { (): Promise<void>; <T>(value: T): Promise<Awaited<T>>; <T_1>(value: T_1 | PromiseLike<T_1>): Promise<Awaited<T_1>>; }
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >Promise : PromiseConstructor
 >        : ^^^^^^^^^^^^^^^^^^
 >resolve : { (): Promise<void>; <T>(value: T): Promise<Awaited<T>>; <T_1>(value: T_1 | PromiseLike<T_1>): Promise<Awaited<T_1>>; }
->        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >'' : ""
 >   : ^^
   }
 
   foo(): Promise<void> {
 >foo : () => Promise<void>
->    : ^^^^^^^^^^^^^      
+>    : ^^^^^^             
 
     return (
 >(      /* TODO: Avoid using type assertions, please refactor. */ this.client        .getThing() as unknown as Promise<void>    ) : Promise<void>
