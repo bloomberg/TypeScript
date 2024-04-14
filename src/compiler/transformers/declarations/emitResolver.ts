@@ -116,18 +116,21 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     });
     /* eslint-disable-next-line no-var */
     var Symbol = objectAllocator.getSymbolConstructor();
-    const resolverWorker = createNameResolver(
-        options,
+    const resolverWorker = createNameResolver({
+        error() { },
+        compilerOptions: options,
+        argumentsSymbol: new Symbol(SymbolFlags.Property, "arguments" as __String),
+        requireSymbol: new Symbol(SymbolFlags.Property, "require" as __String),
+        globals: createSymbolTable(),
+        lookup: lookupSymbolName,
         getSymbolOfDeclaration,
-        () => {},
-        createSymbolTable(),
-        new Symbol(SymbolFlags.Property, "arguments" as __String),
-        new Symbol(SymbolFlags.Property, "require" as __String),
-        createSymbolTable(),
-        r => r,
-        lookupSymbolName,
-        getNodeLinks,
-    );
+        getRequiresScopeChangeCache(node) {
+            return getNodeLinks(node).declarationRequiresScopeChange;
+        },
+        setRequiresScopeChangeCache(node, value) {
+            getNodeLinks(node).declarationRequiresScopeChange = value;
+        },
+    });
 
     bindSourceFile(file, options);
     collectAllLinkedAliases(file);
@@ -182,7 +185,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     }
 
     function resolveName(enclosingDeclaration: Node, name: __String, meaning: SymbolFlags) {
-        return resolverWorker(enclosingDeclaration, name, meaning, /*nameNotFoundMessage*/ undefined, /*nameArg*/ undefined, /*isUse*/ false, /*excludeGlobals*/ true, /*getSpellingSuggestions*/ false);
+        return resolverWorker(enclosingDeclaration, name, meaning, /*nameNotFoundMessage*/ undefined, /*isUse*/ false, /*excludeGlobals*/ true);
     }
 
     const symbolLinks = new Map<Symbol, EmitSymbolLinks>();

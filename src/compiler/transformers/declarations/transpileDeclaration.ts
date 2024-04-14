@@ -189,6 +189,10 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
             redirectTargetsMap: new Map(),
             getFileIncludeReasons: notImplemented,
             createHash: notImplemented,
+            shouldTransformImportCall: notImplemented,
+            getEmitModuleFormatOfFile: notImplemented,
+            getDefaultResolutionModeForFile: notImplemented,
+            getModeForResolutionAtIndex: notImplemented,
         };
     }
 }
