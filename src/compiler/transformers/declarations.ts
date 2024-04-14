@@ -129,7 +129,6 @@ import {
     isMethodSignature,
     isModifier,
     isModuleDeclaration,
-    isObjectLiteralExpression,
     isOmittedExpression,
     isParameter,
     isParenthesizedExpression,

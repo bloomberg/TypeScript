@@ -1104,7 +1104,7 @@ import {
 } from "./_namespaces/ts";
 import * as moduleSpecifiers from "./_namespaces/ts.moduleSpecifiers";
 import * as performance from "./_namespaces/ts.performance";
-import { createSyntacticExpressionToTypeWorker } from "./transformers/declarations/expressionToTypeTransformer";
+import { createSyntacticExpressionToTypeWorker } from "./expressionToTypeNode";
 
 const ambientModuleSymbolRegex = /^".+"$/;
 const anon = "(anonymous)" as __String & string;
@@ -1496,6 +1496,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var checkBinaryExpression = createCheckBinaryExpression();
     var emitResolver = createResolver();
     var nodeBuilder = createNodeBuilder();
+    var syntacticBuilder = createSyntacticExpressionToTypeWorker(compilerOptions);
     var evaluate = createEvaluator({
         evaluateElementAccessExpression,
         evaluateEntityNameExpression,
@@ -5852,7 +5853,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     }
 
     function createNodeBuilder() {
-        const syntacticBuilder = createSyntacticExpressionToTypeWorker(compilerOptions);
         return {
             typeToTypeNode: (type: Type, enclosingDeclaration?: Node, flags?: NodeBuilderFlags, tracker?: SymbolTracker) => withContext(enclosingDeclaration, flags, tracker, context => typeToTypeNodeHelper(type, context)),
             typePredicateToTypePredicateNode: (typePredicate: TypePredicate, enclosingDeclaration?: Node, flags?: NodeBuilderFlags, tracker?: SymbolTracker) => withContext(enclosingDeclaration, flags, tracker, context => typePredicateToTypePredicateNodeHelper(typePredicate, context)),
@@ -5887,7 +5887,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             context: NodeBuilderContext,
             typeNode: TypeNode,
             type: Type,
-            host: Node,
+            host?: Node,
             addUndefined?: boolean,
         ) {
             const originalType = type;
@@ -5946,19 +5946,17 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             const moduleResolverHost = tracker?.trackSymbol ? tracker.moduleResolverHost :
                 flags! & NodeBuilderFlags.DoNotIncludeSymbolChain ? createBasicNodeBuilderModuleSpecifierResolutionHost(host) :
                 undefined;
-            function withEnclosingDeclaration<T extends Node | undefined, R extends TypeNode | undefined>(fn: (n: T, addUndefined?: boolean) => R) {
-                return (node: T, enclosingDeclaration?: Node, addUndefined?: boolean) => {
-                    let oldEnclosingDecl;
-                    if(enclosingDeclaration) {
-                        oldEnclosingDecl = context.enclosingDeclaration;
-                        context.enclosingDeclaration = enclosingDeclaration;
-                    }
-                    const result = fn(node, addUndefined);
-                    if(oldEnclosingDecl) {
-                        context.enclosingDeclaration = oldEnclosingDecl;
-                    }
-                    return result;
+            function withEnclosingDeclaration<R extends TypeNode | undefined>(enclosingDeclaration: Node | undefined, fn: () => R) {
+                let oldEnclosingDecl;
+                if(enclosingDeclaration) {
+                    oldEnclosingDecl = context.enclosingDeclaration;
+                    context.enclosingDeclaration = enclosingDeclaration;
                 }
+                const result = fn();
+                if(oldEnclosingDecl) {
+                    context.enclosingDeclaration = oldEnclosingDecl;
+                }
+                return result;
             }
             const context: NodeBuilderContext = {
                 enclosingDeclaration,
@@ -5980,19 +5978,22 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 isExpandoFunctionDeclaration,
                 isLiteralComputedName,
                 isEntityNameVisible: (entityName, shouldComputeAliasToMakeVisible) => isEntityNameVisible(entityName, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible),
-                serializeExistingTypeNode: withEnclosingDeclaration((node) => {
+                serializeExistingTypeNode: (node, enclosingDeclaration, hostDeclaration) => {
                     if(!node) return undefined;
-                    return tryReuseExistingTypeNodeHelper(context, node) ??  typeToTypeNodeHelper(getTypeFromTypeNode(node), context);
-                }),
-                serializeReturnTypeForSignature: withEnclosingDeclaration((signatureDeclaration) => {
+                    return withEnclosingDeclaration(enclosingDeclaration, () => {
+                        const addUndefined = hostDeclaration && isParameter(hostDeclaration) && requiresAddingImplicitUndefined(hostDeclaration);
+                        return tryReuseExistingTypeNode(context, node, getTypeFromTypeNode(node), hostDeclaration, addUndefined) ??  typeToTypeNodeHelper(getTypeFromTypeNode(node), context);
+                    })
+                },
+                serializeReturnTypeForSignature: (signatureDeclaration, enclosingDeclaration) => withEnclosingDeclaration(enclosingDeclaration, () => {
                     const signature = getSignatureFromDeclaration(signatureDeclaration);
                     return typeToTypeNodeHelper(getReturnTypeOfSignature(signature), context);
                 }),
-                serializeTypeOfExpression: withEnclosingDeclaration((expr) => {
+                serializeTypeOfExpression: (expr, enclosingDeclaration) => withEnclosingDeclaration(enclosingDeclaration, () => {
                     const type = getWidenedType(getRegularTypeOfExpression(expr));
                     return typeToTypeNodeHelper(type, context)
                 }),
-                serializeTypeOfDeclaration: withEnclosingDeclaration((declaration) => {
+                serializeTypeOfDeclaration: (declaration, enclosingDeclaration) => withEnclosingDeclaration(enclosingDeclaration, () => {
                     // Get type of the symbol if this is the valid symbol otherwise get type at location
                     const symbol = getSymbolOfDeclaration(declaration);
                     let type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
@@ -6001,7 +6002,20 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     if (!isReadonlySymbol(symbol)) {
                         type = getWidenedType(type);
                     }
-                    return serializeTypeForDeclaration(context, type, symbol, /*enclosingDeclaration*/ undefined);
+                    if (isParameter(declaration) && requiresAddingImplicitUndefined(declaration)) {
+                        type = getOptionalType(type);
+                    }
+                    const oldFlags = context.flags;
+                    if (
+                        type.flags & TypeFlags.UniqueESSymbol &&
+                        type.symbol === symbol && (!context.enclosingDeclaration || some(symbol.declarations, d => getSourceFileOfNode(d) === getSourceFileOfNode(context.enclosingDeclaration!)))
+                    ) {
+                        context.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
+                    }
+                    
+                    const result =  typeToTypeNodeHelper(type, context);
+                    context.flags = oldFlags;
+                    return result;
                 }),
                 serializeNameOfParameter(parameter) {
                     return parameterToParameterDeclarationName(getSymbolOfDeclaration(parameter), parameter, context)
@@ -8057,6 +8071,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     }
                 }
             }
+            // TODO: Titian: Can be removed probably
             const oldFlags = context.flags;
             if (
                 type.flags & TypeFlags.UniqueESSymbol &&
@@ -8064,8 +8079,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             ) {
                 context.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
             }
+
+            let result;
+            const decl = symbol.valueDeclaration ?? symbol.declarations?.[0];
+            if (decl && hasInferredType(decl) && !isTransientSymbol(symbol)) {
+                result = syntacticBuilder.serializeTypeOfDeclaration(decl, context);
+            }
             
-            const result = typeToTypeNodeHelper(type, context);
+            if(!result) {
+                result = typeToTypeNodeHelper(type, context);
+            }
             context.flags = oldFlags;
 
             return result;
@@ -8115,7 +8138,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (typePredicate) {
                 return typePredicateToTypePredicateNodeHelper(typePredicate, context);
             }
-            const expr = signature.declaration && getPossibleTypeNodeReuseExpression(signature.declaration);
             return typeToTypeNodeHelper(type, context);
         }
 
@@ -50808,9 +50830,9 @@ interface NodeBuilderContext {
     isLiteralComputedName(name: ComputedPropertyName): boolean;
     isExpandoFunctionDeclaration(name: FunctionDeclaration | VariableDeclaration): boolean;
     isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
-    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
+    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node, hostNode?: Node): TypeNode | undefined;
     serializeReturnTypeForSignature(signatureDeclaration: SignatureDeclaration | JSDocSignature, enclosingDeclaration?: Node): TypeNode | undefined;
-    serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
+    serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeTypeOfDeclaration(node: PropertyAssignment | PropertyAccessExpression | BinaryExpression | ElementAccessExpression | VariableDeclaration | ParameterDeclaration | BindingElement | PropertyDeclaration | PropertySignature | ExportAssignment, enclosingDeclaration?: Node): TypeNode | undefined;
     isOptionalParameter(name: ParameterDeclaration): boolean;
     serializeNameOfParameter(parameter: ParameterDeclaration): BindingName | string;

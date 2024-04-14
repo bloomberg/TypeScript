@@ -38,9 +38,9 @@ export declare const vConst: {} & {
 export declare function fn(p?: {} & {
     name: string;
 }): void;
-export declare function fnWithRequiredDefaultParam(p: {
+export declare function fnWithRequiredDefaultParam(p: ({} & {
     name: string;
-}, req: number): void;
+}) | undefined, req: number): void;
 export declare class C {
     ctorField: {} & {
         name: string;
@@ -48,18 +48,18 @@ export declare class C {
     field: {} & {
         name: string;
     };
-    optField?: ({} & {
+    optField?: {} & {
         name: string;
-    }) | undefined;
+    };
     readonly roFiled: {} & {
         name: string;
     };
     method(p?: {} & {
         name: string;
     }): void;
-    methodWithRequiredDefault(p: {
+    methodWithRequiredDefault(p: ({} & {
         name: string;
-    }, req: number): void;
+    }) | undefined, req: number): void;
     constructor(ctorField?: {} & {
         name: string;
     });

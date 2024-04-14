@@ -1,17 +1,15 @@
-import { AccessorDeclaration, AllAccessorDeclarations, ArrayLiteralExpression, ArrowFunction, AsExpression, BigIntLiteral, BinaryExpression, BindingElement, BindingName, CompilerOptions, ComputedPropertyName, Debug, ElementAccessExpression, EntityNameOrEntityNameExpression, ExportAssignment, Expression, factory, FalseLiteral, forEachReturnStatement, FunctionDeclaration, FunctionExpression, FunctionLikeDeclaration, GetAccessorDeclaration, getEffectiveReturnTypeNode, getEffectiveTypeAnnotationNode, getJSDocTypeAssertionType, getStrictOptionValue, HasInferredType, Identifier, IntersectionTypeNode, isBlock, isClassExpression, isConstTypeReference, isDeclarationReadonly, isEntityNameExpression, isGetAccessor, isIdentifier, isJSDocTypeAssertion, isKeyword, isLiteralTypeNode, isOptionalDeclaration, isPrimitiveLiteralValue, isShorthandPropertyAssignment, isSpreadAssignment, isTypeQueryNode, isUnionTypeNode, isValueSignatureDeclaration, isVarConstLike, JSDocSignature, KeywordTypeSyntaxKind, MethodDeclaration, Node, NodeArray, NodeBuilderFlags, NodeFlags, nodeIsMissing, NoSubstitutionTemplateLiteral, NumericLiteral, ObjectLiteralExpression, ParameterDeclaration, ParenthesizedExpression, ParenthesizedTypeNode, PrefixUnaryExpression, PrimitiveLiteral, PropertyAccessExpression, PropertyAssignment, PropertyDeclaration, PropertyName, PropertySignature, SetAccessorDeclaration, setCommentRange, SignatureDeclaration, StringLiteral, SymbolAccessibility, SymbolTracker, SymbolVisibilityResult, SyntaxKind, TrueLiteral, TypeAssertion, TypeElement, TypeNode, TypeParameterDeclaration, UnionTypeNode, VariableDeclaration } from "../../_namespaces/ts";
+import { AccessorDeclaration, AllAccessorDeclarations, ArrayLiteralExpression, ArrowFunction, AsExpression, BigIntLiteral, BinaryExpression, BindingElement, BindingName, CompilerOptions, ComputedPropertyName, Debug, ElementAccessExpression, EntityNameOrEntityNameExpression, ExportAssignment, Expression, factory, FalseLiteral, forEachReturnStatement, FunctionDeclaration, FunctionExpression, FunctionLikeDeclaration, GetAccessorDeclaration, getEffectiveReturnTypeNode, getEffectiveTypeAnnotationNode, getJSDocTypeAssertionType, getStrictOptionValue, HasInferredType, Identifier, IntersectionTypeNode, isBlock, isClassExpression, isConstTypeReference, isDeclarationReadonly, isEntityNameExpression, isGetAccessor, isIdentifier, isJSDocTypeAssertion, isKeyword, isLiteralTypeNode, isOptionalDeclaration, isPrimitiveLiteralValue, isShorthandPropertyAssignment, isSpreadAssignment, isTypeQueryNode, isUnionTypeNode, isValueSignatureDeclaration, isVarConstLike, JSDocSignature, KeywordTypeSyntaxKind, MethodDeclaration, Node, NodeArray, NodeBuilderFlags, NodeFlags, nodeIsMissing, NoSubstitutionTemplateLiteral, NumericLiteral, ObjectLiteralExpression, ParameterDeclaration, ParenthesizedExpression, ParenthesizedTypeNode, PrefixUnaryExpression, PrimitiveLiteral, PropertyAccessExpression, PropertyAssignment, PropertyDeclaration, PropertyName, PropertySignature, SetAccessorDeclaration, setCommentRange, SignatureDeclaration, skipParentheses, StringLiteral, SymbolAccessibility, SymbolTracker, SymbolVisibilityResult, SyntaxKind, TrueLiteral, TypeAssertion, TypeElement, TypeNode, TypeParameterDeclaration, UnionTypeNode, VariableDeclaration, walkUpParenthesizedExpressions } from "./_namespaces/ts";
 
 interface SyntacticExpressionToTypeContext {
-    enclosingDeclaration?: Node;
     flags: NodeBuilderFlags;
     tracker: Required<Pick<SymbolTracker, 'reportInferenceFallback'>>;
     isUndefinedIdentifier(name: Identifier): boolean;
-    requiresAddingImplicitUndefined(name: ParameterDeclaration): boolean;
     isLiteralComputedName(name: ComputedPropertyName): boolean;
     isExpandoFunctionDeclaration(name: FunctionDeclaration | VariableDeclaration): boolean;
     isOptionalParameter(name: ParameterDeclaration): boolean;
     getAllAccessorDeclarations(declaration: AccessorDeclaration): AllAccessorDeclarations;
     isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
-    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node): TypeNode | undefined;
+    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node, hostNode?: Node): TypeNode | undefined;
     serializeReturnTypeForSignature(signatureDeclaration: SignatureDeclaration| JSDocSignature, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeTypeOfDeclaration(node: PropertyAssignment | PropertyAccessExpression | BinaryExpression | ElementAccessExpression | VariableDeclaration | ParameterDeclaration | BindingElement | PropertyDeclaration | PropertySignature | ExportAssignment, enclosingDeclaration?: Node): TypeNode | undefined;
@@ -28,8 +26,8 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
         serializeReturnTypeForSignature,
         serializeTypeOfExpression,
     }
-    function serializeExistingTypeAnnotation(type: TypeNode | undefined, context: SyntacticExpressionToTypeContext, enclosingDeclaration?: Node) {
-        return context.serializeExistingTypeNode(type, enclosingDeclaration);
+    function  serializeExistingTypeAnnotation(type: TypeNode | undefined, context: SyntacticExpressionToTypeContext, enclosingDeclaration?: Node, hostNode?: Node) {
+        return context.serializeExistingTypeNode(type, enclosingDeclaration, hostNode);
     }
     function serializeTypeOfExpression(expr: Expression, context: SyntacticExpressionToTypeContext, addUndefined?: boolean, preserveLiterals?: boolean) {
         return typeFromExpression(expr, context, /*isConstContext*/ false, addUndefined, preserveLiterals) ?? inferExpressionType(expr, context);
@@ -84,9 +82,9 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
     function getTypeAnnotationFromAccessor(accessor: AccessorDeclaration): TypeNode | undefined {
         if (accessor) {
             return accessor.kind === SyntaxKind.GetAccessor
-                ? accessor.type // Getter - return type
+                ? getEffectiveReturnTypeNode(accessor) // Getter - return type
                 : accessor.parameters.length > 0
-                ? accessor.parameters[0].type // Setter parameter type
+                ? getEffectiveTypeAnnotationNode(accessor.parameters[0]) // Setter parameter type
                 : undefined;
         }
     }
@@ -118,7 +116,6 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
             return serializeExistingTypeAnnotation(declaredType, context);
         }
         let resultType;
-        // let isolatedDeclarationsDiagnostic: typeof createVariableOrPropertyError | undefined = createVariableOrPropertyError;
         if (node.initializer) {
             if (!(isClassExpression(node.initializer) || context.isExpandoFunctionDeclaration(node))) {
                 resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, /*requiresAddingUndefined*/ undefined, isVarConstLike(node));
@@ -132,15 +129,12 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
             return typeFromAccessor(parent, context);
         }
         const declaredType = getEffectiveTypeAnnotationNode(node);
-        const addUndefined = context.requiresAddingImplicitUndefined(node);
         let resultType;
-        if (!addUndefined) {
-            if (declaredType) {
-                return serializeExistingTypeAnnotation(declaredType, context, node.parent);
-            }
-            if (node.initializer && isIdentifier(node.name)) {
-                resultType = typeFromExpression(node.initializer, context);
-            }
+        if (declaredType) {
+            return serializeExistingTypeAnnotation(declaredType, context, node.parent, node);
+        }
+        if (node.initializer && isIdentifier(node.name)) {
+            resultType = typeFromExpression(node.initializer, context);
         }
         return resultType ?? inferTypeOfDeclaration(node, context, node.parent);
     }
@@ -151,12 +145,8 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
         }
         let resultType;
         if (node.initializer) {
-            const isOptional = isOptionalDeclaration(node);
             const isReadonly = isDeclarationReadonly(node);
-            resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, isOptional, isReadonly);
-            if (isOptional && resultType) {
-                return addUndefinedInUnion(resultType);
-            }
+            resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, isReadonly);
         }
         return resultType ?? inferTypeOfDeclaration(node, context);
     }
@@ -204,9 +194,9 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
             return typeFromExpression(expression, context, /*isConstContext*/ true, requiresAddingUndefined);
         }
         if (requiresAddingUndefined && !canAddUndefined(type)) {
-            return undefined;
+            context.tracker.reportInferenceFallback(type);
         }
-        return serializeExistingTypeAnnotation(type, context);
+        return serializeExistingTypeAnnotation(type, context, /*enclosingDeclaration*/ undefined, walkUpParenthesizedExpressions(expression.parent.parent));
     }
     function typeFromExpression(node: Expression, context: SyntacticExpressionToTypeContext, isConstContext = false, requiresAddingUndefined = false, preserveLiterals = false): TypeNode | undefined {
         switch (node.kind) {
@@ -552,23 +542,6 @@ export function createSyntacticExpressionToTypeWorker(options: CompilerOptions) 
             return (node as UnionTypeNode | IntersectionTypeNode).types.every(canAddUndefined);
         }
         return false;
-    }
-
-    function addUndefinedInUnion(type: TypeNode) {
-        if (!strictNullChecks) return type;
-        if (isUnionTypeNode(type)) {
-            const hasUndefined = type.types.some(p => p.kind === SyntaxKind.UndefinedKeyword);
-            if (hasUndefined) return type;
-
-            return factory.createUnionTypeNode([
-                ...type.types,
-                factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
-            ]);
-        }
-        return factory.createUnionTypeNode([
-            type,
-            factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword),
-        ]);
     }
 
     function createReturnFromSignature(fn: SignatureDeclaration | JSDocSignature, context: SyntacticExpressionToTypeContext) {

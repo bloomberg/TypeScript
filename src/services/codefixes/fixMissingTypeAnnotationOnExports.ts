@@ -95,7 +95,6 @@ import {
     TypeChecker,
     TypeFlags,
     TypeNode,
-    UnionReduction,
     VariableDeclaration,
     VariableStatement,
     walkUpParenthesizedExpressions,
@@ -226,7 +225,6 @@ function withChanges<T>(
     const sourceFile: SourceFile = context.sourceFile;
     const program = context.program;
     const typeChecker: TypeChecker = program.getTypeChecker();
-    const emitResolver = typeChecker.getEmitResolver();
     const scriptTarget = getEmitScriptTarget(program.getCompilerOptions());
     const importAdder = createImportAdder(context.sourceFile, context.program, context.preferences, context.host);
     const fixedNodes = new Set<Node>();
@@ -929,7 +927,7 @@ function withChanges<T>(
     }
     function inferNodeType(node: Node): InferenceResult {
         if (typePrinter === "full") {
-            let type = isValueSignatureDeclaration(node) ?
+            const type = isValueSignatureDeclaration(node) ?
                 tryGetReturnType(node) :
                 typeChecker.getTypeAtLocation(node);
             if (!type) {
