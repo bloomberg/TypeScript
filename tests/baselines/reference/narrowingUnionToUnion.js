@@ -487,8 +487,8 @@ declare function f1(x: any): asserts x is number | undefined;
 declare let v1: number | string | undefined;
 declare function f2(x: any): asserts x is 6 | undefined;
 declare let v2: number | string | undefined;
-declare function isEmptyString(value: string): value is '';
-declare function isMaybeEmptyString(value: string | null | undefined): value is '' | null | undefined;
+declare function isEmptyString(value: string): value is "";
+declare function isMaybeEmptyString(value: string | null | undefined): value is "" | null | undefined;
 declare function isZero(value: number): value is 0;
 declare function isMaybeZero(value: number | null | undefined): value is 0 | null | undefined;
 declare function isEmptyArray<T>(value: T[]): value is [];
@@ -505,10 +505,10 @@ declare function test3(x: unknown): void;
 declare function assertRelationIsNullOrStringArray(v: (string | number)[] | null): asserts v is string[] | null;
 declare function f1x(obj: (string | number)[] | null): void;
 type MyDiscriminatedUnion = {
-    type: 'A';
+    type: "A";
     aProp: number;
 } | {
-    type: 'B';
+    type: "B";
     bProp: string;
 };
 declare function isMyDiscriminatedUnion(item: unknown): item is MyDiscriminatedUnion;
@@ -516,23 +516,23 @@ declare const working: unknown;
 declare const broken: Record<string, any> | undefined;
 declare const workingAgain: Record<string, any> | undefined | unknown;
 type Union = {
-    type: 'a';
+    type: "a";
     variant: 1;
 } | {
-    type: 'a';
+    type: "a";
     variant: 2;
 } | {
-    type: 'b';
+    type: "b";
 };
 declare function example1(value: Union): {
-    type: 'a';
+    type: "a";
     variant: 2;
 } | null;
 declare function example2(value: Union): {
-    type: 'a';
+    type: "a";
     variant: 2;
 } | null;
 declare function example3(value: Union): {
-    type: 'a';
+    type: "a";
     variant: 2;
 } | null;

@@ -117,7 +117,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     /* eslint-disable-next-line no-var */
     var Symbol = objectAllocator.getSymbolConstructor();
     const resolverWorker = createNameResolver({
-        error() { },
+        error() {},
         compilerOptions: options,
         argumentsSymbol: new Symbol(SymbolFlags.Property, "arguments" as __String),
         requireSymbol: new Symbol(SymbolFlags.Property, "require" as __String),
@@ -363,7 +363,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         return false;
     }
 
-    function isLiteralComputedName(node: ComputedPropertyName) {
+    function isNonNarrowedBindableName(node: ComputedPropertyName) {
         // Best effort implementation. We can't know for sure  if node is valid as a computed name
         // - it might be a narrowed symbol
         // - the type might not be appropriate as a computed property name.
@@ -432,10 +432,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
 
     return {
         ...notImplementedResolver,
-        isUndefinedIdentifier(identifier) {
-            // If we can't find a visible undefined symbol in the scope, it means undefined is referring to the global undefined
-            return identifier.escapedText === "undefined" && resolveName(identifier, identifier.escapedText, SymbolFlags.Value) === undefined;
-        },
         isOptionalParameter,
         createTypeOfDeclaration() {
             return makeInvalidType();
@@ -448,7 +444,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         },
         isDeclarationVisible,
         isLiteralConstDeclaration,
-        isLiteralComputedName,
+        isNonNarrowedBindableName,
         getPropertiesOfContainerFunction(node: FunctionDeclaration | VariableDeclaration) {
             const symbol = getSymbolOfDeclaration(node);
             return [...symbol.exports?.values() ?? [], ...resolveAllLateBoundSymbols(symbol, /*isStatic*/ true).values()];

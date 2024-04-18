@@ -595,98 +595,98 @@ declare function f16(obj: {
 declare function f17(obj: readonly [string | number]): void;
 declare function f18(obj: readonly [string | number]): void;
 declare function f20(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f21(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f22(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f23(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f24(arg: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f25(arg: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f26(outer: {
     readonly obj: {
-        kind: 'foo';
+        kind: "foo";
         foo: string;
     } | {
-        kind: 'bar';
+        kind: "bar";
         bar: number;
     };
 }): void;
 declare function f27(outer: {
     obj: {
-        kind: 'foo';
+        kind: "foo";
         foo: string;
     } | {
-        kind: 'bar';
+        kind: "bar";
         bar: number;
     };
 }): void;
 declare function f28(obj?: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f30(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f31(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f32(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare function f33(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar: number;
 }): void;
 declare class C10 {
@@ -698,17 +698,17 @@ declare class C11 {
     constructor(x: string | number);
 }
 declare function f40(obj: {
-    kind: 'foo';
+    kind: "foo";
     foo?: string;
 } | {
-    kind: 'bar';
+    kind: "bar";
     bar?: number;
 }): void;
 type Data = {
-    kind: 'str';
+    kind: "str";
     payload: string;
 } | {
-    kind: 'num';
+    kind: "num";
     payload: number;
 };
 declare function gg2(obj: Data): void;

@@ -89,10 +89,10 @@ declare class Test {
 }
 type TypesMap = {
     [0]: {
-        foo: 'bar';
+        foo: "bar";
     };
     [1]: {
-        a: 'b';
+        a: "b";
     };
 };
 type P<T extends keyof TypesMap> = {

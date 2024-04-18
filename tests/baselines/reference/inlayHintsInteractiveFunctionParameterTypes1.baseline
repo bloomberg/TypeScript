@@ -117,18 +117,6 @@
       "text": ": "
     },
     {
-      "text": "Exclude"
-    },
-    {
-      "text": "<"
-    },
-    {
-      "text": "1"
-    },
-    {
-      "text": " | "
-    },
-    {
       "text": "2"
     },
     {
@@ -136,15 +124,6 @@
     },
     {
       "text": "3"
-    },
-    {
-      "text": ", "
-    },
-    {
-      "text": "1"
-    },
-    {
-      "text": ">"
     },
     {
       "text": ")"
@@ -259,7 +238,12 @@
       "text": ": "
     },
     {
-      "text": "X"
+      "text": "X",
+      "span": {
+        "start": 599,
+        "length": 1
+      },
+      "file": "/tests/cases/fourslash/inlayHintsInteractiveFunctionParameterTypes1.ts"
     },
     {
       "text": ")"
@@ -476,7 +460,12 @@
       "text": ": "
     },
     {
-      "text": "X"
+      "text": "X",
+      "span": {
+        "start": 578,
+        "length": 1
+      },
+      "file": "/tests/cases/fourslash/inlayHintsInteractiveFunctionParameterTypes1.ts"
     },
     {
       "text": ")"

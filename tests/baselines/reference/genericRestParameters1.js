@@ -346,8 +346,8 @@ type T07<T extends any[]> = Parameters<(...args: T) => void>;
 type T08<T extends any[]> = ConstructorParameters<new (...args: T) => void>;
 type T09 = Parameters<Function>;
 type Record1 = {
-    move: [number, 'left' | 'right'];
-    jump: [number, 'up' | 'down'];
+    move: [number, "left" | "right"];
+    jump: [number, "up" | "down"];
     stop: string;
     done: [];
 };

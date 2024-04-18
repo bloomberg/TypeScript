@@ -23,10 +23,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //// [exportNamespaceDeclarationRetainsVisibility.d.ts]
 declare namespace X {
     interface A {
-        kind: 'a';
+        kind: "a";
     }
     interface B {
-        kind: 'b';
+        kind: "b";
     }
     export type C = A | B;
     export {};

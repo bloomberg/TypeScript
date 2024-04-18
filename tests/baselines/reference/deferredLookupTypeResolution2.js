@@ -41,17 +41,17 @@ type B = ObjectHasKey<[string, number], '1'>;
 type C = ObjectHasKey<[string, number], '2'>;
 type D = A<[string]>;
 type E<T> = {
-    true: 'true';
+    true: "true";
 }[ObjectHasKey<T, '1'>];
 type Juxtapose<T> = ({
-    true: 'otherwise';
+    true: "otherwise";
 } & {
     [k: string]: 'true';
 })[ObjectHasKey<T, '1'>];
 type DeepError<T> = {
-    true: 'true';
+    true: "true";
 }[Juxtapose<T>];
 type DeepOK<T> = {
-    true: 'true';
-    otherwise: 'false';
+    true: "true";
+    otherwise: "false";
 }[Juxtapose<T>];

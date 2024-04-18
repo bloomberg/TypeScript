@@ -139,7 +139,7 @@
      },
      {
       "text": "debug",
-      "kind": "text"
+      "kind": "localName"
      },
      {
       "text": ".",
@@ -175,7 +175,7 @@
      },
      {
       "text": "debug",
-      "kind": "text"
+      "kind": "localName"
      },
      {
       "text": ".",

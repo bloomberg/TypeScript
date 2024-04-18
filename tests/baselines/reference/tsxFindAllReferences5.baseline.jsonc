@@ -62,7 +62,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -78,7 +78,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -158,7 +158,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -174,7 +174,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -268,7 +268,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -284,7 +284,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -377,7 +377,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -393,7 +393,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -485,7 +485,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -501,7 +501,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -592,7 +592,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -608,7 +608,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",
@@ -698,7 +698,7 @@
      },
      {
       "text": "OptionPropBag",
-      "kind": "text"
+      "kind": "interfaceName"
      },
      {
       "text": ")",
@@ -714,7 +714,7 @@
      },
      {
       "text": "JSX",
-      "kind": "text"
+      "kind": "moduleName"
      },
      {
       "text": ".",

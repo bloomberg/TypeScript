@@ -1,8 +1,6 @@
 // @declaration: true
 // @isolatedDeclarations: true
 // @declarationMap: false
-// @isolatedDeclarationDiffReason: Invalid computed property can only be detected by TSC
-// @isolatedDeclarationFixedDiffReason: Invalid computed property can only be detected by TSC
 // @strict: true
 // @target: ESNext
 
@@ -16,7 +14,7 @@ export class Cls {
     methodParams(p): void {}
     methodParams2(p = 1 + 1): void {}
 
-    get getOnly() { return 0 }
+    get getOnly() { return 1 + 1 }
     set setOnly(value) { }
 
     get getSetBad() { return 0 }

@@ -5725,7 +5725,7 @@ export enum TypeReferenceSerializationKind {
 
 /** @internal */
 export interface EmitResolver {
-    isLiteralComputedName(node: ComputedPropertyName): boolean;
+    isNonNarrowedBindableName(node: ComputedPropertyName): boolean;
     hasGlobalName(name: string): boolean;
     getReferencedExportContainer(node: Identifier, prefixLocals?: boolean): SourceFile | ModuleDeclaration | EnumDeclaration | undefined;
     getReferencedImportDeclaration(node: Identifier): Declaration | undefined;
@@ -5739,8 +5739,8 @@ export interface EmitResolver {
     isLateBound(node: Declaration): node is LateBoundDeclaration;
     collectLinkedAliases(node: Identifier, setVisibility?: boolean): Node[] | undefined;
     isImplementationOfOverload(node: SignatureDeclaration): boolean | undefined;
-    isUndefinedIdentifier(node: Identifier): boolean;
-    isExpandoFunctionDeclaration(node: VariableDeclaration | FunctionDeclaration): boolean;
+    requiresAddingImplicitUndefined(node: ParameterDeclaration): boolean;
+    isExpandoFunctionDeclaration(node: FunctionDeclaration | VariableDeclaration): boolean;
     getPropertiesOfContainerFunction(node: Declaration): Symbol[];
     createTypeOfDeclaration(declaration: HasInferredType, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
     createReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker): TypeNode | undefined;
@@ -6087,6 +6087,7 @@ export interface EvaluatorResult<T extends string | number | undefined = string 
     value: T;
     isSyntacticallyString: boolean;
     resolvedOtherFiles: boolean;
+    hasExternalReferences: boolean;
 }
 
 // dprint-ignore
@@ -10247,13 +10248,33 @@ export interface EvaluationResolver {
 
 /** @internal */
 export type HasInferredType =
-    | PropertyAssignment 
-    | PropertyAccessExpression 
-    | BinaryExpression 
-    | ElementAccessExpression 
-    | VariableDeclaration 
-    | ParameterDeclaration 
-    | BindingElement 
-    | PropertyDeclaration 
-    | PropertySignature 
+    | PropertyAssignment
+    | PropertyAccessExpression
+    | BinaryExpression
+    | ElementAccessExpression
+    | VariableDeclaration
+    | ParameterDeclaration
+    | BindingElement
+    | PropertyDeclaration
+    | PropertySignature
     | ExportAssignment;
+
+/** @internal */
+export interface SyntacticTypeNodeBuilderContext {
+    enclosingDeclaration: Node | undefined;
+    flags: NodeBuilderFlags;
+    tracker: Required<Pick<SymbolTracker, "reportInferenceFallback">>;
+    isOptionalParameter(p: ParameterDeclaration): boolean;
+    isUndefinedIdentifierExpression(name: Identifier): boolean;
+    isNonNarrowedBindableName(name: ComputedPropertyName): boolean;
+    isExpandoFunctionDeclaration(name: FunctionDeclaration | VariableDeclaration): boolean;
+    getAllAccessorDeclarations(declaration: AccessorDeclaration): AllAccessorDeclarations;
+    isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
+    requiresAddingImplicitUndefined(parameter: ParameterDeclaration | JSDocParameterTag): boolean;
+    trackComputedName(accessExpression: EntityNameOrEntityNameExpression): void;
+    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
+    serializeReturnTypeForSignature(signatureDeclaration: SignatureDeclaration | JSDocSignature, enclosingDeclaration?: Node): TypeNode | undefined;
+    serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node): TypeNode | undefined;
+    serializeTypeOfDeclaration(node: HasInferredType, enclosingDeclaration?: Node): TypeNode | undefined;
+    serializeNameOfParameter(parameter: ParameterDeclaration): BindingName | string;
+}

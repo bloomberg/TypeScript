@@ -213,13 +213,13 @@ type TypeFromDefs<T extends PropDef<keyof any, any>> = {
     [P in T as P['name']]: P['type'];
 };
 type TP1 = TypeFromDefs<{
-    name: 'a';
+    name: "a";
     type: string;
 } | {
-    name: 'b';
+    name: "b";
     type: number;
 } | {
-    name: 'a';
+    name: "a";
     type: boolean;
 }>;
 type TA1 = Getters<string[]>;
@@ -320,9 +320,9 @@ interface M {
 }
 declare function f(x: KeysExtendedBy<M, number>): "b";
 type NameMap = {
-    'a': 'x';
-    'b': 'y';
-    'c': 'z';
+    'a': "x";
+    'b': "y";
+    'c': "z";
 };
 type TS0<T> = keyof {
     [P in keyof T as keyof Record<P, number>]: string;

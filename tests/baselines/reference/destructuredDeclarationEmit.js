@@ -62,10 +62,10 @@ declare const foo: {
         };
     };
 };
-declare const arr: [0, 1, 2, ['a', 'b', 'c', [{
-    def: 'def';
+declare const arr: [0, 1, 2, ["a", "b", "c", [{
+    def: "def";
 }, {
-    sec: 'sec';
+    sec: "sec";
 }]]];
 export { foo, arr };
 //// [index.d.ts]

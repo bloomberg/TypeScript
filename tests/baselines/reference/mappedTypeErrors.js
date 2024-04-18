@@ -312,6 +312,6 @@ type O = {
     y: boolean;
 };
 declare let o: O;
-declare let f: Foo2<O, 'x'>;
+declare let f: Foo2<O, "x">;
 declare function test1<T, K extends keyof T>(obj: Pick<T, K>): void;
 declare function test2<T, K extends keyof T>(obj: Record<K, number>): void;

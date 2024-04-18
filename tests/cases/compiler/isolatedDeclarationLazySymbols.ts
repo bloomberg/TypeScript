@@ -1,7 +1,6 @@
 // @declaration: true
 // @isolatedDeclarations: true
 // @target: ESNext
-// @isolatedDeclarationFixedDiffReason: Cannot resolve non-static property names
 
 
 export function foo() {

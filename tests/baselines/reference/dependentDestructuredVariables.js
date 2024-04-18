@@ -827,10 +827,10 @@ const parameterReassignedContextualRest1 = (x, y) => {
 
 //// [dependentDestructuredVariables.d.ts]
 type Action = {
-    kind: 'A';
+    kind: "A";
     payload: number;
 } | {
-    kind: 'B';
+    kind: "B";
     payload: string;
 };
 declare function f10({ kind, payload }: Action): void;
@@ -839,10 +839,10 @@ declare function f12({ kind, payload }: Action): void;
 declare function f13<T extends Action>({ kind, payload }: T): void;
 declare function f14<T extends Action>(t: T): void;
 type Action2 = {
-    kind: 'A';
+    kind: "A";
     payload: number | undefined;
 } | {
-    kind: 'B';
+    kind: "B";
     payload: string | undefined;
 };
 declare function f20({ kind, payload }: Action2): void;
@@ -850,24 +850,24 @@ declare function f21(action: Action2): void;
 declare function f22(action: Action2): void;
 declare function f23({ kind, payload }: Action2): void;
 type Foo = {
-    kind: 'A';
+    kind: "A";
     isA: true;
 } | {
-    kind: 'B';
+    kind: "B";
     isA: false;
 } | {
-    kind: 'C';
+    kind: "C";
     isA: false;
 };
 declare function f30({ kind, isA }: Foo): void;
 type Args = ['A', number] | ['B', string];
 declare function f40(...[kind, data]: Args): void;
 interface A<T> {
-    variant: 'a';
+    variant: "a";
     value: T;
 }
 interface B<T> {
-    variant: 'b';
+    variant: "b";
     value: Array<T>;
 }
 type AB<T> = A<T> | B<T>;
@@ -875,12 +875,12 @@ declare function printValue<T>(t: T): void;
 declare function printValueList<T>(t: Array<T>): void;
 declare function unrefined1<T>(ab: AB<T>): void;
 type Action3 = {
-    type: 'add';
+    type: "add";
     payload: {
         toAdd: number;
     };
 } | {
-    type: 'remove';
+    type: "remove";
     payload: {
         toRemove: number;
     };
@@ -889,8 +889,8 @@ declare const reducerBroken: (state: number, { type, payload }: Action3) => numb
 declare var it: Iterator<number>;
 declare const value: any, done: boolean | undefined;
 declare function f50(cb: (...args: Args) => void): void;
-declare const f51: (...args: ['A', number] | ['B', string]) => void;
-declare const f52: (...args: ['A', number] | ['B']) => void;
+declare const f51: (...args: ["A", number] | ["B", string]) => void;
+declare const f52: (...args: ["A", number] | ["B"]) => void;
 declare function readFile(path: string, callback: (...args: [err: null, data: unknown[]] | [err: Error, data: undefined]) => void): void;
 type ReducerArgs = ["add", {
     a: number;

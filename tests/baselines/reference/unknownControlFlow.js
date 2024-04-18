@@ -870,13 +870,13 @@ declare function SendBlob(encoding: unknown): void;
 declare function doSomething1<T extends unknown>(value: T): T;
 declare function doSomething2(value: unknown): void;
 type TypeA = {
-    A: 'A';
-    B: 'B';
+    A: "A";
+    B: "B";
 };
 type TypeB = {
-    A: 'A';
-    B: 'B';
-    C: 'C';
+    A: "A";
+    B: "B";
+    C: "C";
 };
 type R<T extends keyof TypeA> = T extends keyof TypeB ? [TypeA[T], TypeB[T]] : never;
 type R2<T extends PropertyKey> = T extends keyof TypeA ? T extends keyof TypeB ? [TypeA[T], TypeB[T]] : never : never;
@@ -884,7 +884,7 @@ type AB = "A" | "B";
 declare function x<T_AB extends AB>(x: T_AB & undefined, y: any): void;
 type Left = 'left';
 type Right = 'right' & {
-    right: 'right';
+    right: "right";
 };
 type Either = Left | Right;
 declare function assertNever(v: never): never;

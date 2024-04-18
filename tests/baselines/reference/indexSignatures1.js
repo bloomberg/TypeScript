@@ -512,9 +512,9 @@ interface IY {
 }
 declare function gg2(x: IX, y: IY): void;
 declare let combo: {
-    [x: `foo-${string}`]: 'a' | 'b';
+    [x: `foo-${string}`]: "a" | "b";
 } & {
-    [x: `${string}-bar`]: 'b' | 'c';
+    [x: `${string}-bar`]: "b" | "c";
 };
 declare const x1: "a" | "b";
 declare const x2: "b" | "c";
@@ -551,7 +551,7 @@ type Conflicting = {
     [key: `a${string}a`]: 'c';
 };
 type Invalid<T extends string> = {
-    [key: 'a' | 'b' | 'c']: string;
+    [key: "a" | "b" | "c"]: string;
     [key: T | number]: string;
     [key: Error]: string;
     [key: T & string]: string;
@@ -670,7 +670,7 @@ declare const obj3: {
     [key: number]: string;
 };
 type Id = string & {
-    __tag: 'id ';
+    __tag: "id ";
 };
 type Rec1 = {
     [key: Id]: number;

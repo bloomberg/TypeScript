@@ -21,11 +21,11 @@ export class Cls {
 >methodParams2 : Symbol(Cls.methodParams2, Decl(isolatedDeclarationErrorsClasses.ts, 7, 28))
 >p : Symbol(p, Decl(isolatedDeclarationErrorsClasses.ts, 8, 18))
 
-    get getOnly() { return 0 }
+    get getOnly() { return 1 + 1 }
 >getOnly : Symbol(Cls.getOnly, Decl(isolatedDeclarationErrorsClasses.ts, 8, 37))
 
     set setOnly(value) { }
->setOnly : Symbol(Cls.setOnly, Decl(isolatedDeclarationErrorsClasses.ts, 10, 30))
+>setOnly : Symbol(Cls.setOnly, Decl(isolatedDeclarationErrorsClasses.ts, 10, 34))
 >value : Symbol(value, Decl(isolatedDeclarationErrorsClasses.ts, 11, 16))
 
     get getSetBad() { return 0 }

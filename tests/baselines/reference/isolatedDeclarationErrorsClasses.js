@@ -11,7 +11,7 @@ export class Cls {
     methodParams(p): void {}
     methodParams2(p = 1 + 1): void {}
 
-    get getOnly() { return 0 }
+    get getOnly() { return 1 + 1 }
     set setOnly(value) { }
 
     get getSetBad() { return 0 }
@@ -66,7 +66,7 @@ export class Cls {
     methodOk() { }
     methodParams(p) { }
     methodParams2(p = 1 + 1) { }
-    get getOnly() { return 0; }
+    get getOnly() { return 1 + 1; }
     set setOnly(value) { }
     get getSetBad() { return 0; }
     set getSetBad(value) { }

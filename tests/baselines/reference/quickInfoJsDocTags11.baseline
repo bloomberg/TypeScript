@@ -125,7 +125,7 @@
         },
         {
           "text": "T1",
-          "kind": "text"
+          "kind": "typeParameterName"
         },
         {
           "text": ",",
@@ -149,7 +149,7 @@
         },
         {
           "text": "T2",
-          "kind": "text"
+          "kind": "typeParameterName"
         },
         {
           "text": ")",

@@ -675,14 +675,14 @@ type OldDiff<T extends keyof any, U extends keyof any> = ({
 })[T];
 type NewDiff<T, U> = T extends U ? never : T;
 interface A {
-    a: 'a';
+    a: "a";
 }
 interface B1 extends A {
-    b: 'b';
+    b: "b";
     c: OldDiff<keyof this, keyof A>;
 }
 interface B2 extends A {
-    b: 'b';
+    b: "b";
     c: NewDiff<keyof this, keyof A>;
 }
 type c1 = B1['c'];

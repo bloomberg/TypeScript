@@ -449,7 +449,7 @@ type UnionRecord<K extends keyof RecordMap = keyof RecordMap> = {
     };
 }[K];
 declare function processRecord<K extends keyof RecordMap>(rec: UnionRecord<K>): void;
-declare const r1: UnionRecord<'n'>;
+declare const r1: UnionRecord<"n">;
 declare const r2: UnionRecord;
 type TextFieldData = {
     value: string;
@@ -558,7 +558,7 @@ interface MyObj {
     };
 }
 declare const ref: MyObj;
-declare function func<K extends keyof MyObj>(k: K): MyObj[K]['name'] | undefined;
+declare function func<K extends keyof MyObj>(k: K): MyObj[K]["name"] | undefined;
 interface Foo {
     bar?: string;
 }

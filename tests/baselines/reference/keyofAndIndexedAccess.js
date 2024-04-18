@@ -1307,7 +1307,7 @@ type MethodDescriptor = {
     args: any[];
     returnValue: any;
 };
-declare function dispatchMethod<M extends MethodDescriptor>(name: M['name'], args: M['args']): M['returnValue'];
+declare function dispatchMethod<M extends MethodDescriptor>(name: M["name"], args: M["args"]): M["returnValue"];
 type SomeMethodDescriptor = {
     name: "someMethod";
     args: [string, number];

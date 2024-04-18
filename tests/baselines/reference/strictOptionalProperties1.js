@@ -402,7 +402,7 @@ type InputProps = {
     foo?: string;
     bar: string;
 };
-declare const defaultProps: Pick<Props, 'foo'>;
+declare const defaultProps: Pick<Props, "foo">;
 declare const inputProps: InputProps;
 declare const completeProps: Props;
 declare const t1: [number, string?, boolean?];

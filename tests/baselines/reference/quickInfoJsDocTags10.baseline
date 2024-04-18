@@ -91,7 +91,7 @@
         },
         {
           "text": "T1",
-          "kind": "text"
+          "kind": "typeParameterName"
         },
         {
           "text": ",",

@@ -42,55 +42,29 @@ export function fnWithPartialAnnotationOnDefaultparam(x = /** @type {P} */(somet
 
 
 //// [input.d.ts]
-export function fn(p?: {
-    name?: string;
-}): void;
+export function fn(p?: P): void;
 /** @param {number} req */
-export function fnWithRequiredDefaultParam(p: {
-    name?: string;
-}, req: number): void;
+export function fnWithRequiredDefaultParam(p: P, req: number): void;
 /**
  *
  * @param {P} x
  * @param {number} b
  */
 export function fnWithPartialAnnotationOnDefaultparam(x: P, b: number): void;
-export let vLet: {
-    name?: string;
-};
-export const vConst: {
-    name?: string;
-};
+export let vLet: P;
+export const vConst: P;
 export class C {
-    constructor(ctorField?: {
-        name?: string;
-    });
-    field: {
-        name?: string;
-    };
-    /** @optional */ optField: {
-        name?: string;
-    };
-    /** @readonly */ readonly roFiled: {
-        name?: string;
-    };
-    method(p?: {
-        name?: string;
-    }): void;
+    constructor(ctorField?: P);
+    field: P;
+    /** @optional */ optField: P;
+    /** @readonly */ readonly roFiled: P;
+    method(p?: P): void;
     /** @param {number} req */
-    methodWithRequiredDefault(p: {
-        name?: string;
-    }, req: number): void;
-    set x(v: {
-        name?: string;
-    });
-    get x(): {
-        name?: string;
-    };
+    methodWithRequiredDefault(p: P, req: number): void;
+    set x(v: P);
+    get x(): P;
 }
-declare const _default: {
-    name?: string;
-};
+declare const _default: P;
 export default _default;
 export type P = {} & {
     name?: string;

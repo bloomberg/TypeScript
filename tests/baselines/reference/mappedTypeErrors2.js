@@ -28,8 +28,8 @@ type T7<S extends 'a'|'b', L extends 'a'> = {[key in AB[S]]: true}[L];
 
 //// [mappedTypeErrors2.d.ts]
 type AB = {
-    a: 'a';
-    b: 'a';
+    a: "a";
+    b: "a";
 };
 type T1<K extends keyof AB> = {
     [key in AB[K]]: true;

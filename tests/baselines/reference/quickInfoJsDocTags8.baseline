@@ -69,7 +69,7 @@
         },
         {
           "text": "T",
-          "kind": "text"
+          "kind": "typeParameterName"
         },
         {
           "text": ")",

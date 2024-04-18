@@ -2,9 +2,11 @@ isolatedDeclarationErrorsClasses.ts(3,5): error TS9012: Property must have an ex
 isolatedDeclarationErrorsClasses.ts(4,5): error TS9008: Method must have an explicit return type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsClasses.ts(8,18): error TS7006: Parameter 'p' implicitly has an 'any' type.
 isolatedDeclarationErrorsClasses.ts(8,18): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-isolatedDeclarationErrorsClasses.ts(9,19): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsClasses.ts(9,23): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+isolatedDeclarationErrorsClasses.ts(11,9): error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsClasses.ts(12,9): error TS7032: Property 'setOnly' implicitly has type 'any', because its set accessor lacks a parameter type annotation.
 isolatedDeclarationErrorsClasses.ts(12,17): error TS7006: Parameter 'value' implicitly has an 'any' type.
+isolatedDeclarationErrorsClasses.ts(12,17): error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
 isolatedDeclarationErrorsClasses.ts(36,5): error TS1166: A computed property name in a class property declaration must have a simple literal type or a 'unique symbol' type.
 isolatedDeclarationErrorsClasses.ts(36,6): error TS2304: Cannot find name 'missing'.
 isolatedDeclarationErrorsClasses.ts(42,5): error TS9014: Computed properties must be number or string literals, variables or dotted expressions with --isolatedDeclarations.
@@ -20,7 +22,7 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS7010: '[noAnnotationLiteralNa
 isolatedDeclarationErrorsClasses.ts(56,5): error TS9013: Expression type can't be inferred with --isolatedDeclarations.
 
 
-==== isolatedDeclarationErrorsClasses.ts (20 errors) ====
+==== isolatedDeclarationErrorsClasses.ts (22 errors) ====
     export class Cls {
     
         field = 1 + 1;
@@ -41,16 +43,22 @@ isolatedDeclarationErrorsClasses.ts(56,5): error TS9013: Expression type can't b
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsClasses.ts:8:18: Add a type annotation to the parameter p.
         methodParams2(p = 1 + 1): void {}
-                      ~~~~~~~~~
+                          ~~~~~
 !!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
 !!! related TS9028 isolatedDeclarationErrorsClasses.ts:9:19: Add a type annotation to the parameter p.
     
-        get getOnly() { return 0 }
+        get getOnly() { return 1 + 1 }
+            ~~~~~~~
+!!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
+!!! related TS9032 isolatedDeclarationErrorsClasses.ts:11:9: Add a return type to the get accessor declaration.
         set setOnly(value) { }
             ~~~~~~~
 !!! error TS7032: Property 'setOnly' implicitly has type 'any', because its set accessor lacks a parameter type annotation.
                     ~~~~~
 !!! error TS7006: Parameter 'value' implicitly has an 'any' type.
+                    ~~~~~
+!!! error TS9009: At least one accessor must have an explicit return type annotation with --isolatedDeclarations.
+!!! related TS9033 isolatedDeclarationErrorsClasses.ts:12:9: Add a type to parameter of the set accessor declaration.
     
         get getSetBad() { return 0 }
         set getSetBad(value) { }

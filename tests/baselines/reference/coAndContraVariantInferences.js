@@ -53,10 +53,10 @@ call(actionB, printFn);
 
 //// [coAndContraVariantInferences.d.ts]
 type A = {
-    kind: 'a';
+    kind: "a";
 };
 type B = {
-    kind: 'b';
+    kind: "b";
 };
 declare const a: A;
 declare const b: B;

@@ -363,7 +363,7 @@ type Schema = {
 declare function chain<F extends keyof Schema>(field: F | `${F}.${F}`): void;
 declare function ff1(x: `foo-${string}`, y: `${string}-bar`, z: `baz-${string}`): void;
 declare function ff2<T extends string>(x: `foo-${T}`, y: `${T}-bar`, z: `baz-${T}`): void;
-declare function ff3(x: string, y: `foo-${string}` | 'bar'): void;
+declare function ff3(x: string, y: `foo-${string}` | "bar"): void;
 declare function ff4(x: string, y: `foo-${string}`): void;
 type Action = {
     type: `${string}_REQUEST`;

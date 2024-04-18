@@ -3,7 +3,6 @@ import * as ts from "./_namespaces/ts";
 import * as vfs from "./_namespaces/vfs";
 
 export const isolatedDeclarationsErrors = new Set([
-    ts.Diagnostics.Declaration_emit_for_this_expression_requires_adding_a_type_reference_directive_to_0_with_isolatedDeclarations,
     ts.Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
     ts.Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations,
     ts.Diagnostics.Function_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations,

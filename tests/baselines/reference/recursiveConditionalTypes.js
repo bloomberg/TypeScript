@@ -291,4 +291,4 @@ declare let five: Add<2, 3>;
 type _PrependNextNum<A extends Array<unknown>> = A['length'] extends infer T ? [T, ...A] extends [...infer X] ? X : never : never;
 type _Enumerate<A extends Array<unknown>, N extends number> = N extends A['length'] ? A : _Enumerate<_PrependNextNum<A>, N> & number;
 type Enumerate<N extends number> = number extends N ? number : _Enumerate<[], N> extends (infer E)[] ? E : never;
-declare function foo2<T extends unknown[]>(value: T): Enumerate<T['length']>;
+declare function foo2<T extends unknown[]>(value: T): Enumerate<T["length"]>;

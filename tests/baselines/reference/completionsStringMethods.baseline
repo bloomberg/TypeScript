@@ -873,7 +873,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "text"
+              "kind": "localName"
             },
             {
               "text": ")",
@@ -986,7 +986,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "text"
+              "kind": "localName"
             },
             {
               "text": ",",
@@ -1214,7 +1214,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "text"
+              "kind": "localName"
             },
             {
               "text": ")",
@@ -1473,7 +1473,7 @@
             },
             {
               "text": "RegExp",
-              "kind": "text"
+              "kind": "localName"
             },
             {
               "text": ",",

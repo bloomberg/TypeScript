@@ -25,7 +25,7 @@
 // a.subscribe(() => {
 //   ^^^^^^^^^
 // | ----------------------------------------------------------------------
-// | (method) ThingWithDeprecations<void>.subscribe(observer?: PartialObserver<T>): Subscription (+2 overloads)
+// | (method) ThingWithDeprecations<void>.subscribe(observer?: PartialObserver<void>): Subscription (+2 overloads)
 // | ----------------------------------------------------------------------
 //   console.log('something happened');
 // });
@@ -107,15 +107,15 @@
         },
         {
           "text": "PartialObserver",
-          "kind": "text"
+          "kind": "interfaceName"
         },
         {
           "text": "<",
           "kind": "punctuation"
         },
         {
-          "text": "T",
-          "kind": "text"
+          "text": "void",
+          "kind": "keyword"
         },
         {
           "text": ">",
@@ -135,7 +135,7 @@
         },
         {
           "text": "Subscription",
-          "kind": "text"
+          "kind": "interfaceName"
         },
         {
           "text": " ",

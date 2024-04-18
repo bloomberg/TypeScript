@@ -184,7 +184,7 @@
         },
         {
           "text": "Local",
-          "kind": "text"
+          "kind": "aliasName"
         },
         {
           "text": ")",
