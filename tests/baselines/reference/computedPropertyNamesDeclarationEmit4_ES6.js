@@ -10,4 +10,6 @@ var v;
 
 
 //// [computedPropertyNamesDeclarationEmit4_ES6.d.ts]
-declare var v: {};
+declare var v: {
+    ["" + ""](): void;
+};

@@ -10272,9 +10272,24 @@ export interface SyntacticTypeNodeBuilderContext {
     isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
     requiresAddingImplicitUndefined(parameter: ParameterDeclaration | JSDocParameterTag): boolean;
     trackComputedName(accessExpression: EntityNameOrEntityNameExpression): void;
-    serializeExistingTypeNode(node: TypeNode | undefined, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
+    serializeExistingTypeNode(node: TypeNode, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
     serializeReturnTypeForSignature(signatureDeclaration: SignatureDeclaration | JSDocSignature, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeTypeOfDeclaration(node: HasInferredType, enclosingDeclaration?: Node): TypeNode | undefined;
     serializeNameOfParameter(parameter: ParameterDeclaration): BindingName | string;
+    getJsDocPropertyOverride(jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty:JSDocPropertyLikeTag): TypeNode | undefined;
+    canReuseTypeReference(node: TypeReferenceNode): boolean;
+    canReuseImportTypeNode(node: LiteralImportTypeNode): boolean;
+    enterNewScope(node: IntroducesNewScopeNode | ConditionalTypeNode): {
+        context: SyntacticTypeNodeBuilderContext,
+        cleanup?: () => void
+    };
+    markNodeReuse<T extends Node>(range: T, location: Node | undefined): T;
+    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T): { introducesError: boolean, node: Node };
+    getModuleSpecifierOverride(parent: ImportTypeNode, lit: StringLiteral): string | undefined;
+    canReuseTypeNode(existing: TypeNode, host: Declaration | undefined, addUndefined?: boolean): boolean;
 }
+
+/** @internal */
+export type IntroducesNewScopeNode = SignatureDeclaration | JSDocSignature | MappedTypeNode;
+

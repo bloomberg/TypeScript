@@ -1100,6 +1100,7 @@ import {
     YieldExpression,
     SyntacticTypeNodeBuilderContext,
     AllAccessorDeclarations,
+    IntroducesNewScopeNode,
 } from "./_namespaces/ts";
 import * as moduleSpecifiers from "./_namespaces/ts.moduleSpecifiers";
 import * as performance from "./_namespaces/ts.performance";
@@ -5977,14 +5978,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 isEntityNameVisible(entityName, shouldComputeAliasToMakeVisible) {
                     return isEntityNameVisible(entityName, this.enclosingDeclaration!, shouldComputeAliasToMakeVisible)
                 },
-                serializeExistingTypeNode(node, enclosingDeclaration, addUndefined) {
-                    if (!node) return undefined;
+                serializeExistingTypeNode(typeNode, enclosingDeclaration, addUndefined) {
                     return withEnclosingDeclaration(this, enclosingDeclaration, () => {
-                        let result;
-                        if(this.enclosingDeclaration && !!findAncestor(node, n => n === this.enclosingDeclaration)) {
-                            result = tryReuseExistingTypeNode(this, node, getTypeFromTypeNode(node), undefined, addUndefined)
-                        } 
-                        return  result ?? typeToTypeNodeHelper(getTypeFromTypeNode(node), this);
+                        const type = getTypeFromTypeNode(typeNode);
+                        if(addUndefined &&
+                            this.canReuseTypeNode(typeNode, undefined) &&
+                            !someType(type, t => !!(t.flags & TypeFlags.Undefined))) {
+                            const clone = syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(this, typeNode);
+                            if(clone) {
+                                return factory.createUnionTypeNode([clone, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
+                            }
+                        }
+                        return typeToTypeNodeHelper(addUndefined? getOptionalType(type): type, this);
                     });
                 },
                 serializeReturnTypeForSignature(signatureDeclaration, enclosingDeclaration) {
@@ -6041,6 +6046,63 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     Debug.assert(isExpressionNode(node));
                     return getSymbolAtLocation(node) === undefinedSymbol;
                 },
+                getJsDocPropertyOverride(jsDocTypeLiteral, jsDocProperty) {
+                    const name = isIdentifier(jsDocProperty.name) ? jsDocProperty.name : jsDocProperty.name.right;
+                    const typeViaParent = getTypeOfPropertyOfType(getTypeFromTypeNode(jsDocTypeLiteral), name.escapedText);
+                    const overrideTypeNode = typeViaParent && jsDocProperty.typeExpression && getTypeFromTypeNode(jsDocProperty.typeExpression.type) !== typeViaParent ? typeToTypeNodeHelper(typeViaParent, context) : undefined;
+                    return overrideTypeNode;
+                },
+                canReuseTypeReference(node) {
+                    return !isInJSDoc(node) ||
+                    (
+                        existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(node, getTypeFromTypeNode(node)) && 
+                        !getIntendedTypeFromJSDocTypeReference(node) && 
+                        unknownSymbol !== resolveTypeReferenceName(node, SymbolFlags.Type, /*ignoreErrors*/ true)
+                    );
+                },
+                canReuseImportTypeNode(node) {
+                    const nodeSymbol = getNodeLinks(node).resolvedSymbol;
+                    return (
+                        isInJSDoc(node) &&
+                        !!nodeSymbol &&
+                        (
+                            // The import type resolved using jsdoc fallback logic
+                            (!node.isTypeOf && !(nodeSymbol.flags & SymbolFlags.Type)) ||
+                            // The import type had type arguments autofilled by js fallback logic
+                            !(length(node.typeArguments) >= getMinTypeArgumentCount(getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(nodeSymbol)))
+                        )
+                    )
+                },
+                enterNewScope(node) {
+                    const context = cloneNodeBuilderContext(this);
+                    const cleanup = enterNewScope(context, node, getParametersInScope(node), getTypeParametersInScope(node));
+                    return { context, cleanup }
+                },
+                markNodeReuse<T extends Node>(range: T, location: Node | undefined) {
+                    return setTextRange(this, range, location);
+                },
+                trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T) {
+                    return trackExistingEntityName(node, this);
+                },
+                getModuleSpecifierOverride(parent: ImportTypeNode, lit: StringLiteral): string | undefined {
+                    if (context.bundled || context.enclosingFile !== getSourceFileOfNode(lit)) {
+                        const targetFile = getExternalModuleFileFromDeclaration(parent);
+                        if (targetFile) {
+                            const newName = getSpecifierForModuleSymbol(targetFile.symbol, context);
+                            if (newName !== lit.text) {
+                                return newName;
+                            }
+                        }
+                    }
+                }, 
+                canReuseTypeNode(existing: TypeNode, host: Declaration | undefined, addUndefined: boolean) {
+                    const type = getTypeFromTypeNode(existing);
+                    // const annotationType = getTypeOfSymbol(host)
+                    if (existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, type)) {
+                        return true;
+                    }
+                    return false;
+                }
             };
             context.tracker = new SymbolTrackerImpl(context, tracker, moduleResolverHost);
             const resultingNode = cb(context);
@@ -7191,7 +7253,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return node;
         }
 
-        type IntroducesNewScopeNode = SignatureDeclaration | JSDocSignature | MappedTypeNode;
 
         function isNewScopeNode(node: Node): node is IntroducesNewScopeNode {
             return isFunctionLike(node)

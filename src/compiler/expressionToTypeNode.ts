@@ -6,9 +6,12 @@ import {
     AsExpression,
     ClassExpression,
     CompilerOptions,
+    ConditionalTypeNode,
     Debug,
+    EmitFlags,
     Expression,
     factory,
+    findAncestor,
     forEachReturnStatement,
     FunctionExpression,
     FunctionLikeDeclaration,
@@ -16,33 +19,66 @@ import {
     getEffectiveReturnTypeNode,
     getEffectiveSetAccessorTypeAnnotationNode,
     getEffectiveTypeAnnotationNode,
+    getEmitFlags,
     getJSDocType,
     getJSDocTypeAssertionType,
     getStrictOptionValue,
     HasInferredType,
     Identifier,
+    ImportTypeNode,
     IntersectionTypeNode,
+    IntroducesNewScopeNode,
     isBlock,
+    isConditionalTypeNode,
     isConstTypeReference,
+    isDeclarationName,
     isDeclarationReadonly,
+    isEntityName,
     isEntityNameExpression,
+    isExpressionWithTypeArguments,
+    isFunctionLike,
     isGetAccessor,
     isIdentifier,
     isInJSFile,
+    isJSDocAllType,
+    isJSDocConstructSignature,
+    isJSDocFunctionType,
+    isJSDocIndexSignature,
+    isJSDocNonNullableType,
+    isJSDocNullableType,
+    isJSDocOptionalType,
+    isJSDocSignature,
     isJSDocTypeAssertion,
+    isJSDocTypeLiteral,
+    isJSDocUnknownType,
+    isJSDocVariadicType,
     isKeyword,
+    isLiteralImportTypeNode,
     isLiteralTypeNode,
+    isMappedTypeNode,
+    isParameter,
     isPrimitiveLiteralValue,
+    isPropertyDeclaration,
+    isPropertySignature,
     isShorthandPropertyAssignment,
     isSpreadAssignment,
+    isStringLiteral,
+    isTupleTypeNode,
+    isTypeLiteralNode,
+    isTypeNode,
+    isTypeParameterDeclaration,
     isTypePredicateNode,
     isTypeQueryNode,
+    isTypeReferenceNode,
     isUnionTypeNode,
     isValueSignatureDeclaration,
     isVarConstLike,
     JSDocSignature,
     KeywordTypeSyntaxKind,
+    map,
+    mapDefined,
     MethodDeclaration,
+    Mutable,
     Node,
     NodeArray,
     NodeBuilderFlags,
@@ -59,7 +95,10 @@ import {
     PropertyName,
     SetAccessorDeclaration,
     setCommentRange,
+    setEmitFlags,
+    setOriginalNode,
     SignatureDeclaration,
+    StringLiteral,
     SymbolAccessibility,
     SyntacticTypeNodeBuilderContext,
     SyntaxKind,
@@ -69,6 +108,9 @@ import {
     TypeParameterDeclaration,
     UnionTypeNode,
     VariableDeclaration,
+    visitEachChild,
+    visitNode,
+    visitNodes,
 } from "./_namespaces/ts";
 
 export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
@@ -79,14 +121,244 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         serializeTypeOfDeclaration,
         serializeReturnTypeForSignature,
         serializeTypeOfExpression,
-        serializeTypeOfAccessor
+        serializeTypeOfAccessor,
+        tryReuseExistingTypeNodeHelper,
     };
-    function serializeExistingTypeAnnotation(type: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Node, addUndefined?: boolean) {
-        if(!type) return;
-        if(addUndefined && !canAddUndefined(type)) {
-            context.tracker.reportInferenceFallback(type);
+
+    function tryReuseExistingTypeNodeHelper(context: SyntacticTypeNodeBuilderContext, existing: TypeNode) {
+        let hadError = false;
+        const transformed = visitNode(existing, visitExistingNodeTreeSymbols, isTypeNode);
+        if (hadError) {
+            return undefined;
         }
-        return context.serializeExistingTypeNode(type, enclosingDeclaration, addUndefined);
+        return transformed;
+
+        function isNewScopeNode(node: Node): node is IntroducesNewScopeNode {
+            return isFunctionLike(node)
+                || isJSDocSignature(node)
+                || isMappedTypeNode(node);
+        }
+
+        function visitExistingNodeTreeSymbols(node: Node): Node | undefined {
+            const onExitNewScope = isNewScopeNode(node) ? onEnterNewScope(node) : undefined;
+            const result = visitExistingNodeTreeSymbolsWorker(node);
+            onExitNewScope?.();
+            // We want to clone the subtree, so when we mark it up with __pos and __end in quickfixes,
+            //  we don't get odd behavior because of reused nodes. We also need to clone to _remove_
+            //  the position information if the node comes from a different file than the one the node builder
+            //  is set to build for (even though we are reusing the node structure, the position information
+            //  would make the printer print invalid spans for literals and identifiers, and the formatter would
+            //  choke on the mismatched positonal spans between a parent and an injected child from another file).
+            return result === node ? context.markNodeReuse(factory.cloneNode(result), node) : result;
+        }
+
+        function onEnterNewScope(node: IntroducesNewScopeNode | ConditionalTypeNode) {
+            const oldContext = context;
+            const scope = context.enterNewScope(node);
+            context = scope.context;
+            return onExitNewScope;
+
+            function onExitNewScope() {
+                scope.cleanup?.();
+                context = oldContext;
+            }
+        }
+
+        function visitExistingNodeTreeSymbolsWorker(node: Node): Node | undefined {
+            // We don't _actually_ support jsdoc namepath types, emit `any` instead
+            if (isJSDocAllType(node) || node.kind === SyntaxKind.JSDocNamepathType) {
+                return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+            }
+            if (isJSDocUnknownType(node)) {
+                return factory.createKeywordTypeNode(SyntaxKind.UnknownKeyword);
+            }
+            if (isJSDocNullableType(node)) {
+                return factory.createUnionTypeNode([visitNode(node.type, visitExistingNodeTreeSymbols, isTypeNode)!, factory.createLiteralTypeNode(factory.createNull())]);
+            }
+            if (isJSDocOptionalType(node)) {
+                return factory.createUnionTypeNode([visitNode(node.type, visitExistingNodeTreeSymbols, isTypeNode)!, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
+            }
+            if (isJSDocNonNullableType(node)) {
+                return visitNode(node.type, visitExistingNodeTreeSymbols);
+            }
+            if (isJSDocVariadicType(node)) {
+                return factory.createArrayTypeNode(visitNode(node.type, visitExistingNodeTreeSymbols, isTypeNode)!);
+            }
+            if (isJSDocTypeLiteral(node)) {
+                return factory.createTypeLiteralNode(map(node.jsDocPropertyTags, t => {
+                    const name = isIdentifier(t.name) ? t.name : t.name.right;
+                    const overrideTypeNode = context.getJsDocPropertyOverride(node, t);
+
+                    return factory.createPropertySignature(
+                        /*modifiers*/ undefined,
+                        name,
+                        t.isBracketed || t.typeExpression && isJSDocOptionalType(t.typeExpression.type) ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
+                        overrideTypeNode || (t.typeExpression && visitNode(t.typeExpression.type, visitExistingNodeTreeSymbols, isTypeNode)) || factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
+                    );
+                }));
+            }
+            if (isTypeReferenceNode(node) && isIdentifier(node.typeName) && node.typeName.escapedText === "") {
+                return setOriginalNode(factory.createKeywordTypeNode(SyntaxKind.AnyKeyword), node);
+            }
+            if ((isExpressionWithTypeArguments(node) || isTypeReferenceNode(node)) && isJSDocIndexSignature(node)) {
+                return factory.createTypeLiteralNode([factory.createIndexSignature(
+                    /*modifiers*/ undefined,
+                    [factory.createParameterDeclaration(
+                        /*modifiers*/ undefined,
+                        /*dotDotDotToken*/ undefined,
+                        "x",
+                        /*questionToken*/ undefined,
+                        visitNode(node.typeArguments![0], visitExistingNodeTreeSymbols, isTypeNode),
+                    )],
+                    visitNode(node.typeArguments![1], visitExistingNodeTreeSymbols, isTypeNode),
+                )]);
+            }
+            if (isJSDocFunctionType(node)) {
+                if (isJSDocConstructSignature(node)) {
+                    let newTypeNode: TypeNode | undefined;
+                    return factory.createConstructorTypeNode(
+                        /*modifiers*/ undefined,
+                        visitNodes(node.typeParameters, visitExistingNodeTreeSymbols, isTypeParameterDeclaration),
+                        mapDefined(node.parameters, (p, i) =>
+                            p.name && isIdentifier(p.name) && p.name.escapedText === "new" ? (newTypeNode = p.type, undefined) : factory.createParameterDeclaration(
+                                /*modifiers*/ undefined,
+                                getEffectiveDotDotDotForParameter(p),
+                                getNameForJSDocFunctionParameter(p, i),
+                                p.questionToken,
+                                visitNode(p.type, visitExistingNodeTreeSymbols, isTypeNode),
+                                /*initializer*/ undefined,
+                            )),
+                        visitNode(newTypeNode || node.type, visitExistingNodeTreeSymbols, isTypeNode) || factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
+                    );
+                }
+                else {
+                    return factory.createFunctionTypeNode(
+                        visitNodes(node.typeParameters, visitExistingNodeTreeSymbols, isTypeParameterDeclaration),
+                        map(node.parameters, (p, i) =>
+                            factory.createParameterDeclaration(
+                                /*modifiers*/ undefined,
+                                getEffectiveDotDotDotForParameter(p),
+                                getNameForJSDocFunctionParameter(p, i),
+                                p.questionToken,
+                                visitNode(p.type, visitExistingNodeTreeSymbols, isTypeNode),
+                                /*initializer*/ undefined,
+                            )),
+                        visitNode(node.type, visitExistingNodeTreeSymbols, isTypeNode) || factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
+                    );
+                }
+            }
+            if (isTypeReferenceNode(node) && !context.canReuseTypeReference(node)) {
+                return context.serializeExistingTypeNode(node);
+            }
+            if (isLiteralImportTypeNode(node)) {
+                if (context.canReuseImportTypeNode(node)) {
+                    return context.serializeExistingTypeNode(node);
+                }
+                return factory.updateImportTypeNode(
+                    node,
+                    factory.updateLiteralTypeNode(node.argument, rewriteModuleSpecifier(node, node.argument.literal)),
+                    node.attributes,
+                    node.qualifier,
+                    visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
+                    node.isTypeOf,
+                );
+            }
+            if (
+                (isFunctionLike(node) && !node.type)
+                || (isPropertyDeclaration(node) && !node.type && !node.initializer)
+                || (isPropertySignature(node) && !node.type && !node.initializer)
+                || (isParameter(node) && !node.type && !node.initializer)
+            ) {
+                let visited = visitEachChild(node, visitExistingNodeTreeSymbols, /*context*/ undefined);
+                if (visited === node) {
+                    visited = context.markNodeReuse(factory.cloneNode(node), node);
+                }
+                (visited as Mutable<typeof visited>).type = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+                if (isParameter(node)) {
+                    (visited as Mutable<ParameterDeclaration>).modifiers = undefined;
+                }
+                return visited;
+            }
+
+            if (isEntityName(node) || isEntityNameExpression(node)) {
+                if (isDeclarationName(node)) {
+                    return node;
+                }
+                const { introducesError, node: result } = context.trackExistingEntityName(node);
+                hadError = hadError || introducesError;
+                // We should not go to child nodes of the entity name, they will not be accessible
+                return result;
+            }
+
+            if (isTupleTypeNode(node) || isTypeLiteralNode(node) || isMappedTypeNode(node)) {
+                const visited = visitEachChild(node, visitExistingNodeTreeSymbols, /*context*/ undefined);
+                const clone = context.markNodeReuse(visited === node ? factory.cloneNode(node) : visited, node);
+                const flags = getEmitFlags(clone);
+                setEmitFlags(clone, flags | (context.flags & NodeBuilderFlags.MultilineObjectLiterals && isTypeLiteralNode(node) ? 0 : EmitFlags.SingleLine));
+                return clone;
+            }
+            if (isStringLiteral(node) && !!(context.flags & NodeBuilderFlags.UseSingleQuotesForStringLiteralType) && !node.singleQuote) {
+                const clone = factory.cloneNode(node);
+                (clone as Mutable<typeof clone>).singleQuote = true;
+                return clone;
+            }
+            if (isConditionalTypeNode(node)) {
+                const checkType = visitNode(node.checkType, visitExistingNodeTreeSymbols, isTypeNode)!;
+
+                const disposeScope = onEnterNewScope(node);
+                const extendType = visitNode(node.extendsType, visitExistingNodeTreeSymbols, isTypeNode)!;
+                const trueType = visitNode(node.trueType, visitExistingNodeTreeSymbols, isTypeNode)!;
+                disposeScope();
+                const falseType = visitNode(node.falseType, visitExistingNodeTreeSymbols, isTypeNode)!;
+                return factory.updateConditionalTypeNode(
+                    node,
+                    checkType,
+                    extendType,
+                    trueType,
+                    falseType,
+                );
+            }
+
+            return visitEachChild(node, visitExistingNodeTreeSymbols, /*context*/ undefined);
+
+            function getEffectiveDotDotDotForParameter(p: ParameterDeclaration) {
+                return p.dotDotDotToken || (p.type && isJSDocVariadicType(p.type) ? factory.createToken(SyntaxKind.DotDotDotToken) : undefined);
+            }
+
+            /** Note that `new:T` parameters are not handled, but should be before calling this function. */
+            function getNameForJSDocFunctionParameter(p: ParameterDeclaration, index: number) {
+                return p.name && isIdentifier(p.name) && p.name.escapedText === "this" ? "this"
+                    : getEffectiveDotDotDotForParameter(p) ? `args`
+                    : `arg${index}`;
+            }
+
+            function rewriteModuleSpecifier(parent: ImportTypeNode, lit: StringLiteral) {
+                const newName = context.getModuleSpecifierOverride(parent, lit);
+                if (newName) {
+                    return setOriginalNode(factory.createStringLiteral(newName), lit);
+                }
+                return visitNode(lit, visitExistingNodeTreeSymbols, isStringLiteral)!;
+            }
+        }
+    }
+
+    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Node, addUndefined?: boolean) {
+        if(!typeNode) return;
+        let result;
+        if(
+            (!addUndefined || canAddUndefined(typeNode)) &&
+            !!findAncestor(typeNode, n => n === (enclosingDeclaration ?? context.enclosingDeclaration)) &&
+            context.canReuseTypeNode(typeNode, undefined, addUndefined)
+        ) {
+            result = tryReuseExistingTypeNodeHelper(context, typeNode);
+            if(result) {
+                result = addUndefinedIfNeeded(result, addUndefined, context);
+            }
+        }
+        if(!result) {
+            context.tracker.reportInferenceFallback(typeNode);
+        }
+        return result ?? context.serializeExistingTypeNode(typeNode, enclosingDeclaration, addUndefined);
     }
     function serializeTypeOfAccessor(accessor: AccessorDeclaration, context: SyntacticTypeNodeBuilderContext) {
         return typeFromAccessor(accessor, context) ?? inferAccessorType(accessor, context.getAllAccessorDeclarations(accessor), context);
@@ -164,7 +436,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         const accessorDeclarations = context.getAllAccessorDeclarations(node);
         const accessorType = getTypeAnnotationFromAllAccessorDeclarations(node, accessorDeclarations);
         if (accessorType && !isTypePredicateNode(accessorType)) {
-            return serializeExistingTypeAnnotation(accessorType, context);
+            return serializeExistingTypeAnnotation(accessorType, context, accessorType.parent);
         }
         if (accessorDeclarations.getAccessor) {
             const oldEnclosingDecl = context.enclosingDeclaration;
@@ -226,6 +498,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
     }
 
     function inferExpressionType(node: Expression, context: SyntacticTypeNodeBuilderContext, reportFallback = true, requiresAddingUndefined?: boolean) {
+        Debug.assert(!requiresAddingUndefined);
         if (reportFallback) {
             context.tracker.reportInferenceFallback(node);
         }
@@ -596,7 +869,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         return addUndefinedIfNeeded(result, requiresAddingUndefined, context);
     }
 
-    function addUndefinedIfNeeded(node: TypeNode, addUndefined: boolean, context: SyntacticTypeNodeBuilderContext) {
+    function addUndefinedIfNeeded(node: TypeNode, addUndefined: boolean | undefined, context: SyntacticTypeNodeBuilderContext) {
         if (!strictNullChecks || !addUndefined) return node;
         if(!canAddUndefined(node)) {
             context.tracker.reportInferenceFallback(node);
