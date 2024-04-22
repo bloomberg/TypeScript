@@ -1,4 +1,4 @@
-file3.ts(2,40): error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
+file2.ts(1,26): error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
 
 
 ==== file1.ts (0 errors) ====
@@ -10,18 +10,13 @@ file3.ts(2,40): error TS9011: Parameter must have an explicit type annotation wi
         f = 2;
     }
     
-==== file2.ts (0 errors) ====
+==== file2.ts (1 errors) ====
     export function foo(p = (ip = 10, v: number): void => {}): void{
+                             ~~~~~~~
+!!! error TS9025: Declaration emit for this parameter requires implicitly adding undefined to it's type. This is not supported with --isolatedDeclarations.
+!!! related TS9028 file2.ts:1:26: Add a type annotation to the parameter ip.
     }
     export class Bar2 {
         readonly r = 1;
         f = 2;
-    }
-    
-==== file3.ts (1 errors) ====
-    type N = 1;
-    export function foo(p = (ip = null! as N, v: number): void => {}): void{
-                                           ~
-!!! error TS9011: Parameter must have an explicit type annotation with --isolatedDeclarations.
-!!! related TS9028 file3.ts:2:26: Add a type annotation to the parameter ip.
     }

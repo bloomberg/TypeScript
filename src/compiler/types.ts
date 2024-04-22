@@ -2762,6 +2762,22 @@ export interface RegularExpressionLiteral extends LiteralExpression {
     readonly kind: SyntaxKind.RegularExpressionLiteral;
 }
 
+// dprint-ignore
+/** @internal */
+export const enum RegularExpressionFlags {
+    None        = 0,
+    HasIndices  = 1 << 0, // d
+    Global      = 1 << 1, // g
+    IgnoreCase  = 1 << 2, // i
+    Multiline   = 1 << 3, // m
+    DotAll      = 1 << 4, // s
+    Unicode     = 1 << 5, // u
+    UnicodeSets = 1 << 6, // v
+    Sticky      = 1 << 7, // y
+    UnicodeMode = Unicode | UnicodeSets,
+    Modifiers   = IgnoreCase | Multiline | DotAll,
+}
+
 export interface NoSubstitutionTemplateLiteral extends LiteralExpression, TemplateLiteralLikeNode, Declaration {
     readonly kind: SyntaxKind.NoSubstitutionTemplateLiteral;
     /** @internal */
@@ -5404,7 +5420,7 @@ export const enum NodeBuilderFlags {
     AllowUniqueESSymbolType                 = 1 << 20,
     AllowEmptyIndexInfoType                 = 1 << 21,
     /** @internal */ WriteComputedProps      = 1 << 30, // { [E.A]: 1 }
-
+    /** @internal */ NoSyntacticPrinter     = 1 << 31,
     // Errors (cont.)
     AllowNodeModulesRelativePaths           = 1 << 26,
     /** @internal */ DoNotIncludeSymbolChain = 1 << 27,    // Skip looking up and printing an accessible symbol chain
@@ -7178,7 +7194,7 @@ export enum PollingWatchKind {
     FixedChunkSize,
 }
 
-export type CompilerOptionsValue = string | number | boolean | (string | number)[] | string[] | MapLike<string[]> | PluginImport[] | ProjectReference[] | null | undefined;
+export type CompilerOptionsValue = string | number | boolean | (string | number)[] | string[] | MapLike<string[]> | PluginImport[] | ProjectReference[] | null | undefined; // eslint-disable-line no-restricted-syntax
 
 export interface CompilerOptions {
     /** @internal */ all?: boolean;
@@ -7484,6 +7500,9 @@ export interface ConfigFileSpecs {
     validatedFilesSpec: readonly string[] | undefined;
     validatedIncludeSpecs: readonly string[] | undefined;
     validatedExcludeSpecs: readonly string[] | undefined;
+    validatedFilesSpecBeforeSubstitution: readonly string[] | undefined;
+    validatedIncludeSpecsBeforeSubstitution: readonly string[] | undefined;
+    validatedExcludeSpecsBeforeSubstitution: readonly string[] | undefined;
     pathPatterns: readonly (string | Pattern)[] | undefined;
     isDefaultIncludeSpec: boolean;
 }
@@ -7530,7 +7549,8 @@ export interface CommandLineOptionBase {
     affectsBuildInfo?: true;                                // true if this options should be emitted in buildInfo
     transpileOptionValue?: boolean | undefined;             // If set this means that the option should be set to this value when transpiling
     extraValidation?: (value: CompilerOptionsValue) => [DiagnosticMessage, ...string[]] | undefined; // Additional validation to be performed for the value to be valid
-    disallowNullOrUndefined?: true;                                    // If set option does not allow setting null
+    disallowNullOrUndefined?: true;                         // If set option does not allow setting null
+    allowConfigDirTemplateSubstitution?: true;              // If set option allows substitution of `${configDir}` in the value
 }
 
 /** @internal */
@@ -7620,6 +7640,9 @@ export const enum CharacterCodes {
     ideographicSpace = 0x3000,
     mathematicalSpace = 0x205F,
     ogham = 0x1680,
+
+    // Unicode replacement character produced when a byte sequence is invalid
+    replacementCharacter = 0xFFFD,
 
     _ = 0x5F,
     $ = 0x24,
@@ -9025,7 +9048,7 @@ export interface NodeFactory {
     // Synthetic Nodes
     //
     /** @internal */ createSyntheticExpression(type: Type, isSpread?: boolean, tupleNameSource?: ParameterDeclaration | NamedTupleMember): SyntheticExpression;
-    /** @internal */ createSyntaxList(children: Node[]): SyntaxList;
+    /** @internal */ createSyntaxList(children: readonly Node[]): SyntaxList;
 
     //
     // Transformation nodes
@@ -9609,11 +9632,11 @@ export interface PrinterOptions {
 export interface RawSourceMap {
     version: 3;
     file: string;
-    sourceRoot?: string | null;
+    sourceRoot?: string | null; // eslint-disable-line no-restricted-syntax
     sources: string[];
-    sourcesContent?: (string | null)[] | null;
+    sourcesContent?: (string | null)[] | null; // eslint-disable-line no-restricted-syntax
     mappings: string;
-    names?: string[] | null;
+    names?: string[] | null; // eslint-disable-line no-restricted-syntax
 }
 
 /**
@@ -9630,7 +9653,7 @@ export interface SourceMapGenerator {
     /**
      * Set the content for a source.
      */
-    setSourceContent(sourceIndex: number, content: string | null): void;
+    setSourceContent(sourceIndex: number, content: string | null): void; // eslint-disable-line no-restricted-syntax
     /**
      * Adds a name.
      */
@@ -9738,6 +9761,9 @@ export interface ModuleSpecifierResolutionHost {
     getCommonSourceDirectory(): string;
     getDefaultResolutionModeForFile(sourceFile: SourceFile): ResolutionMode;
     getModeForResolutionAtIndex(file: SourceFile, index: number): ResolutionMode;
+
+    getModuleResolutionCache?(): ModuleResolutionCache | undefined;
+    trace?(s: string): void;
 }
 
 /** @internal */
@@ -10261,37 +10287,38 @@ export type HasInferredType =
     | JSDocPropertyTag
     | JSDocParameterTag;
 
-/** @internal */
 export interface SyntacticTypeNodeBuilderContext {
-    enclosingDeclaration: Node | undefined;
     flags: NodeBuilderFlags;
     tracker: Required<Pick<SymbolTracker, "reportInferenceFallback">>;
+    enclosingDeclaration: Node | undefined;
+}
+
+/** @internal */
+export interface SyntacticTypeNodeBuilderResolver {
     isOptionalParameter(p: ParameterDeclaration): boolean;
     isUndefinedIdentifierExpression(name: Identifier): boolean;
     isNonNarrowedBindableName(name: ComputedPropertyName): boolean;
     isExpandoFunctionDeclaration(name: FunctionDeclaration | VariableDeclaration): boolean;
     getAllAccessorDeclarations(declaration: AccessorDeclaration): AllAccessorDeclarations;
-    isEntityNameVisible(entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
     requiresAddingImplicitUndefined(parameter: ParameterDeclaration | JSDocParameterTag): boolean;
-    trackComputedName(accessExpression: EntityNameOrEntityNameExpression): void;
-    serializeExistingTypeNode(node: TypeNode, enclosingDeclaration?: Node, addUndefined?: boolean): TypeNode | undefined;
-    serializeReturnTypeForSignature(signatureDeclaration: SignatureDeclaration | JSDocSignature, enclosingDeclaration?: Node): TypeNode | undefined;
-    serializeTypeOfExpression(expr: Expression, enclosingDeclaration?: Node): TypeNode | undefined;
-    serializeTypeOfDeclaration(node: HasInferredType, enclosingDeclaration?: Node): TypeNode | undefined;
-    serializeNameOfParameter(parameter: ParameterDeclaration): BindingName | string;
-    getJsDocPropertyOverride(jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty:JSDocPropertyLikeTag): TypeNode | undefined;
-    canReuseTypeReference(node: TypeReferenceNode): boolean;
-    canReuseImportTypeNode(node: LiteralImportTypeNode): boolean;
-    enterNewScope(node: IntroducesNewScopeNode | ConditionalTypeNode): {
+    isEntityNameVisible(context: SyntacticTypeNodeBuilderContext, entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
+    trackComputedName(context: SyntacticTypeNodeBuilderContext, accessExpression: EntityNameOrEntityNameExpression): void;
+    serializeExistingTypeNode(context: SyntacticTypeNodeBuilderContext, node: TypeNode, addUndefined?: boolean): TypeNode | undefined;
+    serializeReturnTypeForSignature(context: SyntacticTypeNodeBuilderContext, signatureDeclaration: SignatureDeclaration | JSDocSignature): TypeNode | undefined;
+    serializeTypeOfExpression(context: SyntacticTypeNodeBuilderContext, expr: Expression): TypeNode | undefined;
+    serializeTypeOfDeclaration(context: SyntacticTypeNodeBuilderContext, node: HasInferredType): TypeNode | undefined;
+    serializeNameOfParameter(context: SyntacticTypeNodeBuilderContext, parameter: ParameterDeclaration): BindingName | string;
+    getJsDocPropertyOverride(context: SyntacticTypeNodeBuilderContext, jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty:JSDocPropertyLikeTag): TypeNode | undefined;
+    canReuseTypeReference(context: SyntacticTypeNodeBuilderContext, node: TypeReferenceNode): boolean;
+    canReuseImportTypeNode(context: SyntacticTypeNodeBuilderContext, node: LiteralImportTypeNode): boolean;
+    enterNewScope(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode): {
         context: SyntacticTypeNodeBuilderContext,
         cleanup?: () => void
     };
-    markNodeReuse<T extends Node>(range: T, location: Node | undefined): T;
-    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T): { introducesError: boolean, node: Node };
-    getModuleSpecifierOverride(parent: ImportTypeNode, lit: StringLiteral): string | undefined;
-    canReuseTypeNode(existing: TypeNode, enclosingDeclaration?: Node): boolean;
-}
+    markNodeReuse<T extends Node>(context: SyntacticTypeNodeBuilderContext, range: T, location: Node | undefined): T;
+    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(context: SyntacticTypeNodeBuilderContext, node: T): { introducesError: boolean, node: Node };
+    getModuleSpecifierOverride(context: SyntacticTypeNodeBuilderContext, parent: ImportTypeNode, lit: StringLiteral): string | undefined;
+    canReuseTypeNode(context: SyntacticTypeNodeBuilderContext, existing: TypeNode): boolean;}
 
 /** @internal */
 export type IntroducesNewScopeNode = SignatureDeclaration | JSDocSignature | MappedTypeNode;
-

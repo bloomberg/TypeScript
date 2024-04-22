@@ -19,8 +19,3 @@ export class Bar2 {
     readonly r = 1;
     f = 2;
 }
-
-// @filename: file3.ts
-type N = 1;
-export function foo(p = (ip = null! as N, v: number): void => {}): void{
-}

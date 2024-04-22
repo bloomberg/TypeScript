@@ -537,6 +537,7 @@ import {
     SymbolVisibilityResult,
     SyntaxKind,
     TaggedTemplateExpression,
+    targetOptionDeclaration,
     TemplateExpression,
     TemplateLiteral,
     TemplateLiteralLikeNode,
@@ -1517,6 +1518,10 @@ export const getScriptTargetFeatures = /* @__PURE__ */ memoize((): ScriptTargetF
             ],
             es2022: [
                 "at",
+            ],
+            esnext: [
+                "isWellFormed",
+                "toWellFormed",
             ],
         })),
         StringConstructor: new Map(Object.entries({
@@ -5368,10 +5373,6 @@ export function isPushOrUnshiftIdentifier(node: Identifier) {
     return node.escapedText === "push" || node.escapedText === "unshift";
 }
 
-// TODO(jakebailey): this function should not be named this. While it does technically
-// return true if the argument is a ParameterDeclaration, it also returns true for nodes
-// that are children of ParameterDeclarations inside binding elements.
-// Probably, this should be called `rootDeclarationIsParameter`.
 /**
  * This function returns true if the this node's root declaration is a parameter.
  * For example, passing a `ParameterDeclaration` will return true, as will passing a
@@ -5381,7 +5382,7 @@ export function isPushOrUnshiftIdentifier(node: Identifier) {
  *
  * @internal
  */
-export function isParameterDeclaration(node: Declaration): boolean {
+export function isPartOfParameterDeclaration(node: Declaration): boolean {
     const root = getRootDeclaration(node);
     return root.kind === SyntaxKind.Parameter;
 }
@@ -9002,6 +9003,11 @@ export function getStrictOptionValue(compilerOptions: CompilerOptions, flag: Str
 }
 
 /** @internal */
+export function getNameOfScriptTarget(scriptTarget: ScriptTarget): string | undefined {
+    return forEachEntry(targetOptionDeclaration.type, (value, key) => value === scriptTarget ? key : undefined);
+}
+
+/** @internal */
 export function getEmitStandardClassFields(compilerOptions: CompilerOptions) {
     return compilerOptions.useDefineForClassFields !== false && getEmitScriptTarget(compilerOptions) >= ScriptTarget.ES2022;
 }
@@ -9092,6 +9098,7 @@ export interface SymlinkCache {
     getSymlinkedFiles(): ReadonlyMap<Path, string> | undefined;
     setSymlinkedDirectory(symlink: string, real: SymlinkedDirectory | false): void;
     setSymlinkedFile(symlinkPath: Path, real: string): void;
+    hasAnySymlinks(): boolean;
     /**
      * @internal
      * Uses resolvedTypeReferenceDirectives from program instead of from files, since files
@@ -9107,6 +9114,7 @@ export interface SymlinkCache {
         ) => void,
         typeReferenceDirectives: ModeAwareCache<ResolvedTypeReferenceDirectiveWithFailedLookupLocations>,
     ): void;
+    setSymlinksFromResolution(resolution: ResolvedModuleFull | undefined): void;
     /**
      * @internal
      * Whether `setSymlinksFromResolutions` has already been called.
@@ -9146,7 +9154,15 @@ export function createSymlinkCache(cwd: string, getCanonicalFileName: GetCanonic
             typeReferenceDirectives.forEach(resolution => processResolution(this, resolution.resolvedTypeReferenceDirective));
         },
         hasProcessedResolutions: () => hasProcessedResolutions,
+        setSymlinksFromResolution(resolution) {
+            processResolution(this, resolution);
+        },
+        hasAnySymlinks,
     };
+
+    function hasAnySymlinks() {
+        return !!symlinkedFiles?.size || (!!symlinkedDirectories && !!forEachEntry(symlinkedDirectories, value => !!value));
+    }
 
     function processResolution(cache: SymlinkCache, resolution: ResolvedModuleFull | ResolvedTypeReferenceDirective | undefined) {
         if (!resolution || !resolution.originalPath || !resolution.resolvedFileName) return;
@@ -9971,7 +9987,7 @@ export function skipTypeChecking(sourceFile: SourceFile, options: CompilerOption
 
 /** @internal */
 export function isJsonEqual(a: unknown, b: unknown): boolean {
-    // eslint-disable-next-line no-null/no-null
+    // eslint-disable-next-line no-restricted-syntax
     return a === b || typeof a === "object" && a !== null && typeof b === "object" && b !== null && equalOwnProperties(a as MapLike<unknown>, b as MapLike<unknown>, isJsonEqual);
 }
 
@@ -11264,7 +11280,7 @@ export function createNameResolver({
                             lastLocation === (location as BindingElement).name && isBindingPattern(lastLocation)
                         )
                     ) {
-                        if (isParameterDeclaration(location as BindingElement) && !associatedDeclarationForContainingInitializerOrBindingName) {
+                        if (isPartOfParameterDeclaration(location as BindingElement) && !associatedDeclarationForContainingInitializerOrBindingName) {
                             associatedDeclarationForContainingInitializerOrBindingName = location as BindingElement;
                         }
                     }
@@ -11457,6 +11473,63 @@ export function createNameResolver({
         }
 
         return false;
+    }
+}
+
+/** @internal */
+export function isPrimitiveLiteralValue(node: Expression, includeBigInt = true): node is PrimitiveLiteral {
+    Debug.type<PrimitiveLiteral>(node);
+    switch (node.kind) {
+        case SyntaxKind.TrueKeyword:
+        case SyntaxKind.FalseKeyword:
+        case SyntaxKind.NumericLiteral:
+        case SyntaxKind.StringLiteral:
+        case SyntaxKind.NoSubstitutionTemplateLiteral:
+            return true;
+        case SyntaxKind.BigIntLiteral:
+            return includeBigInt;
+        case SyntaxKind.PrefixUnaryExpression:
+            if (node.operator === SyntaxKind.MinusToken) {
+                return isNumericLiteral(node.operand) || (includeBigInt && isBigIntLiteral(node.operand));
+            }
+            if (node.operator === SyntaxKind.PlusToken) {
+                return isNumericLiteral(node.operand);
+            }
+            return false;
+        default:
+            assertType<never>(node);
+            return false;
+    }
+}
+
+/** @internal */
+export function unwrapParenthesizedExpression(o: Expression) {
+    while (o.kind === SyntaxKind.ParenthesizedExpression) {
+        o = (o as ParenthesizedExpression).expression;
+    }
+    return o;
+}
+
+/** @internal */
+export function hasInferredType(node: Node): node is HasInferredType {
+    Debug.type<HasInferredType>(node);
+    switch (node.kind) {
+        case SyntaxKind.Parameter:
+        case SyntaxKind.PropertySignature:
+        case SyntaxKind.PropertyDeclaration:
+        case SyntaxKind.BindingElement:
+        case SyntaxKind.PropertyAccessExpression:
+        case SyntaxKind.ElementAccessExpression:
+        case SyntaxKind.BinaryExpression:
+        case SyntaxKind.VariableDeclaration:
+        case SyntaxKind.ExportAssignment:
+        case SyntaxKind.PropertyAssignment:
+        case SyntaxKind.JSDocParameterTag:
+        case SyntaxKind.JSDocPropertyTag:
+            return true;
+        default:
+            assertType<never>(node);
+            return false;
     }
 }
 
@@ -11809,61 +11882,4 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
     }
 
     return { hasVisibleDeclarations, isEntityNameVisible, collectLinkedAliases };
-}
-
-/** @internal */
-export function isPrimitiveLiteralValue(node: Expression, includeBigInt = true): node is PrimitiveLiteral {
-    Debug.type<PrimitiveLiteral>(node);
-    switch (node.kind) {
-        case SyntaxKind.TrueKeyword:
-        case SyntaxKind.FalseKeyword:
-        case SyntaxKind.NumericLiteral:
-        case SyntaxKind.StringLiteral:
-        case SyntaxKind.NoSubstitutionTemplateLiteral:
-            return true;
-        case SyntaxKind.BigIntLiteral:
-            return includeBigInt;
-        case SyntaxKind.PrefixUnaryExpression:
-            if (node.operator === SyntaxKind.MinusToken) {
-                return isNumericLiteral(node.operand) || (includeBigInt && isBigIntLiteral(node.operand));
-            }
-            if (node.operator === SyntaxKind.PlusToken) {
-                return isNumericLiteral(node.operand);
-            }
-            return false;
-        default:
-            assertType<never>(node);
-            return false;
-    }
-}
-
-/** @internal */
-export function unwrapParenthesizedExpression(o: Expression) {
-    while (o.kind === SyntaxKind.ParenthesizedExpression) {
-        o = (o as ParenthesizedExpression).expression;
-    }
-    return o;
-}
-
-/** @internal */
-export function hasInferredType(node: Node): node is HasInferredType {
-    Debug.type<HasInferredType>(node);
-    switch (node.kind) {
-        case SyntaxKind.Parameter:
-        case SyntaxKind.PropertySignature:
-        case SyntaxKind.PropertyDeclaration:
-        case SyntaxKind.BindingElement:
-        case SyntaxKind.PropertyAccessExpression:
-        case SyntaxKind.ElementAccessExpression:
-        case SyntaxKind.BinaryExpression:
-        case SyntaxKind.VariableDeclaration:
-        case SyntaxKind.ExportAssignment:
-        case SyntaxKind.PropertyAssignment:
-        case SyntaxKind.JSDocPropertyTag:
-        case SyntaxKind.JSDocParameterTag:
-            return true;
-        default:
-            assertType<never>(node);
-            return false;
-    }
 }

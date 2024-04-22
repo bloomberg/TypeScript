@@ -17,11 +17,6 @@ export class Bar2 {
     f = 2;
 }
 
-//// [file3.ts]
-type N = 1;
-export function foo(p = (ip = null! as N, v: number): void => {}): void{
-}
-
 //// [file1.js]
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -54,29 +49,14 @@ var Bar2 = /** @class */ (function () {
     return Bar2;
 }());
 exports.Bar2 = Bar2;
-//// [file3.js]
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.foo = foo;
-function foo(p) {
-    if (p === void 0) { p = function (ip, v) {
-        if (ip === void 0) { ip = null; }
-    }; }
-}
 
 
 //// [file1.d.ts]
 type N = 1;
 export declare class Bar {
-    c?: readonly [N];
+    c?: readonly [1] | undefined;
     c3?: N;
     readonly r = 1;
     f: number;
 }
 export {};
-//// [file2.d.ts]
-export declare function foo(p?: (ip: number | undefined, v: number) => void): void;
-export declare class Bar2 {
-    readonly r = 1;
-    f: number;
-}
