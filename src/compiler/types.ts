@@ -10309,17 +10309,18 @@ export interface SyntacticTypeNodeBuilderResolver {
     serializeTypeOfExpression(context: SyntacticTypeNodeBuilderContext, expr: Expression): TypeNode | undefined;
     serializeTypeOfDeclaration(context: SyntacticTypeNodeBuilderContext, node: HasInferredType): TypeNode | undefined;
     serializeNameOfParameter(context: SyntacticTypeNodeBuilderContext, parameter: ParameterDeclaration): BindingName | string;
-    getJsDocPropertyOverride(context: SyntacticTypeNodeBuilderContext, jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty:JSDocPropertyLikeTag): TypeNode | undefined;
+    getJsDocPropertyOverride(context: SyntacticTypeNodeBuilderContext, jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty: JSDocPropertyLikeTag): TypeNode | undefined;
     canReuseTypeReference(context: SyntacticTypeNodeBuilderContext, node: TypeReferenceNode): boolean;
     canReuseImportTypeNode(context: SyntacticTypeNodeBuilderContext, node: LiteralImportTypeNode): boolean;
     enterNewScope(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode): {
-        context: SyntacticTypeNodeBuilderContext,
-        cleanup?: () => void
+        context: SyntacticTypeNodeBuilderContext;
+        cleanup?: () => void;
     };
     markNodeReuse<T extends Node>(context: SyntacticTypeNodeBuilderContext, range: T, location: Node | undefined): T;
-    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(context: SyntacticTypeNodeBuilderContext, node: T): { introducesError: boolean, node: T };
+    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(context: SyntacticTypeNodeBuilderContext, node: T): { introducesError: boolean; node: T; };
     getModuleSpecifierOverride(context: SyntacticTypeNodeBuilderContext, parent: ImportTypeNode, lit: StringLiteral): string | undefined;
-    canReuseTypeNode(context: SyntacticTypeNodeBuilderContext, existing: TypeNode): boolean;}
+    canReuseTypeNode(context: SyntacticTypeNodeBuilderContext, existing: TypeNode): boolean;
+}
 
 /** @internal */
 export type IntroducesNewScopeNode = SignatureDeclaration | JSDocSignature | MappedTypeNode;

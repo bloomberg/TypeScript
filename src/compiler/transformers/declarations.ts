@@ -628,7 +628,8 @@ export function transformDeclarations(context: TransformationContext) {
             if (!isPrimitiveLiteralValue(unwrappedInitializer)) {
                 reportInferenceFallback(node);
                 return resolver.createLiteralConstValue(getParseTreeNode(node, canHaveLiteralInitializer)!, symbolTracker);
-            } else {
+            }
+            else {
                 if (unwrappedInitializer.kind === SyntaxKind.PrefixUnaryExpression && unwrappedInitializer.operator === SyntaxKind.PlusToken) {
                     return unwrappedInitializer.operand;
                 }

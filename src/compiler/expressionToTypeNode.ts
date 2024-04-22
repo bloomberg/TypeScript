@@ -256,12 +256,12 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             }
             if (isTypeReferenceNode(node)) {
                 const { introducesError, node: newName } = resolver.trackExistingEntityName(context, node.typeName);
-                if(!introducesError) {
+                if (!introducesError) {
                     return factory.updateTypeReferenceNode(
                         node,
                         newName,
-                        visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode)
-                    )
+                        visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
+                    );
                 }
                 return resolver.serializeExistingTypeNode(context, node);
             }
@@ -294,16 +294,16 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 }
                 return visited;
             }
-            if(isTypeQueryNode(node)) {
+            if (isTypeQueryNode(node)) {
                 const { introducesError, node: exprName } = resolver.trackExistingEntityName(context, node.exprName);
-                if(introducesError) {
+                if (introducesError) {
                     return resolver.serializeExistingTypeNode(context, node);
                 }
                 return factory.updateTypeQueryNode(
                     node,
                     exprName,
                     visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
-                )
+                );
             }
             if (isEntityName(node) || isEntityNameExpression(node)) {
                 if (isDeclarationName(node)) {
@@ -344,8 +344,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 );
             }
 
-            if(isTypeOperatorNode(node) && node.operator === SyntaxKind.UniqueKeyword && node.type.kind === SyntaxKind.SymbolKeyword) {
-                if(!resolver.canReuseTypeNode(context, node)) {
+            if (isTypeOperatorNode(node) && node.operator === SyntaxKind.UniqueKeyword && node.type.kind === SyntaxKind.SymbolKeyword) {
+                if (!resolver.canReuseTypeNode(context, node)) {
                     return serializeExistingTypeAnnotation(node, context);
                 }
             }
@@ -374,18 +374,18 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
     }
 
     function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean) {
-        if(!typeNode) return;
+        if (!typeNode) return;
         let result;
-        if(
+        if (
             (!addUndefined || canAddUndefined(typeNode)) &&
             resolver.canReuseTypeNode(context, typeNode)
         ) {
             result = tryReuseExistingTypeNodeHelper(context, typeNode);
-            if(result) {
+            if (result) {
                 result = addUndefinedIfNeeded(result, addUndefined, context);
             }
         }
-        if(!result) {
+        if (!result) {
             context.tracker.reportInferenceFallback(typeNode);
         }
         return result ?? resolver.serializeExistingTypeNode(context, typeNode, addUndefined);
@@ -558,7 +558,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
     }
 
-    function withNewScope<R>(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode, fn: (context: SyntacticTypeNodeBuilderContext) =>R) {
+    function withNewScope<R>(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode, fn: (context: SyntacticTypeNodeBuilderContext) => R) {
         const scope = resolver.enterNewScope(context, node);
         const result = fn(scope.context);
         scope.cleanup?.();
@@ -601,11 +601,11 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 const unaryExpression = node as PrefixUnaryExpression;
                 if (isPrimitiveLiteralValue(unaryExpression)) {
                     return typeFromPrimitiveLiteral(
-                        unaryExpression.operator === SyntaxKind.PlusToken ? unaryExpression.operand: unaryExpression, 
-                        unaryExpression.operand.kind === SyntaxKind.BigIntLiteral ? SyntaxKind.BigIntKeyword: SyntaxKind.NumberKeyword, 
-                        context, 
-                        isConstContext || preserveLiterals, 
-                        requiresAddingUndefined
+                        unaryExpression.operator === SyntaxKind.PlusToken ? unaryExpression.operand : unaryExpression,
+                        unaryExpression.operand.kind === SyntaxKind.BigIntLiteral ? SyntaxKind.BigIntKeyword : SyntaxKind.NumberKeyword,
+                        context,
+                        isConstContext || preserveLiterals,
+                        requiresAddingUndefined,
                     );
                 }
                 break;
@@ -620,11 +620,11 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     return factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
                 }
                 break;
-            default: 
+            default:
                 let typeKind: KeywordTypeSyntaxKind | undefined;
-                switch(node.kind) {
+                switch (node.kind) {
                     case SyntaxKind.NumericLiteral:
-                        typeKind = SyntaxKind.NumberKeyword
+                        typeKind = SyntaxKind.NumberKeyword;
                         break;
                     case SyntaxKind.NoSubstitutionTemplateLiteral:
                     case SyntaxKind.StringLiteral:
@@ -638,10 +638,9 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                         typeKind = SyntaxKind.BooleanKeyword;
                         break;
                 }
-                if(typeKind) {
+                if (typeKind) {
                     return typeFromPrimitiveLiteral(node as PrimitiveLiteral, typeKind, context, isConstContext || preserveLiterals, requiresAddingUndefined);
                 }
-            
         }
         return undefined;
     }
@@ -761,7 +760,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             let newProp;
             switch (prop.kind) {
                 case SyntaxKind.MethodDeclaration:
-                    newProp = withNewScope(context, prop, (c) => typeFromObjectLiteralMethod(prop, name, c, isConstContext));
+                    newProp = withNewScope(context, prop, c => typeFromObjectLiteralMethod(prop, name, c, isConstContext));
                     break;
                 case SyntaxKind.PropertyAssignment:
                     newProp = typeFromObjectLiteralPropertyAssignment(prop, name, context, isConstContext);
@@ -816,7 +815,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             )
         );
     }
-    
+
     function typeFromObjectLiteralMethod(method: MethodDeclaration, name: PropertyName, context: SyntacticTypeNodeBuilderContext, isConstContext: boolean) {
         const returnType = createReturnFromSignature(method, context);
         const typeParameters = reuseTypeParameters(method.typeParameters, context);
@@ -853,7 +852,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const setAccessorType = allAccessors.setAccessor && getTypeAnnotationFromAccessor(allAccessors.setAccessor);
         // We have types for both accessors, we can't know if they are the same type so we keep both accessors
         if (getAccessorType !== undefined && setAccessorType !== undefined) {
-            return withNewScope(context, accessor, (c) => {
+            return withNewScope(context, accessor, c => {
                 const parameters = accessor.parameters.map(p => ensureParameter(p, c));
 
                 if (isGetAccessor(accessor)) {
@@ -878,9 +877,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             });
         }
         else if (allAccessors.firstAccessor === accessor) {
-            const foundType = 
-                getAccessorType ? withNewScope(context, allAccessors.getAccessor!, c => serializeExistingTypeAnnotation(getAccessorType, c)):
-                setAccessorType ? withNewScope(context, allAccessors.setAccessor!, c => serializeExistingTypeAnnotation(setAccessorType, c)):
+            const foundType = getAccessorType ? withNewScope(context, allAccessors.getAccessor!, c => serializeExistingTypeAnnotation(getAccessorType, c)) :
+                setAccessorType ? withNewScope(context, allAccessors.setAccessor!, c => serializeExistingTypeAnnotation(setAccessorType, c)) :
                 undefined;
             const propertyType = foundType ?? inferAccessorType(accessor, allAccessors, context);
 
@@ -917,10 +915,10 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
 
     function addUndefinedIfNeeded(node: TypeNode, addUndefined: boolean | undefined, context: SyntacticTypeNodeBuilderContext) {
         if (!strictNullChecks || !addUndefined) return node;
-        if(!canAddUndefined(node)) {
+        if (!canAddUndefined(node)) {
             context.tracker.reportInferenceFallback(node);
         }
-        if(isUnionTypeNode(node)) {
+        if (isUnionTypeNode(node)) {
             return factory.createUnionTypeNode([...node.types, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
         }
         return factory.createUnionTypeNode([node, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
@@ -985,5 +983,3 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
     }
 }
-
-
