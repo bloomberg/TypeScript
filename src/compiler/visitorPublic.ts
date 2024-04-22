@@ -149,8 +149,7 @@ export function visitNode(
     visitor: Visitor,
     test?: (node: Node) => boolean,
     lift?: (node: readonly Node[]) => Node,
-): Node | undefined {
-    if (node === undefined) {
+): Node | undefined {if (node === undefined) {
         // If the input type is undefined, then the output type can be undefined.
         return node;
     }

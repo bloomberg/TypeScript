@@ -4,14 +4,16 @@ import {
     ArrayLiteralExpression,
     ArrowFunction,
     AsExpression,
+    BinaryExpression,
     ClassExpression,
     CompilerOptions,
     ConditionalTypeNode,
     Debug,
+    Declaration,
+    ElementAccessExpression,
     EmitFlags,
     Expression,
     factory,
-    findAncestor,
     forEachReturnStatement,
     FunctionExpression,
     FunctionLikeDeclaration,
@@ -90,6 +92,7 @@ import {
     ParenthesizedTypeNode,
     PrefixUnaryExpression,
     PrimitiveLiteral,
+    PropertyAccessExpression,
     PropertyAssignment,
     PropertyDeclaration,
     PropertyName,
@@ -342,13 +345,12 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         }
     }
 
-    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Node, addUndefined?: boolean) {
+    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Declaration, addUndefined?: boolean) {
         if(!typeNode) return;
         let result;
         if(
             (!addUndefined || canAddUndefined(typeNode)) &&
-            !!findAncestor(typeNode, n => n === (enclosingDeclaration ?? context.enclosingDeclaration)) &&
-            context.canReuseTypeNode(typeNode, undefined, addUndefined)
+            context.canReuseTypeNode(typeNode, enclosingDeclaration)
         ) {
             result = tryReuseExistingTypeNodeHelper(context, typeNode);
             if(result) {
@@ -370,7 +372,9 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
     function serializeTypeOfDeclaration(node: HasInferredType, context: SyntacticTypeNodeBuilderContext) {
         switch (node.kind) {
             case SyntaxKind.PropertySignature:
-                return serializeExistingTypeAnnotation(getEffectiveTypeAnnotationNode(node), context, node) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+            case SyntaxKind.JSDocPropertyTag:
+            case SyntaxKind.JSDocParameterTag:
+                return serializeExistingTypeAnnotation(getEffectiveTypeAnnotationNode(node), context) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
             case SyntaxKind.Parameter:
                 return typeFromParameter(node, context);
             case SyntaxKind.VariableDeclaration:
@@ -384,7 +388,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
             case SyntaxKind.PropertyAccessExpression:
             case SyntaxKind.ElementAccessExpression:
             case SyntaxKind.BinaryExpression:
-                return inferTypeOfDeclaration(node, context);
+                return typeFromExpandoProperty(node, context);
             case SyntaxKind.PropertyAssignment:
                 return typeFromExpression(node.initializer, context) ?? inferTypeOfDeclaration(node, context, node.initializer);
             default:
@@ -436,7 +440,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         const accessorDeclarations = context.getAllAccessorDeclarations(node);
         const accessorType = getTypeAnnotationFromAllAccessorDeclarations(node, accessorDeclarations);
         if (accessorType && !isTypePredicateNode(accessorType)) {
-            return serializeExistingTypeAnnotation(accessorType, context, accessorType.parent);
+            return serializeExistingTypeAnnotation(accessorType, context, accessorType.parent as AccessorDeclaration);
         }
         if (accessorDeclarations.getAccessor) {
             const oldEnclosingDecl = context.enclosingDeclaration;
@@ -468,12 +472,22 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         let resultType;
         const requiresAddingImplicitUndefined = context.requiresAddingImplicitUndefined(node);
         if (declaredType) {
-            return serializeExistingTypeAnnotation(declaredType, context, undefined, requiresAddingImplicitUndefined);
+            return serializeExistingTypeAnnotation(declaredType, context, /*enclosingDeclaration*/ undefined, requiresAddingImplicitUndefined);
         }
         if (node.initializer && isIdentifier(node.name)) {
-            resultType = typeFromExpression(node.initializer, context, undefined, requiresAddingImplicitUndefined);
+            resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, requiresAddingImplicitUndefined);
         }
         return resultType ?? inferTypeOfDeclaration(node, context);
+    }
+    /**
+     * While expando poperies are errors in TSC, in JS we try to extract the type from the binary epxression;
+     */
+    function typeFromExpandoProperty(node: PropertyAccessExpression | BinaryExpression | ElementAccessExpression, context: SyntacticTypeNodeBuilderContext) {
+        const declaredType = getEffectiveTypeAnnotationNode(node);
+        if (declaredType) {
+            return serializeExistingTypeAnnotation(declaredType, context);
+        }
+        return inferTypeOfDeclaration(node, context);
     }
     function typeFromProperty(node: PropertyDeclaration, context: SyntacticTypeNodeBuilderContext) {
         const declaredType = getEffectiveTypeAnnotationNode(node);
@@ -525,7 +539,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
         if (isConstTypeReference(type)) {
             return typeFromExpression(expression, context, /*isConstContext*/ true, requiresAddingUndefined);
         }
-        return serializeExistingTypeAnnotation(type, context, undefined, requiresAddingUndefined);
+        return serializeExistingTypeAnnotation(type, context, /*enclosingDeclaration*/ undefined, requiresAddingUndefined);
     }
     function typeFromExpression(node: Expression, context: SyntacticTypeNodeBuilderContext, isConstContext = false, requiresAddingUndefined = false, preserveLiterals = false): TypeNode | undefined {
         switch (node.kind) {
@@ -570,7 +584,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
             case SyntaxKind.ObjectLiteralExpression:
                 return typeFromObjectLiteral(node as ObjectLiteralExpression, context, isConstContext, requiresAddingUndefined);
             case SyntaxKind.ClassExpression:
-                return inferExpressionType(node as ClassExpression, context, true, requiresAddingUndefined);
+                return inferExpressionType(node as ClassExpression, context, /*reportFallback*/ true, requiresAddingUndefined);
             case SyntaxKind.TemplateExpression:
                 if (!isConstContext && !preserveLiterals) {
                     return factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
@@ -771,8 +785,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions) {
                 tp,
                 tp.modifiers,
                 tp.name,
-                serializeExistingTypeAnnotation(tp.constraint, context, tp.parent),
-                serializeExistingTypeAnnotation(tp.default, context, tp.parent),
+                serializeExistingTypeAnnotation(tp.constraint, context, tp.parent as FunctionLikeDeclaration),
+                serializeExistingTypeAnnotation(tp.default, context, tp.parent as FunctionLikeDeclaration),
             )
         );
     }

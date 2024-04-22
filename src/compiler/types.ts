@@ -10257,7 +10257,9 @@ export type HasInferredType =
     | BindingElement
     | PropertyDeclaration
     | PropertySignature
-    | ExportAssignment;
+    | ExportAssignment
+    | JSDocPropertyTag
+    | JSDocParameterTag;
 
 /** @internal */
 export interface SyntacticTypeNodeBuilderContext {
@@ -10287,7 +10289,7 @@ export interface SyntacticTypeNodeBuilderContext {
     markNodeReuse<T extends Node>(range: T, location: Node | undefined): T;
     trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T): { introducesError: boolean, node: Node };
     getModuleSpecifierOverride(parent: ImportTypeNode, lit: StringLiteral): string | undefined;
-    canReuseTypeNode(existing: TypeNode, host: Declaration | undefined, addUndefined?: boolean): boolean;
+    canReuseTypeNode(existing: TypeNode, enclosingDeclaration?: Node): boolean;
 }
 
 /** @internal */

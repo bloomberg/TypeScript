@@ -5884,33 +5884,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return setTextRangeWorker(setOriginalNode(range, location), location);
         }
 
-        function tryReuseExistingTypeNode(
-            context: NodeBuilderContext,
-            typeNode: TypeNode,
-            type: Type,
-            host?: Node,
-            addUndefined?: boolean,
-        ) {
-            const originalType = type;
-            if (addUndefined) {
-                type = getOptionalType(type);
-            }
-            const clone = tryReuseExistingNonParameterTypeNode(context, typeNode, type, host);
-            if (clone) {
-                if (addUndefined && !someType(getTypeFromTypeNode(typeNode), t => !!(t.flags & TypeFlags.Undefined))) {
-                    return factory.createUnionTypeNode([clone, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
-                }
-                return clone;
-            }
-            if (addUndefined && originalType !== type) {
-                const cloneMissingUndefined = tryReuseExistingNonParameterTypeNode(context, typeNode, originalType, host);
-                if (cloneMissingUndefined) {
-                    return factory.createUnionTypeNode([cloneMissingUndefined, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
-                }
-            }
-            return undefined;
-        }
-
         function tryReuseExistingNonParameterTypeNode(
             context: NodeBuilderContext,
             existing: TypeNode,
@@ -5981,9 +5954,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 serializeExistingTypeNode(typeNode, enclosingDeclaration, addUndefined) {
                     return withEnclosingDeclaration(this, enclosingDeclaration, () => {
                         const type = getTypeFromTypeNode(typeNode);
-                        if(addUndefined &&
-                            this.canReuseTypeNode(typeNode, undefined) &&
-                            !someType(type, t => !!(t.flags & TypeFlags.Undefined))) {
+                        
+                        if(
+                            addUndefined &&
+                            !someType(type, t => !!(t.flags & TypeFlags.Undefined)) &&
+                            this.canReuseTypeNode(typeNode)
+                        ) {
                             const clone = syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(this, typeNode);
                             if(clone) {
                                 return factory.createUnionTypeNode([clone, factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)]);
@@ -6012,26 +5988,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     return withEnclosingDeclaration(this, enclosingDeclaration, () => {
                         // Get type of the symbol if this is the valid symbol otherwise get type at location
                         const symbol = getSymbolOfDeclaration(declaration);
-                        let type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
-                            ? getTypeOfSymbol(symbol)
-                            : errorType;
-                        if (!isReadonlySymbol(symbol)) {
-                            type = getWidenedType(type);
-                        }
-                        if (isParameter(declaration) && requiresAddingImplicitUndefined(declaration)) {
-                            type = getOptionalType(type);
-                        }
-                        const oldFlags = this.flags;
-                        if (
-                            type.flags & TypeFlags.UniqueESSymbol &&
-                            type.symbol === symbol && (!this.enclosingDeclaration || some(symbol.declarations, d => getSourceFileOfNode(d) === this.enclosingFile))
-                        ) {
-                            this.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
-                        }
-
-                        const result = typeToTypeNodeHelper(type, this);
-                        this.flags = oldFlags;
-                        return result;
+                        return serializeInferredTypeForDeclaration(symbol, this);
                     })
                 },
                 serializeNameOfParameter(parameter) {
@@ -6095,13 +6052,19 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         }
                     }
                 }, 
-                canReuseTypeNode(existing: TypeNode, host: Declaration | undefined, addUndefined: boolean) {
+                canReuseTypeNode(existing: TypeNode, enclosingDeclaration: Node) {
+                    if(!isTypeReferenceNode(existing) &&
+                        !(isTypeOperatorNode(existing) && 
+                            existing.operator === SyntaxKind.UniqueKeyword &&
+                            existing.type.kind === SyntaxKind.SymbolKeyword)) return true;
+                    
                     const type = getTypeFromTypeNode(existing);
-                    // const annotationType = getTypeOfSymbol(host)
-                    if (existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, type)) {
-                        return true;
+                    if (!existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, type)) {
+                        return false;
                     }
-                    return false;
+                    const effectiveEnclosingContext = enclosingDeclaration ?? 
+                        (context.enclosingDeclaration && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration));
+                    return effectiveEnclosingContext === undefined || !!findAncestor(existing, n => n === effectiveEnclosingContext);
                 }
             };
             context.tracker = new SymbolTrackerImpl(context, tracker, moduleResolverHost);
@@ -8136,6 +8099,28 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return enclosingDeclaration;
         }
 
+        function serializeInferredTypeForDeclaration(symbol: Symbol, context: NodeBuilderContext) {
+            let type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
+                ? getTypeOfSymbol(symbol)
+                : errorType;
+
+                if (symbol.valueDeclaration 
+                && (isParameter(symbol.valueDeclaration) || isJSDocParameterTag(symbol.valueDeclaration)) 
+                && requiresAddingImplicitUndefined(symbol.valueDeclaration)) {
+                type = getOptionalType(type);
+            }
+            const oldFlags = context.flags;
+            if (
+                type.flags & TypeFlags.UniqueESSymbol &&
+                type.symbol === symbol && (!context.enclosingDeclaration || some(symbol.declarations, d => getSourceFileOfNode(d) === context.enclosingFile))
+            ) {
+                context.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
+            }
+
+            const result = typeToTypeNodeHelper(type, context);
+            context.flags = oldFlags;
+            return result;
+        }
         /**
          * Unlike `typeToTypeNodeHelper`, this handles setting up the `AllowUniqueESSymbolType` flag
          * so a `unique symbol` is returned when appropriate for the input symbol, rather than `typeof sym`
@@ -8144,34 +8129,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
          * @param type - The type to write; an existing annotation must match this type if it's used, otherwise this is the type serialized as a new type node
          * @param symbol - The symbol is used both to find an existing annotation if declaration is not provided, and to determine if `unique symbol` should be printed
          */
-        function serializeTypeForDeclaration(context: NodeBuilderContext, declaration: Declaration | undefined, type: Type, symbol: Symbol) {
-            const addUndefined = declaration && (isParameter(declaration) || isJSDocParameterTag(declaration)) && requiresAddingImplicitUndefined(declaration);
-            const enclosingDeclaration = context.enclosingDeclaration;
-            if (!isErrorType(type) && enclosingDeclaration) {
-                const declWithExistingAnnotation = declaration && getNonlocalEffectiveTypeAnnotationNode(declaration)
-                    ? declaration
-                    : getDeclarationWithTypeAnnotation(symbol, getEnclosingDeclarationIgnoringFakeScope(enclosingDeclaration));
-                if (declWithExistingAnnotation && !isFunctionLikeDeclaration(declWithExistingAnnotation) && !isGetAccessorDeclaration(declWithExistingAnnotation)) {
-                    // try to reuse the existing annotation
-                    const existing = getNonlocalEffectiveTypeAnnotationNode(declWithExistingAnnotation)!;
-                    const result = tryReuseExistingTypeNode(context, existing, type, declWithExistingAnnotation, addUndefined);
-                    if (result) {
-                        return result;
-                    }
-                }
-            }
-            // TODO: Titian: Can be removed probably
-            const oldFlags = context.flags;
-            if (
-                type.flags & TypeFlags.UniqueESSymbol &&
-                type.symbol === symbol && (!context.enclosingDeclaration || some(symbol.declarations, d => getSourceFileOfNode(d) === getSourceFileOfNode(context.enclosingDeclaration!)))
-            ) {
-                context.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
-            }
-
+        function serializeTypeForDeclaration(context: NodeBuilderContext, declaration: Declaration | undefined, _type: Type, symbol: Symbol) {
             let result;
-            const decl = symbol.valueDeclaration ?? symbol.declarations?.[0];
-            if (decl && !!findAncestor(decl, n => n === context.enclosingDeclaration)) {
+            const decl = declaration ?? symbol.valueDeclaration ?? symbol.declarations?.[0];
+            if (decl) {
                 if(isAccessor(decl)) {
                     result = syntacticNodeBuilder.serializeTypeOfAccessor(decl, context);
                 }
@@ -8179,13 +8140,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, context);
                 }
             }
-
-            if (!result) {
-                result = typeToTypeNodeHelper(type, context);
+            if(!result) {
+                result = serializeInferredTypeForDeclaration(symbol, context);
             }
-            context.flags = oldFlags;
-
-            return result;
+            return result ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
         }
 
         function typeNodeIsEquivalentToType(typeNode: TypeNode, annotatedDeclaration: Node | undefined, type: Type, typeFromTypeNode = getTypeFromTypeNode(typeNode)) {
