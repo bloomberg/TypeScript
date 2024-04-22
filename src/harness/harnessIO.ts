@@ -1134,7 +1134,7 @@ export namespace Compiler {
         expectNull?: boolean,
     ) {
         if (expectNull) {
-            // eslint-disable-next-line no-null/no-null
+            // eslint-disable-next-line no-restricted-syntax
             return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts.diff`), /*actual*/ null);
         }
         const Diff = require("diff");
@@ -1198,7 +1198,7 @@ export namespace Compiler {
         expectNull?: boolean,
     ) {
         if (expectNull) {
-            // eslint-disable-next-line no-null/no-null
+            // eslint-disable-next-line no-restricted-syntax
             return Baseline.runBaseline(type + "/" + baselinePath.replace(/\.tsx?/, `.d.ts`), /*actual*/ null);
         }
 

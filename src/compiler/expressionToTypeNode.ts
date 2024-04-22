@@ -9,7 +9,6 @@ import {
     CompilerOptions,
     ConditionalTypeNode,
     Debug,
-    Declaration,
     ElementAccessExpression,
     EmitFlags,
     Expression,
@@ -68,6 +67,8 @@ import {
     isTupleTypeNode,
     isTypeLiteralNode,
     isTypeNode,
+    isTypeOfExpression,
+    isTypeOperatorNode,
     isTypeParameterDeclaration,
     isTypePredicateNode,
     isTypeQueryNode,
@@ -117,6 +118,7 @@ import {
     visitNodes,
 } from "./_namespaces/ts";
 
+/** @internal */
 export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolver: SyntacticTypeNodeBuilderResolver) {
     const strictNullChecks = getStrictOptionValue(options, "strictNullChecks");
 
@@ -135,6 +137,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         if (hadError) {
             return undefined;
         }
+        context.approximateLength += existing.end - existing.pos;
         return transformed;
 
         function isNewScopeNode(node: Node): node is IntroducesNewScopeNode {
@@ -251,11 +254,19 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     );
                 }
             }
-            if (isTypeReferenceNode(node) && !resolver.canReuseTypeReference(context, node)) {
+            if (isTypeReferenceNode(node)) {
+                const { introducesError, node: newName } = resolver.trackExistingEntityName(context, node.typeName);
+                if(!introducesError) {
+                    return factory.updateTypeReferenceNode(
+                        node,
+                        newName,
+                        visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode)
+                    )
+                }
                 return resolver.serializeExistingTypeNode(context, node);
             }
             if (isLiteralImportTypeNode(node)) {
-                if (resolver.canReuseImportTypeNode(context, node)) {
+                if (!resolver.canReuseImportTypeNode(context, node)) {
                     return resolver.serializeExistingTypeNode(context, node);
                 }
                 return factory.updateImportTypeNode(
@@ -283,15 +294,25 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 }
                 return visited;
             }
-
+            if(isTypeQueryNode(node)) {
+                const { introducesError, node: exprName } = resolver.trackExistingEntityName(context, node.exprName);
+                if(introducesError) {
+                    return resolver.serializeExistingTypeNode(context, node);
+                }
+                return factory.updateTypeQueryNode(
+                    node,
+                    exprName,
+                    visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
+                )
+            }
             if (isEntityName(node) || isEntityNameExpression(node)) {
                 if (isDeclarationName(node)) {
                     return node;
                 }
-                const { introducesError, node: result } = resolver.trackExistingEntityName(context, node);
-                hadError = hadError || introducesError;
-                // We should not go to child nodes of the entity name, they will not be accessible
-                return result;
+                Debug.fail("???");
+                // const { introducesError, node: result } = resolver.trackExistingEntityName(context, node);
+                // // We should not go to child nodes of the entity name, they will not be accessible
+                // return result;
             }
 
             if (isTupleTypeNode(node) || isTypeLiteralNode(node) || isMappedTypeNode(node)) {
@@ -323,6 +344,12 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 );
             }
 
+            if(isTypeOperatorNode(node) && node.operator === SyntaxKind.UniqueKeyword && node.type.kind === SyntaxKind.SymbolKeyword) {
+                if(!resolver.canReuseTypeNode(context, node)) {
+                    return serializeExistingTypeAnnotation(node, context);
+                }
+            }
+
             return visitEachChild(node, visitExistingNodeTreeSymbols, /*context*/ undefined);
 
             function getEffectiveDotDotDotForParameter(p: ParameterDeclaration) {
@@ -346,7 +373,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
     }
 
-    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Declaration, addUndefined?: boolean) {
+    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean) {
         if(!typeNode) return;
         let result;
         if(
@@ -391,7 +418,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             case SyntaxKind.BinaryExpression:
                 return typeFromExpandoProperty(node, context);
             case SyntaxKind.PropertyAssignment:
-                return typeFromExpression(node.initializer, context) ?? inferTypeOfDeclaration(node, context, node.initializer);
+                return typeFromExpression(node.initializer, context) ?? inferTypeOfDeclaration(node, context);
             default:
                 Debug.assertNever(node, `Node needs to be an inferrable node, found ${Debug.formatSyntaxKind((node as Node).kind)}`);
         }
@@ -441,14 +468,10 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const accessorDeclarations = resolver.getAllAccessorDeclarations(node);
         const accessorType = getTypeAnnotationFromAllAccessorDeclarations(node, accessorDeclarations);
         if (accessorType && !isTypePredicateNode(accessorType)) {
-            return serializeExistingTypeAnnotation(accessorType, context, accessorType.parent as AccessorDeclaration);
+            return withNewScope(context, node, c => serializeExistingTypeAnnotation(accessorType, c));
         }
         if (accessorDeclarations.getAccessor) {
-            const oldEnclosingDecl = context.enclosingDeclaration;
-            context.enclosingDeclaration = accessorDeclarations.getAccessor;
-            const result = createReturnFromSignature(accessorDeclarations.getAccessor, context);
-            context.enclosingDeclaration = oldEnclosingDecl;
-            return result;
+            return withNewScope(context, accessorDeclarations.getAccessor, c => createReturnFromSignature(accessorDeclarations.getAccessor!, c));
         }
     }
     function typeFromVariable(node: VariableDeclaration, context: SyntacticTypeNodeBuilderContext) {
@@ -473,7 +496,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         let resultType;
         const requiresAddingImplicitUndefined = resolver.requiresAddingImplicitUndefined(node);
         if (declaredType) {
-            return serializeExistingTypeAnnotation(declaredType, context, /*enclosingDeclaration*/ undefined, requiresAddingImplicitUndefined);
+            return serializeExistingTypeAnnotation(declaredType, context, requiresAddingImplicitUndefined);
         }
         if (node.initializer && isIdentifier(node.name)) {
             resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, requiresAddingImplicitUndefined);
@@ -506,7 +529,6 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
     function inferTypeOfDeclaration(
         node: HasInferredType,
         context: SyntacticTypeNodeBuilderContext,
-        enclosingDeclaration?: Node,
     ) {
         context.tracker.reportInferenceFallback(node);
         return resolver.serializeTypeOfDeclaration(context, node);
@@ -520,7 +542,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         return resolver.serializeTypeOfExpression(context, node) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
     }
 
-    function inferReturnTypeOfSignatureSignature(node: SignatureDeclaration | JSDocSignature, context: SyntacticTypeNodeBuilderContext, enclosingDeclaration?: Node) {
+    function inferReturnTypeOfSignatureSignature(node: SignatureDeclaration | JSDocSignature, context: SyntacticTypeNodeBuilderContext) {
         context.tracker.reportInferenceFallback(node);
         return resolver.serializeReturnTypeForSignature(context, node) ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
     }
@@ -536,11 +558,17 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
     }
 
+    function withNewScope<R>(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode, fn: (context: SyntacticTypeNodeBuilderContext) =>R) {
+        const scope = resolver.enterNewScope(context, node);
+        const result = fn(scope.context);
+        scope.cleanup?.();
+        return result;
+    }
     function typeFromTypeAssertion(expression: Expression, type: TypeNode, context: SyntacticTypeNodeBuilderContext, requiresAddingUndefined: boolean) {
         if (isConstTypeReference(type)) {
             return typeFromExpression(expression, context, /*isConstContext*/ true, requiresAddingUndefined);
         }
-        return serializeExistingTypeAnnotation(type, context, /*enclosingDeclaration*/ undefined, requiresAddingUndefined);
+        return serializeExistingTypeAnnotation(type, context, requiresAddingUndefined);
     }
     function typeFromExpression(node: Expression, context: SyntacticTypeNodeBuilderContext, isConstContext = false, requiresAddingUndefined = false, preserveLiterals = false): TypeNode | undefined {
         switch (node.kind) {
@@ -563,7 +591,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 }
             case SyntaxKind.ArrowFunction:
             case SyntaxKind.FunctionExpression:
-                return typeFromFunctionLikeExpression(node as ArrowFunction | FunctionExpression, context, requiresAddingUndefined);
+                Debug.type<ArrowFunction | FunctionExpression>(node);
+                return withNewScope(context, node, c => typeFromFunctionLikeExpression(node, c, requiresAddingUndefined));
             case SyntaxKind.TypeAssertionExpression:
             case SyntaxKind.AsExpression:
                 const asExpression = node as AsExpression | TypeAssertion;
@@ -618,7 +647,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
     }
     function typeFromFunctionLikeExpression(fnNode: FunctionExpression | ArrowFunction, context: SyntacticTypeNodeBuilderContext, requiresAddingUndefined: boolean) {
         context.enclosingDeclaration = fnNode;
-        const returnType = serializeExistingTypeAnnotation(fnNode.type, context, fnNode) ??
+        const returnType = serializeExistingTypeAnnotation(fnNode.type, context) ??
             createReturnFromSignature(fnNode, context);
         const fnTypeNode = factory.createFunctionTypeNode(
             reuseTypeParameters(fnNode.typeParameters, context),
@@ -732,7 +761,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             let newProp;
             switch (prop.kind) {
                 case SyntaxKind.MethodDeclaration:
-                    newProp = typeFromObjectLiteralMethod(prop, name, context, isConstContext);
+                    newProp = withNewScope(context, prop, (c) => typeFromObjectLiteralMethod(prop, name, c, isConstContext));
                     break;
                 case SyntaxKind.PropertyAssignment:
                     newProp = typeFromObjectLiteralPropertyAssignment(prop, name, context, isConstContext);
@@ -756,7 +785,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const modifiers = isConstContext ?
             [factory.createModifier(SyntaxKind.ReadonlyKeyword)] :
             [];
-        const typeNode = typeFromExpression(prop.initializer, context, isConstContext) ?? inferTypeOfDeclaration(prop, context, prop.initializer);
+        const typeNode = typeFromExpression(prop.initializer, context, isConstContext) ?? inferTypeOfDeclaration(prop, context);
         return factory.createPropertySignature(
             modifiers,
             name,
@@ -766,8 +795,6 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
     }
 
     function ensureParameter(p: ParameterDeclaration, context: SyntacticTypeNodeBuilderContext) {
-        // TODO: We will probably need to add a fake scopes for the signature (to hold the type parameters and the parameter)
-        // For now this is good enough since the new serialization is used for Nodes in the same context.
         return factory.updateParameterDeclaration(
             p,
             [],
@@ -779,24 +806,23 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         );
     }
     function reuseTypeParameters(typeParameters: NodeArray<TypeParameterDeclaration> | undefined, context: SyntacticTypeNodeBuilderContext) {
-        // TODO: We will probably need to add a fake scopes for the signature (to hold the type parameters and the parameter)
-        // For now this is good enough since the new serialization is used for Nodes in the same context.
         return typeParameters?.map(tp =>
             factory.updateTypeParameterDeclaration(
                 tp,
                 tp.modifiers,
                 tp.name,
-                serializeExistingTypeAnnotation(tp.constraint, context, tp.parent as FunctionLikeDeclaration),
-                serializeExistingTypeAnnotation(tp.default, context, tp.parent as FunctionLikeDeclaration),
+                serializeExistingTypeAnnotation(tp.constraint, context),
+                serializeExistingTypeAnnotation(tp.default, context),
             )
         );
     }
+    
     function typeFromObjectLiteralMethod(method: MethodDeclaration, name: PropertyName, context: SyntacticTypeNodeBuilderContext, isConstContext: boolean) {
         const returnType = createReturnFromSignature(method, context);
         const typeParameters = reuseTypeParameters(method.typeParameters, context);
         const parameters = method.parameters.map(p => ensureParameter(p, context));
         if (isConstContext) {
-            return factory.createPropertySignature(
+            factory.createPropertySignature(
                 [factory.createModifier(SyntaxKind.ReadonlyKeyword)],
                 name,
                 method.questionToken,
@@ -827,31 +853,36 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const setAccessorType = allAccessors.setAccessor && getTypeAnnotationFromAccessor(allAccessors.setAccessor);
         // We have types for both accessors, we can't know if they are the same type so we keep both accessors
         if (getAccessorType !== undefined && setAccessorType !== undefined) {
-            const parameters = accessor.parameters.map(p => ensureParameter(p, context));
+            return withNewScope(context, accessor, (c) => {
+                const parameters = accessor.parameters.map(p => ensureParameter(p, c));
 
-            if (isGetAccessor(accessor)) {
-                return factory.updateGetAccessorDeclaration(
-                    accessor,
-                    [],
-                    name,
-                    parameters,
-                    serializeExistingTypeAnnotation(getAccessorType, context),
-                    /*body*/ undefined,
-                );
-            }
-            else {
-                return factory.updateSetAccessorDeclaration(
-                    accessor,
-                    [],
-                    name,
-                    parameters,
-                    /*body*/ undefined,
-                );
-            }
+                if (isGetAccessor(accessor)) {
+                    return factory.updateGetAccessorDeclaration(
+                        accessor,
+                        [],
+                        name,
+                        parameters,
+                        serializeExistingTypeAnnotation(getAccessorType, c),
+                        /*body*/ undefined,
+                    );
+                }
+                else {
+                    return factory.updateSetAccessorDeclaration(
+                        accessor,
+                        [],
+                        name,
+                        parameters,
+                        /*body*/ undefined,
+                    );
+                }
+            });
         }
         else if (allAccessors.firstAccessor === accessor) {
-            const foundType = getAccessorType ?? setAccessorType;
-            const propertyType = foundType ? serializeExistingTypeAnnotation(foundType, context) : inferAccessorType(accessor, allAccessors, context);
+            const foundType = 
+                getAccessorType ? withNewScope(context, allAccessors.getAccessor!, c => serializeExistingTypeAnnotation(getAccessorType, c)):
+                setAccessorType ? withNewScope(context, allAccessors.setAccessor!, c => serializeExistingTypeAnnotation(setAccessorType, c)):
+                undefined;
+            const propertyType = foundType ?? inferAccessorType(accessor, allAccessors, context);
 
             const propertySignature = factory.createPropertySignature(
                 allAccessors.setAccessor === undefined ? [factory.createModifier(SyntaxKind.ReadonlyKeyword)] : [],
@@ -922,12 +953,12 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         let returnType;
         const returnTypeNode = getEffectiveReturnTypeNode(fn);
         if (returnTypeNode) {
-            returnType = serializeExistingTypeAnnotation(returnTypeNode, context, fn);
+            returnType = serializeExistingTypeAnnotation(returnTypeNode, context);
         }
         if (!returnType && isValueSignatureDeclaration(fn)) {
             returnType = typeFromSingleReturnExpression(fn, context);
         }
-        return returnType ?? inferReturnTypeOfSignatureSignature(fn, context, fn);
+        return returnType ?? inferReturnTypeOfSignatureSignature(fn, context);
     }
 
     function typeFromSingleReturnExpression(declaration: FunctionLikeDeclaration | undefined, context: SyntacticTypeNodeBuilderContext): TypeNode | undefined {

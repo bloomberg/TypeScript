@@ -5420,7 +5420,6 @@ export const enum NodeBuilderFlags {
     AllowUniqueESSymbolType                 = 1 << 20,
     AllowEmptyIndexInfoType                 = 1 << 21,
     /** @internal */ WriteComputedProps      = 1 << 30, // { [E.A]: 1 }
-    /** @internal */ NoSyntacticPrinter     = 1 << 31,
     // Errors (cont.)
     AllowNodeModulesRelativePaths           = 1 << 26,
     /** @internal */ DoNotIncludeSymbolChain = 1 << 27,    // Skip looking up and printing an accessible symbol chain
@@ -10287,10 +10286,12 @@ export type HasInferredType =
     | JSDocPropertyTag
     | JSDocParameterTag;
 
+/** @internal */
 export interface SyntacticTypeNodeBuilderContext {
     flags: NodeBuilderFlags;
     tracker: Required<Pick<SymbolTracker, "reportInferenceFallback">>;
     enclosingDeclaration: Node | undefined;
+    approximateLength: number;
 }
 
 /** @internal */
@@ -10316,7 +10317,7 @@ export interface SyntacticTypeNodeBuilderResolver {
         cleanup?: () => void
     };
     markNodeReuse<T extends Node>(context: SyntacticTypeNodeBuilderContext, range: T, location: Node | undefined): T;
-    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(context: SyntacticTypeNodeBuilderContext, node: T): { introducesError: boolean, node: Node };
+    trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(context: SyntacticTypeNodeBuilderContext, node: T): { introducesError: boolean, node: T };
     getModuleSpecifierOverride(context: SyntacticTypeNodeBuilderContext, parent: ImportTypeNode, lit: StringLiteral): string | undefined;
     canReuseTypeNode(context: SyntacticTypeNodeBuilderContext, existing: TypeNode): boolean;}
 

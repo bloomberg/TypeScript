@@ -5930,7 +5930,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             enterNewScope(oldContext: NodeBuilderContext, node) {
                 const context = cloneNodeBuilderContext(oldContext);
                 const cleanup = enterNewScope(context, node, getParametersInScope(node), getTypeParametersInScope(node));
-                return { context, cleanup }
+                return { 
+                    context, 
+                    cleanup: () => {
+                        oldContext.approximateLength = context.approximateLength;
+                        oldContext.truncating = context.truncating;
+                        cleanup?.();
+                    } 
+                }
             },
             markNodeReuse<T extends Node>(context: NodeBuilderContext, range: T, location: Node | undefined) {
                 return setTextRange(context, range, location);
@@ -5950,17 +5957,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
             }, 
             canReuseTypeNode(context: NodeBuilderContext, existing: TypeNode) {
-                if(!isTypeReferenceNode(existing) &&
-                    !(isTypeOperatorNode(existing) && 
-                        existing.operator === SyntaxKind.UniqueKeyword &&
-                        existing.type.kind === SyntaxKind.SymbolKeyword)) return true;
-                
-                const type = getTypeFromTypeNode(existing);
-                if (!existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, type)) {
-                    return false;
+                if(
+                    isTypeOperatorNode(existing) && 
+                    existing.operator === SyntaxKind.UniqueKeyword &&
+                    existing.type.kind === SyntaxKind.SymbolKeyword
+                ) {
+                    const effectiveEnclosingContext = context.enclosingDeclaration && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
+                    return !!findAncestor(existing, n => n === effectiveEnclosingContext);
                 }
-                const effectiveEnclosingContext = context.enclosingDeclaration && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
-                return effectiveEnclosingContext === undefined || !!findAncestor(existing, n => n === effectiveEnclosingContext);
+                return true;
             }
         }
         return {
@@ -6466,6 +6471,9 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             function createAnonymousTypeNode(type: ObjectType): TypeNode {
                 const typeId = type.id;
                 const symbol = type.symbol;
+                if(checkTruncationLength(context)) {
+                    return createElidedInformationPlaceholder(context);
+                }
                 if (symbol) {
                     const isInstantiationExpressionType = !!(getObjectFlags(type) & ObjectFlags.InstantiationExpressionType);
                     if (isInstantiationExpressionType) {
@@ -7233,16 +7241,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             // accessible to the current enclosing declaration, or gain access to symbols not accessible to the current
             // enclosing declaration. To keep this chain accurate, insert a fake scope into the chain which makes the
             // function's parameters visible.
-            //
-            // If the declaration is in a JS file, then we don't need to do this at all, as there are no annotations besides
-            // JSDoc, which are always outside the function declaration, so are not in the parameter scope.
             let cleanup: (() => void) | undefined;
             if (
                 context.enclosingDeclaration
                 && declaration
                 && declaration !== context.enclosingDeclaration
-                && !isInJSFile(declaration)
-                && (some(expandedParams) || some(typeParameters))
             ) {
                 // As a performance optimization, reuse the same fake scope within this chain.
                 // This is especially needed when we are working on an excessively deep type;
@@ -7333,7 +7336,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                             locals.set(name, symbol);
                         }
                     });
-                    if (!newLocals) return;
 
                     const oldCleanup = cleanup;
                     function undo() {
@@ -8091,7 +8093,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 ? getTypeOfSymbol(symbol)
                 : errorType;
 
-                if (symbol.valueDeclaration 
+            if (symbol.valueDeclaration 
                 && (isParameter(symbol.valueDeclaration) || isJSDocParameterTag(symbol.valueDeclaration)) 
                 && requiresAddingImplicitUndefined(symbol.valueDeclaration)) {
                 type = getOptionalType(type);
@@ -8150,11 +8152,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             let returnTypeNode: TypeNode | undefined;
             const returnType = getReturnTypeOfSignature(signature);
             if (returnType && !(suppressAny && isTypeAny(returnType))) {
-                if (signature.declaration && !(context.flags & NodeBuilderFlags.NoSyntacticPrinter)) {
-                    syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+                if (signature.declaration && !signature.target) {
+                    returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+                } else {
+                    returnTypeNode = serializeReturnTypeForSignatureWorker(context, signature);
                 }
-                context.flags |= NodeBuilderFlags.NoSyntacticPrinter;
-                returnTypeNode = serializeReturnTypeForSignatureWorker(context, signature);
             }
             else if (!suppressAny) {
                 returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
@@ -8203,6 +8205,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return { introducesError, node: attachSymbolToLeftmostIdentifier(node) as T };
             }
             sym = resolveEntityName(leftmost, meaning, /*ignoreErrors*/ true, /*dontResolveAlias*/ true);
+            
+            if(context.enclosingDeclaration && 
+                (getNodeLinks(context.enclosingDeclaration).fakeScopeForSignatureDeclaration || !findAncestor(node, n => n == context.enclosingDeclaration))) {
+                const symAtLocation = resolveEntityName(leftmost, meaning, /*ignoreErrors*/ true, /*dontResolveAlias*/ true, context.enclosingDeclaration);
+                if(symAtLocation != sym) {
+                    introducesError = true;
+                    return { introducesError, node}
+                }
+            }
+
             if (sym) {
                 // If a parameter is resolvable in the current context it is also visible, so no need to go to symbol accesibility
                 if (
