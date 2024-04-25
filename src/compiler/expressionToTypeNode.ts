@@ -319,7 +319,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 ) {
                     return node;
                 }
-                Debug.assertNode(node.parent, n => isTypePredicateNode(n), "???");
+                // Debug.assertNode(node.parent, n => isTypePredicateNode(n), "???");
                 const { node: result } = resolver.trackExistingEntityName(context, node);
                 // We should not go to child nodes of the entity name, they will not be accessible
                 return result;

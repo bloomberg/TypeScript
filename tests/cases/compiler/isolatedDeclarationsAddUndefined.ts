@@ -12,8 +12,8 @@ export class Bar {
 }
 
 // @filename: file2.ts
-
-export function foo(p = (ip = 10, v: number): void => {}): void{
+type N = 1;
+export function foo(p = (ip = 1 as N, v: number): void => {}): void{
 }
 export class Bar2 {
     readonly r = 1;
