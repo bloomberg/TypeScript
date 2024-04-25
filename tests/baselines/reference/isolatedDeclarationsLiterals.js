@@ -146,6 +146,8 @@ export declare const constObject: {
     readonly oneStrSingleQuote: '1';
     /** Value Of `1` */
     readonly oneStrTemplate: `1`;
+    /** A method */
+    readonly method: () => void;
 };
 export declare const one = 1;
 export declare const oneOctal = 0o1;

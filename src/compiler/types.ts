@@ -10310,8 +10310,6 @@ export interface SyntacticTypeNodeBuilderResolver {
     serializeTypeOfDeclaration(context: SyntacticTypeNodeBuilderContext, node: HasInferredType): TypeNode | undefined;
     serializeNameOfParameter(context: SyntacticTypeNodeBuilderContext, parameter: ParameterDeclaration): BindingName | string;
     getJsDocPropertyOverride(context: SyntacticTypeNodeBuilderContext, jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty: JSDocPropertyLikeTag): TypeNode | undefined;
-    canReuseTypeReference(context: SyntacticTypeNodeBuilderContext, node: TypeReferenceNode): boolean;
-    canReuseImportTypeNode(context: SyntacticTypeNodeBuilderContext, node: LiteralImportTypeNode): boolean;
     enterNewScope(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode): {
         context: SyntacticTypeNodeBuilderContext;
         cleanup?: () => void;

@@ -5878,11 +5878,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             },
             serializeReturnTypeForSignature(context: NodeBuilderContext, signatureDeclaration) {
                 const signature = getSignatureFromDeclaration(signatureDeclaration);
-                const typePredicate = getTypePredicateOfSignature(signature);
-                if (typePredicate) {
-                    return typePredicateToTypePredicateNodeHelper(typePredicate, context);
-                }
-                return typeToTypeNodeHelper(getReturnTypeOfSignature(signature), context);
+                return serializeInferredReturnTypeForSignature(context, signature);
             },
             serializeTypeOfExpression(context: NodeBuilderContext, expr) {
                 const type = getWidenedType(getRegularTypeOfExpression(expr));
@@ -5904,27 +5900,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 const typeViaParent = getTypeOfPropertyOfType(getTypeFromTypeNode(jsDocTypeLiteral), name.escapedText);
                 const overrideTypeNode = typeViaParent && jsDocProperty.typeExpression && getTypeFromTypeNode(jsDocProperty.typeExpression.type) !== typeViaParent ? typeToTypeNodeHelper(typeViaParent, context) : undefined;
                 return overrideTypeNode;
-            },
-            canReuseTypeReference(context: NodeBuilderContext, node) {
-                return !isInJSDoc(node) ||
-                    (
-                        existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(node, getTypeFromTypeNode(node)) &&
-                        !getIntendedTypeFromJSDocTypeReference(node) &&
-                        unknownSymbol !== resolveTypeReferenceName(node, SymbolFlags.Type, /*ignoreErrors*/ true)
-                    );
-            },
-            canReuseImportTypeNode(context: NodeBuilderContext, node) {
-                const nodeSymbol = getNodeLinks(node).resolvedSymbol;
-                return (
-                    isInJSDoc(node) &&
-                    !!nodeSymbol &&
-                    (
-                        // The import type resolved using jsdoc fallback logic
-                        (!node.isTypeOf && !(nodeSymbol.flags & SymbolFlags.Type)) ||
-                        // The import type had type arguments autofilled by js fallback logic
-                        !(length(node.typeArguments) >= getMinTypeArgumentCount(getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(nodeSymbol)))
-                    )
-                );
             },
             enterNewScope(oldContext: NodeBuilderContext, node) {
                 const context = cloneNodeBuilderContext(oldContext);
@@ -5956,6 +5931,26 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 }
             },
             canReuseTypeNode(context: NodeBuilderContext, existing: TypeNode) {
+                if(isInJSFile(existing)) {
+                    if(isTypeReferenceNode(existing)) {
+                        return existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, getTypeFromTypeNode(existing))
+                            && !getIntendedTypeFromJSDocTypeReference(existing) // We should probably allow the reuse of JSDoc reference types such as String Number etc
+                            && resolveTypeReferenceName(existing, SymbolFlags.Type, /*ignoreErrors*/ true) !== unknownSymbol; // JSDoc type annotations can reference values (meaning typeof value) as well as types. We only reuse type nodes
+                    }
+                    if(isLiteralImportTypeNode(existing)) {
+                        // This was existing code. Should we call getTypeFromImportTypeNode to make sure teh symbol is actually there ?
+                        const nodeSymbol = getNodeLinks(existing).resolvedSymbol;
+                        return (
+                            !nodeSymbol ||
+                            !(
+                                // The import type resolved using jsdoc fallback logic
+                                (!existing.isTypeOf && !(nodeSymbol.flags & SymbolFlags.Type)) ||
+                                // The import type had type arguments autofilled by js fallback logic
+                                !(length(existing.typeArguments) >= getMinTypeArgumentCount(getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(nodeSymbol)))
+                            )
+                        );
+                    }
+                }
                 if (
                     isTypeOperatorNode(existing) &&
                     existing.operator === SyntaxKind.UniqueKeyword &&
@@ -6049,6 +6044,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 flags: flags || NodeBuilderFlags.None,
                 tracker: undefined!,
                 encounteredError: false,
+                suppressReportInferenceFallback: false,
                 reportedDiagnostic: false,
                 visitedTypes: undefined,
                 symbolDepth: undefined,
@@ -8104,9 +8100,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             ) {
                 context.flags |= NodeBuilderFlags.AllowUniqueESSymbolType;
             }
+            context.suppressReportInferenceFallback = true;
 
             const result = typeToTypeNodeHelper(type, context);
             context.flags = oldFlags;
+            context.suppressReportInferenceFallback = false;
             return result;
         }
         /**
@@ -8152,11 +8150,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             const returnType = getReturnTypeOfSignature(signature);
             if (returnType && !(suppressAny && isTypeAny(returnType))) {
                 if (signature.declaration && !signature.target) {
-                    returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+                    const declaration = signature.declaration;
+                    const declarationSignature = getSignatureFromDeclaration(signature.declaration)
+                    if(declarationSignature === signature) {
+                        const enclosingDeclarationIgnoringFakeScope = context.enclosingDeclaration && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
+                        if (declaration && !!findAncestor(declaration, n => n === enclosingDeclarationIgnoringFakeScope)) {
+                            returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+                        }
+                    }
                 }
-                else {
-                    returnTypeNode = serializeReturnTypeForSignatureWorker(context, signature);
-                }
+                returnTypeNode ??= serializeInferredReturnTypeForSignature(context, signature);
             }
             else if (!suppressAny) {
                 returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
@@ -8164,26 +8167,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             context.flags = flags;
             return returnTypeNode;
         }
-
-        function serializeReturnTypeForSignatureWorker(context: NodeBuilderContext, signature: Signature) {
+        function serializeInferredReturnTypeForSignature(context: NodeBuilderContext, signature: Signature) {
+            context.suppressReportInferenceFallback = true;
             const typePredicate = getTypePredicateOfSignature(signature);
-            const type = getReturnTypeOfSignature(signature);
-            if (!isErrorType(type) && context.enclosingDeclaration) {
-                const annotation = signature.declaration && getNonlocalEffectiveReturnTypeAnnotationNode(signature.declaration);
-                const enclosingDeclarationIgnoringFakeScope = getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
-                if (!!findAncestor(annotation, n => n === enclosingDeclarationIgnoringFakeScope) && annotation) {
-                    const annotated = getTypeFromTypeNode(annotation);
-                    const thisInstantiated = annotated.flags & TypeFlags.TypeParameter && (annotated as TypeParameter).isThisType ? instantiateType(annotated, signature.mapper) : annotated;
-                    const result = tryReuseExistingNonParameterTypeNode(context, annotation, type, signature.declaration, thisInstantiated);
-                    if (result) {
-                        return result;
-                    }
-                }
-            }
-            if (typePredicate) {
-                return typePredicateToTypePredicateNodeHelper(typePredicate, context);
-            }
-            return typeToTypeNodeHelper(type, context);
+            const returnType = typePredicate ? 
+                typePredicateToTypePredicateNodeHelper(typePredicate, context):
+                typeToTypeNodeHelper(getReturnTypeOfSignature(signature), context);
+            context.suppressReportInferenceFallback = false;
+            return returnType;
         }
 
         function trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T, context: NodeBuilderContext) {
@@ -8208,10 +8199,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
             if (
                 context.enclosingDeclaration &&
-                (getNodeLinks(context.enclosingDeclaration).fakeScopeForSignatureDeclaration || !findAncestor(node, n => n == context.enclosingDeclaration))
+                (getNodeLinks(context.enclosingDeclaration).fakeScopeForSignatureDeclaration || !findAncestor(node, n => n === context.enclosingDeclaration))
             ) {
                 const symAtLocation = resolveEntityName(leftmost, meaning, /*ignoreErrors*/ true, /*dontResolveAlias*/ true, context.enclosingDeclaration);
-                if (symAtLocation != sym) {
+                if (symAtLocation !== sym) {
                     introducesError = true;
                     return { introducesError, node };
                 }
@@ -48501,23 +48492,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         return undefined;
     }
 
-    function getNonlocalEffectiveReturnTypeAnnotationNode(node: SignatureDeclaration | JSDocSignature) {
-        const direct = getEffectiveReturnTypeNode(node);
-        if (direct) {
-            return direct;
-        }
-        if (node.kind === SyntaxKind.GetAccessor) {
-            const other = getAllAccessorDeclarationsForDeclaration(node).setAccessor;
-            if (other) {
-                const param = getSetAccessorValueParameter(other);
-                if (param) {
-                    return getEffectiveTypeAnnotationNode(param);
-                }
-            }
-        }
-        return undefined;
-    }
-
     function createResolver(): EmitResolver {
         return {
             getReferencedExportContainer,
@@ -50915,6 +50889,7 @@ interface NodeBuilderContext extends SyntacticTypeNodeBuilderContext {
     remappedSymbolReferences?: Map<SymbolId, Symbol>;
     reverseMappedStack?: ReverseMappedSymbol[];
     bundled?: boolean;
+    suppressReportInferenceFallback: boolean;
 }
 
 class SymbolTrackerImpl implements SymbolTracker {
@@ -51009,7 +50984,7 @@ class SymbolTrackerImpl implements SymbolTracker {
     }
 
     reportInferenceFallback(node: Node): void {
-        if (this.inner?.reportInferenceFallback) {
+        if (this.inner?.reportInferenceFallback && !this.context.suppressReportInferenceFallback) {
             this.inner.reportInferenceFallback(node);
         }
     }
