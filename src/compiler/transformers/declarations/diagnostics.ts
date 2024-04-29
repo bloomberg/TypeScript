@@ -792,9 +792,10 @@ export function createGetIsolatedDeclarationErrors(resolver: EmitResolver) {
             const targetStr = isExportAssignment(parentDeclaration) ? "" : getTextOfNode(parentDeclaration.name, /*includeTrivia*/ false);
             const parent = findAncestor(node.parent, n => isExportAssignment(n) || (isStatement(n) ? "quit" : !isParenthesizedExpression(n) && !isTypeAssertionExpression(n) && !isAsExpression(n)));
             if (parentDeclaration === parent) {
-                if(parentDeclaration.kind === SyntaxKind.Parameter && !diagnosticMessage && resolver.requiresAddingImplicitUndefined(parentDeclaration)) {
+                if (parentDeclaration.kind === SyntaxKind.Parameter && !diagnosticMessage && resolver.requiresAddingImplicitUndefined(parentDeclaration)) {
                     diag = createDiagnosticForNode(node, Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations);
-                } else {
+                }
+                else {
                     diag = createDiagnosticForNode(node, diagnosticMessage ?? errorByDeclarationKind[parentDeclaration.kind]);
                 }
                 addRelatedInfo(diag, createDiagnosticForNode(parentDeclaration, relatedSuggestionByDeclarationKind[parentDeclaration.kind], targetStr));

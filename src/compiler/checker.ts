@@ -101,6 +101,7 @@ import {
     countWhere,
     createBinaryExpressionTrampoline,
     createCompilerDiagnostic,
+    createDetachedDiagnostic,
     createDiagnosticCollection,
     createDiagnosticForFileFromMessageChain,
     createDiagnosticForNode,
@@ -123,6 +124,7 @@ import {
     createPrinterWithRemoveCommentsNeverAsciiEscape,
     createPrinterWithRemoveCommentsOmitTrailingSemicolon,
     createPropertyNameNodeForIdentifierOrLiteral,
+    createScanner,
     createSymbolTable,
     createSyntacticTypeNodeBuilder,
     createTextWriter,
@@ -934,6 +936,7 @@ import {
     rangeOfTypeParameters,
     ReadonlyKeyword,
     reduceLeft,
+    RegularExpressionLiteral,
     RelationComparisonResult,
     relativeComplement,
     removeExtension,
@@ -950,6 +953,7 @@ import {
     ReverseMappedType,
     sameMap,
     SatisfiesExpression,
+    Scanner,
     scanTokenAtPosition,
     ScriptKind,
     ScriptTarget,
@@ -1444,6 +1448,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var requestedExternalEmitHelperNames = new Set<string>();
     var requestedExternalEmitHelpers: ExternalEmitHelpers;
     var externalHelpersModule: Symbol;
+    var scanner: Scanner | undefined;
 
     var Symbol = objectAllocator.getSymbolConstructor();
     var Type = objectAllocator.getTypeConstructor();
@@ -6593,7 +6598,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     if (!nodeIsSynthesized(node) && getParseTreeNode(node) === node) {
                         return node;
                     }
-                    return setTextRange(context, factory.cloneNode(visitEachChild(node, deepCloneOrReuseNode, /*context*/ undefined, deepCloneOrReuseNodes)), node);
+                    return setTextRange(context, factory.cloneNode(visitEachChild(node, deepCloneOrReuseNode, /*context*/ undefined, deepCloneOrReuseNodes, deepCloneOrReuseNode)), node);
                 }
 
                 function deepCloneOrReuseNodes(
@@ -8498,6 +8503,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
 
             function serializeSymbol(symbol: Symbol, isPrivate: boolean, propertyAsAlias: boolean): void {
+                void getPropertiesOfType(getTypeOfSymbol(symbol)); // resolve symbol's type and properties, which should trigger any required merges
                 // cache visited list based on merged symbol, since we want to use the unmerged top-level symbol, but
                 // still skip reserializing it if we encounter the merged product later on
                 const visitedSym = getMergedSymbol(symbol);
@@ -30903,6 +30909,48 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
     }
 
+    function checkGrammarRegularExpressionLiteral(node: RegularExpressionLiteral) {
+        const sourceFile = getSourceFileOfNode(node);
+        if (!hasParseDiagnostics(sourceFile)) {
+            let lastError: DiagnosticWithLocation | undefined;
+            scanner ??= createScanner(ScriptTarget.ESNext, /*skipTrivia*/ true);
+            scanner.setScriptTarget(sourceFile.languageVersion);
+            scanner.setLanguageVariant(sourceFile.languageVariant);
+            scanner.setOnError((message, length, arg0) => {
+                // emulate `parseErrorAtPosition` from parser.ts
+                const start = scanner!.getTokenEnd();
+                if (message.category === DiagnosticCategory.Message && lastError && start === lastError.start && length === lastError.length) {
+                    const error = createDetachedDiagnostic(sourceFile.fileName, sourceFile.text, start, length, message, arg0);
+                    addRelatedInfo(lastError, error);
+                }
+                else if (!lastError || start !== lastError.start) {
+                    lastError = createFileDiagnostic(sourceFile, start, length, message, arg0);
+                    diagnostics.add(lastError);
+                }
+            });
+            scanner.setText(sourceFile.text, node.pos, node.end - node.pos);
+            try {
+                scanner.scan();
+                Debug.assert(scanner.reScanSlashToken(/*reportErrors*/ true) === SyntaxKind.RegularExpressionLiteral, "Expected scanner to rescan RegularExpressionLiteral");
+                return !!lastError;
+            }
+            finally {
+                scanner.setText("");
+                scanner.setOnError(/*onError*/ undefined);
+            }
+        }
+        return false;
+    }
+
+    function checkRegularExpressionLiteral(node: RegularExpressionLiteral) {
+        const nodeLinks = getNodeLinks(node);
+        if (!(nodeLinks.flags & NodeCheckFlags.TypeChecked)) {
+            nodeLinks.flags |= NodeCheckFlags.TypeChecked;
+            addLazyDiagnostic(() => checkGrammarRegularExpressionLiteral(node));
+        }
+        return globalRegExpType;
+    }
+
     function checkSpreadExpression(node: SpreadElement, checkMode?: CheckMode): Type {
         if (languageVersion < LanguageFeatureMinimumTarget.SpreadElements) {
             checkExternalEmitHelpers(node, compilerOptions.downlevelIteration ? ExternalEmitHelpers.SpreadIncludes : ExternalEmitHelpers.SpreadArray);
@@ -38043,7 +38091,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         parent = parent.parent;
                     }
                     if (operator === SyntaxKind.AmpersandAmpersandToken || isIfStatement(parent)) {
-                        checkTestingKnownTruthyCallableOrAwaitableType(node.left, leftType, isIfStatement(parent) ? parent.thenStatement : undefined);
+                        checkTestingKnownTruthyCallableOrAwaitableOrEnumMemberType(node.left, leftType, isIfStatement(parent) ? parent.thenStatement : undefined);
                     }
                     checkTruthinessOfType(leftType, node.left);
                 }
@@ -38677,7 +38725,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
 
     function checkConditionalExpression(node: ConditionalExpression, checkMode?: CheckMode): Type {
         const type = checkTruthinessExpression(node.condition, checkMode);
-        checkTestingKnownTruthyCallableOrAwaitableType(node.condition, type, node.whenTrue);
+        checkTestingKnownTruthyCallableOrAwaitableOrEnumMemberType(node.condition, type, node.whenTrue);
         const type1 = checkExpression(node.whenTrue, checkMode);
         const type2 = checkExpression(node.whenFalse, checkMode);
         return getUnionType([type1, type2], UnionReduction.Subtype);
@@ -39212,7 +39260,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             case SyntaxKind.TemplateExpression:
                 return checkTemplateExpression(node as TemplateExpression);
             case SyntaxKind.RegularExpressionLiteral:
-                return globalRegExpType;
+                return checkRegularExpressionLiteral(node as RegularExpressionLiteral);
             case SyntaxKind.ArrayLiteralExpression:
                 return checkArrayLiteral(node as ArrayLiteralExpression, checkMode, forceTuple);
             case SyntaxKind.ObjectLiteralExpression:
@@ -42651,7 +42699,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         // Grammar checking
         checkGrammarStatementInAmbientContext(node);
         const type = checkTruthinessExpression(node.expression);
-        checkTestingKnownTruthyCallableOrAwaitableType(node.expression, type, node.thenStatement);
+        checkTestingKnownTruthyCallableOrAwaitableOrEnumMemberType(node.expression, type, node.thenStatement);
         checkSourceElement(node.thenStatement);
 
         if (node.thenStatement.kind === SyntaxKind.EmptyStatement) {
@@ -42661,7 +42709,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         checkSourceElement(node.elseStatement);
     }
 
-    function checkTestingKnownTruthyCallableOrAwaitableType(condExpr: Expression, condType: Type, body?: Statement | Expression) {
+    function checkTestingKnownTruthyCallableOrAwaitableOrEnumMemberType(condExpr: Expression, condType: Type, body?: Statement | Expression) {
         if (!strictNullChecks) return;
         bothHelper(condExpr, body);
 
@@ -42686,6 +42734,11 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return;
             }
             const type = location === condExpr ? condType : checkTruthinessExpression(location);
+            if (type.flags & TypeFlags.EnumLiteral && isPropertyAccessExpression(location) && (getNodeLinks(location.expression).resolvedSymbol ?? unknownSymbol).flags & SymbolFlags.Enum) {
+                // EnumLiteral type at condition with known value is always truthy or always falsy, likely an error
+                error(location, Diagnostics.This_condition_will_always_return_0, !!(type as LiteralType).value ? "true" : "false");
+                return;
+            }
             const isPropertyExpressionCast = isPropertyAccessExpression(location) && isTypeAssertion(location.expression);
             if (!hasTypeFacts(type, TypeFacts.Truthy) || isPropertyExpressionCast) return;
 
@@ -45829,7 +45882,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             // If we hit an import declaration in an illegal context, just bail out to avoid cascading errors.
             return;
         }
-        if (!checkGrammarModifiers(node) && hasEffectiveModifiers(node)) {
+        if (!checkGrammarModifiers(node) && node.modifiers) {
             grammarErrorOnFirstToken(node, Diagnostics.An_import_declaration_cannot_have_modifiers);
         }
         if (checkExternalImportOrExportDeclaration(node)) {
@@ -48323,6 +48376,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 if (!sym) {
                     return !node.locals ? [] : nodeBuilder.symbolTableToDeclarationStatements(node.locals, node, flags, tracker);
                 }
+                resolveExternalModuleSymbol(sym); // ensures cjs export assignment is setup
                 return !sym.exports ? [] : nodeBuilder.symbolTableToDeclarationStatements(sym.exports, node, flags, tracker);
             },
             isImportRequiredByAugmentation,

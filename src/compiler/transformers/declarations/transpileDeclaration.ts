@@ -42,7 +42,7 @@ import {
     TranspileDeclarationsOutput,
 } from "../../_namespaces/ts";
 
-export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: TranspileDeclarationsOptions): TranspileDeclarationsOutput {
+export function transpileDeclarationTesting(sourceFile: SourceFile, transpileOptions: TranspileDeclarationsOptions): TranspileDeclarationsOutput {
     const compilerOptions: CompilerOptions = {
         ...transpileOptions.compilerOptions,
         isolatedDeclarations: true,
