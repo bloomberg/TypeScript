@@ -23,6 +23,7 @@ import {
     getEffectiveSetAccessorTypeAnnotationNode,
     getEffectiveTypeAnnotationNode,
     getEmitFlags,
+    getEmitScriptTarget,
     getFunctionFlags,
     getJSDocType,
     getJSDocTypeAssertionType,
@@ -35,6 +36,7 @@ import {
     isBindingElement,
     isBlock,
     isCallExpression,
+    isComputedPropertyName,
     isConditionalTypeNode,
     isConstTypeReference,
     isDeclarationName,
@@ -46,6 +48,7 @@ import {
     isFunctionLikeDeclaration,
     isGetAccessor,
     isIdentifier,
+    isIdentifierText,
     isInJSFile,
     isJSDocAllType,
     isJSDocConstructSignature,
@@ -110,7 +113,6 @@ import {
     setOriginalNode,
     SignatureDeclaration,
     StringLiteral,
-    SymbolAccessibility,
     SyntacticTypeNodeBuilderContext,
     SyntacticTypeNodeBuilderResolver,
     SyntaxKind,
@@ -258,7 +260,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 }
             }
             if (isTypeReferenceNode(node)) {
-                if(resolver.canReuseTypeNode(context, node)) {
+                if (resolver.canReuseTypeNode(context, node)) {
                     const { introducesError, node: newName } = resolver.trackExistingEntityName(context, node.typeName);
                     if (!introducesError) {
                         return factory.updateTypeReferenceNode(
@@ -310,18 +312,37 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode),
                 );
             }
+            if (isComputedPropertyName(node) && isEntityNameExpression(node.expression)) {
+                const { node: result, introducesError } = resolver.trackExistingEntityName(context, node.expression);
+                if (!introducesError) {
+                    return result;
+                }
+                else {
+                    const computedPropertyNameType = resolver.serializeTypeOfExpression(context, node.expression);
+                    Debug.assertNode(computedPropertyNameType, isLiteralTypeNode);
+                    const literal = computedPropertyNameType.literal;
+                    if (literal.kind === SyntaxKind.StringLiteral && isIdentifierText(literal.text, getEmitScriptTarget(options))) {
+                        return factory.createIdentifier(literal.text);
+                    }
+                    if (literal.kind === SyntaxKind.NumericLiteral && !literal.text.startsWith("-")) {
+                        return literal;
+                    }
+                    return factory.updateComputedPropertyName(node, literal);
+                }
+            }
             if (isEntityName(node) || isEntityNameExpression(node)) {
-                if (isDeclarationName(node) || 
+                if (
+                    isDeclarationName(node) ||
                     (isIdentifier(node) && (
-                        (isBindingElement(node.parent) && isPartOfParameterDeclaration(node.parent)) || 
+                        (isBindingElement(node.parent) && isPartOfParameterDeclaration(node.parent)) ||
                         (isNamedTupleMember(node.parent) && node.parent.name === node)
                     ))
                 ) {
                     return node;
                 }
                 // Debug.assertNode(node.parent, n => isTypePredicateNode(n), "???");
-                const { node: result } = resolver.trackExistingEntityName(context, node);
-                // We should not go to child nodes of the entity name, they will not be accessible
+                const { node: result, introducesError } = resolver.trackExistingEntityName(context, node);
+                Debug.assert(!introducesError);
                 return result;
             }
 
@@ -521,7 +542,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         if (declaredType) {
             return serializeExistingTypeAnnotation(declaredType, context);
         }
-        return inferTypeOfDeclaration(node, context, false);
+        return inferTypeOfDeclaration(node, context, /*reportFallback*/ false);
     }
     function typeFromProperty(node: PropertyDeclaration, context: SyntacticTypeNodeBuilderContext) {
         const declaredType = getEffectiveTypeAnnotationNode(node);
@@ -539,9 +560,9 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
     function inferTypeOfDeclaration(
         node: HasInferredType,
         context: SyntacticTypeNodeBuilderContext,
-        reportFallback = true
+        reportFallback = true,
     ) {
-        if(reportFallback) {
+        if (reportFallback) {
             context.tracker.reportInferenceFallback(node);
         }
         return resolver.serializeTypeOfDeclaration(context, node);
@@ -658,9 +679,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         return undefined;
     }
     function typeFromFunctionLikeExpression(fnNode: FunctionExpression | ArrowFunction, context: SyntacticTypeNodeBuilderContext, requiresAddingUndefined: boolean) {
-        context.enclosingDeclaration = fnNode;
-        const returnType = serializeExistingTypeAnnotation(fnNode.type, context) ??
-            createReturnFromSignature(fnNode, context);
+        const returnType = createReturnFromSignature(fnNode, context);
         const fnTypeNode = factory.createFunctionTypeNode(
             reuseTypeParameters(fnNode.typeParameters, context),
             fnNode.parameters.map(p => ensureParameter(p, context)),
@@ -745,13 +764,12 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
                 let computedNameExpressionType;
                 if (isEntityNameExpression(prop.name.expression)) {
-                    const visibilityResult = resolver.isEntityNameVisible(context, prop.name.expression, /*shouldComputeAliasToMakeVisible*/ false);
-
                     if (!resolver.isNonNarrowedBindableName(prop.name)) {
                         context.tracker.reportInferenceFallback(prop.name);
                     }
-                    if (visibilityResult.accessibility === SymbolAccessibility.Accessible) {
-                        resolver.trackComputedName(context, prop.name.expression);
+                    const { introducesError, node } = resolver.trackExistingEntityName(context, prop.name.expression);
+                    if (!introducesError) {
+                        name = factory.createComputedPropertyName(node);
                     }
                     else {
                         context.tracker.reportInferenceFallback(prop.name);
@@ -976,7 +994,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         let candidateExpr: Expression | undefined;
         if (declaration && !nodeIsMissing(declaration.body)) {
             const flags = getFunctionFlags(declaration);
-            if(flags & FunctionFlags.AsyncGenerator || isContextuallyTyped(declaration)) return undefined;
+            if (flags & FunctionFlags.AsyncGenerator || isContextuallyTyped(declaration)) return undefined;
 
             const body = declaration.body;
             if (body && isBlock(body)) {

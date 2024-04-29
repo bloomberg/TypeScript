@@ -10303,7 +10303,6 @@ export interface SyntacticTypeNodeBuilderResolver {
     getAllAccessorDeclarations(declaration: AccessorDeclaration): AllAccessorDeclarations;
     requiresAddingImplicitUndefined(parameter: ParameterDeclaration | JSDocParameterTag): boolean;
     isEntityNameVisible(context: SyntacticTypeNodeBuilderContext, entityName: EntityNameOrEntityNameExpression, shouldComputeAliasToMakeVisible?: boolean): SymbolVisibilityResult;
-    trackComputedName(context: SyntacticTypeNodeBuilderContext, accessExpression: EntityNameOrEntityNameExpression): void;
     serializeExistingTypeNode(context: SyntacticTypeNodeBuilderContext, node: TypeNode, addUndefined?: boolean): TypeNode | undefined;
     serializeReturnTypeForSignature(context: SyntacticTypeNodeBuilderContext, signatureDeclaration: SignatureDeclaration | JSDocSignature): TypeNode | undefined;
     serializeTypeOfExpression(context: SyntacticTypeNodeBuilderContext, expr: Expression): TypeNode | undefined;

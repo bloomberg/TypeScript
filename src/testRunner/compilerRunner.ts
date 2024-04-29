@@ -1,4 +1,3 @@
-import path from "path";
 import { fixTestFiles } from "../harness/isolatedDeclarationFixer";
 import * as compiler from "./_namespaces/compiler";
 import {

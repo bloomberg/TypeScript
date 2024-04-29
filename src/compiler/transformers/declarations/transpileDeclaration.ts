@@ -155,6 +155,7 @@ export function transpileDeclaration(sourceFile: SourceFile, transpileOptions: T
         );
         return { sourceMapGenerator, sourceMappingURL: `//# ${"sourceMappingURL"}=${sourceMappingURL}` };
     }
+
     function createEmitHost(): EmitHost {
         const symlinkCache = createSymlinkCache(currentDirectory, getCanonicalFileName);
         return {

@@ -7,6 +7,7 @@ import {
     createEvaluator,
     createNameResolver,
     createSymbolTable,
+    createSyntacticTypeNodeBuilder,
     Debug,
     Declaration,
     DeclarationName,
@@ -21,6 +22,7 @@ import {
     ExportSpecifier,
     Expression,
     factory,
+    findAncestor,
     forEachChild,
     forEachEntry,
     FunctionDeclaration,
@@ -58,14 +60,17 @@ import {
     isPropertyName,
     isSetAccessor,
     isStringLiteralLike,
+    isTypeOperatorNode,
     isVarConst,
     isVariableDeclaration,
     LateBoundDeclaration,
     ModifierFlags,
     Node,
+    NodeBuilderFlags,
     NodeFlags,
     nodeIsPresent,
     NoSubstitutionTemplateLiteral,
+    notImplemented,
     notImplementedResolver,
     objectAllocator,
     ParameterDeclaration,
@@ -80,6 +85,8 @@ import {
     SymbolAccessibility,
     SymbolFlags,
     SymbolTable,
+    SymbolTracker,
+    SyntacticTypeNodeBuilderContext,
     SyntaxKind,
     VariableDeclaration,
 } from "../../_namespaces/ts";
@@ -430,17 +437,75 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         return factory.createTypeReferenceNode("invalid");
     }
 
+    const syntacticPrinter = createSyntacticTypeNodeBuilder(options, {
+        trackExistingEntityName: notImplemented,
+        enterNewScope: notImplemented,
+        getAllAccessorDeclarations: notImplemented,
+        getJsDocPropertyOverride: notImplemented,
+        getModuleSpecifierOverride: notImplemented,
+        isEntityNameVisible(context, name, shouldComputeAliasToMakeVisible) {
+            return isEntityNameVisible(name, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible);
+        },
+        isExpandoFunctionDeclaration,
+        isNonNarrowedBindableName,
+        isOptionalParameter,
+        isUndefinedIdentifierExpression(name) {
+            return !!resolveName(name, name.escapedText, SymbolFlags.Value);
+        },
+        markNodeReuse: notImplemented,
+        requiresAddingImplicitUndefined: notImplemented,
+        serializeExistingTypeNode() {
+            return makeInvalidType();
+        },
+        serializeReturnTypeForSignature() {
+            return makeInvalidType();
+        },
+        serializeNameOfParameter(context, parameter) {
+            return parameter.name;
+        },
+        serializeTypeOfDeclaration() {
+            return makeInvalidType();
+        },
+        serializeTypeOfExpression() {
+            return makeInvalidType();
+        },
+        canReuseTypeNode(context, existing) {
+            if (
+                isTypeOperatorNode(existing) &&
+                existing.operator === SyntaxKind.UniqueKeyword &&
+                existing.type.kind === SyntaxKind.SymbolKeyword
+            ) {
+                const effectiveEnclosingContext = context.enclosingDeclaration; // && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
+                return !!findAncestor(existing, n => n === effectiveEnclosingContext);
+            }
+            return true;
+        },
+    });
+
+    function withContext<T>(enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, cb: (context: SyntacticTypeNodeBuilderContext) => T) {
+        const context: SyntacticTypeNodeBuilderContext = {
+            approximateLength: 0,
+            enclosingDeclaration,
+            flags,
+            tracker: {
+                reportInferenceFallback(node) {
+                    tracker.reportInferenceFallback?.(node);
+                },
+            },
+        };
+        return cb(context);
+    }
     return {
         ...notImplementedResolver,
         isOptionalParameter,
-        createTypeOfDeclaration() {
-            return makeInvalidType();
+        createTypeOfDeclaration(declaration, enclosingDeclaration, flags, tracker) {
+            return withContext(enclosingDeclaration, flags, tracker, c => syntacticPrinter.serializeTypeOfDeclaration(declaration, c));
         },
-        createReturnTypeOfSignatureDeclaration() {
-            return makeInvalidType();
+        createReturnTypeOfSignatureDeclaration(signatureDeclaration, enclosingDeclaration, flags, tracker) {
+            return withContext(enclosingDeclaration, flags, tracker, c => syntacticPrinter.serializeReturnTypeForSignature(signatureDeclaration, c));
         },
-        createTypeOfExpression() {
-            return makeInvalidType();
+        createTypeOfExpression(expr, enclosingDeclaration, flags, tracker) {
+            return withContext(enclosingDeclaration, flags, tracker, c => syntacticPrinter.serializeTypeOfExpression(expr, c));
         },
         isDeclarationVisible,
         isLiteralConstDeclaration,
