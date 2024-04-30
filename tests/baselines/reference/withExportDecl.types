@@ -105,11 +105,11 @@ exportedArrayVar.push({ x: 30, y : 'hello world' });
 >exportedArrayVar.push({ x: 30, y : 'hello world' }) : number
 >                                                    : ^^^^^^
 >exportedArrayVar.push : (...items: { x: number; y: string; }[]) => number
->                      : ^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                      : ^^^^     ^^^^^^^      ^^^^^      ^^^^^^^^^^      
 >exportedArrayVar : { x: number; y: string; }[]
->                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                 : ^^^^^      ^^^^^      ^^^^^
 >push : (...items: { x: number; y: string; }[]) => number
->     : ^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>     : ^^^^     ^^^^^^^      ^^^^^      ^^^^^^^^^^      
 >{ x: 30, y : 'hello world' } : { x: number; y: string; }
 >                             : ^^^^^^^^^^^^^^^^^^^^^^^^^
 >x : number
@@ -122,8 +122,8 @@ exportedArrayVar.push({ x: 30, y : 'hello world' });
 >              : ^^^^^^^^^^^^^
 
 function simpleFunction() {
->simpleFunction : () => { x: string; y: string; n: number; }
->               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>simpleFunction : () => {    x: string;    y: string;    n: number;}
+>               : ^^^^^^^     ^^^^^^^^^     ^^^^^^^^^     ^^^^^^^^^^
 
     return {
 >{        x: "Hello",        y: "word",        n: 2    } : { x: string; y: string; n: number; }
@@ -157,8 +157,8 @@ export function exportedFunction() {
     return simpleFunction();
 >simpleFunction() : { x: string; y: string; n: number; }
 >                 : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->simpleFunction : () => { x: string; y: string; n: number; }
->               : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>simpleFunction : () => {    x: string;    y: string;    n: number;}
+>               : ^^^^^^^     ^^^^^^^^^     ^^^^^^^^^     ^^^^^^^^^^
 }
 
 module m1 {

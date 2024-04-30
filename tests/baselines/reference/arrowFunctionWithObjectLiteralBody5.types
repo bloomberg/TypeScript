@@ -21,9 +21,9 @@ var a = () => <Error>{ name: "foo", message: "bar" };
 
 var b = () => (<Error>{ name: "foo", message: "bar" });    
 >b : () => Error
->  : ^^^^^^^^^^^
+>  : ^^^^^^     
 >() => (<Error>{ name: "foo", message: "bar" }) : () => Error
->                                               : ^^^^^^^^^^^
+>                                               : ^^^^^^     
 >(<Error>{ name: "foo", message: "bar" }) : Error
 >                                         : ^^^^^
 ><Error>{ name: "foo", message: "bar" } : Error
@@ -40,10 +40,10 @@ var b = () => (<Error>{ name: "foo", message: "bar" });
 >      : ^^^^^
 
 var c = () => ({ name: "foo", message: "bar" });           
->c : () => { name: string; message: string; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->() => ({ name: "foo", message: "bar" }) : () => { name: string; message: string; }
->                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>c : () => {    name: string;    message: string;}
+>  : ^^^^^^^        ^^^^^^^^^           ^^^^^^^^^^
+>() => ({ name: "foo", message: "bar" }) : () => {    name: string;    message: string;}
+>                                        : ^^^^^^^        ^^^^^^^^^           ^^^^^^^^^^
 >({ name: "foo", message: "bar" }) : { name: string; message: string; }
 >                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{ name: "foo", message: "bar" } : { name: string; message: string; }
@@ -59,9 +59,9 @@ var c = () => ({ name: "foo", message: "bar" });
 
 var d = () => ((<Error>({ name: "foo", message: "bar" })));
 >d : () => Error
->  : ^^^^^^^^^^^
+>  : ^^^^^^     
 >() => ((<Error>({ name: "foo", message: "bar" }))) : () => Error
->                                                   : ^^^^^^^^^^^
+>                                                   : ^^^^^^     
 >((<Error>({ name: "foo", message: "bar" }))) : Error
 >                                             : ^^^^^
 >(<Error>({ name: "foo", message: "bar" })) : Error

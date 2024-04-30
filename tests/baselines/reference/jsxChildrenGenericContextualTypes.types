@@ -81,10 +81,10 @@ const q = <Elem prop={{a: "x"}} children={i => ({a: "z"})} />
 >  : ^^^^^^
 >"x" : "x"
 >    : ^^^
->children : (i: { a: string; }) => { a: string; }
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->i => ({a: "z"}) : (i: { a: string; }) => { a: string; }
->                : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>children : (i: { a: string; }) => {    a: string;}
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
+>i => ({a: "z"}) : (i: { a: string; }) => {    a: string;}
+>                : ^ ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 >i : { a: string; }
 >  : ^^^^^^^^^^^^^^
 >({a: "z"}) : { a: string; }
@@ -111,8 +111,8 @@ const qq = <Elem prop={{a: "x"}}>{i => ({a: "z"})}</Elem>
 >  : ^^^^^^
 >"x" : "x"
 >    : ^^^
->i => ({a: "z"}) : (i: { a: string; }) => { a: string; }
->                : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>i => ({a: "z"}) : (i: { a: string; }) => {    a: string;}
+>                : ^ ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 >i : { a: string; }
 >  : ^^^^^^^^^^^^^^
 >({a: "z"}) : { a: string; }
@@ -175,10 +175,10 @@ const j = <ElemLit prop="x" children={() => "x"} />
 >        : ^ ^^^^^^^^^^^^^^^^^ ^^           ^^^^^^^^^^^^^^^^
 >prop : "x"
 >     : ^^^
->children : () => "x"
->         : ^^^^^^^^^
->() => "x" : () => "x"
->          : ^^^^^^^^^
+>children : () => string
+>         : ^^^^^^^^^^^^
+>() => "x" : () => string
+>          : ^^^^^^^^^^^^
 >"x" : "x"
 >    : ^^^
 
@@ -191,8 +191,8 @@ const jj = <ElemLit prop="x">{() => "x"}</ElemLit>
 >        : ^ ^^^^^^^^^^^^^^^^^ ^^           ^^^^^^^^^^^^^^^^
 >prop : "x"
 >     : ^^^
->() => "x" : () => "x"
->          : ^^^^^^^^^
+>() => "x" : () => string
+>          : ^^^^^^^^^^^^
 >"x" : "x"
 >    : ^^^
 >ElemLit : <T extends string>(p: LitProps<T>) => JSX.Element
@@ -208,10 +208,10 @@ const arg = <ElemLit prop="x" children={p => "y"} />
 >        : ^ ^^^^^^^^^^^^^^^^^ ^^           ^^^^^^^^^^^^^^^^
 >prop : "x"
 >     : ^^^
->children : (p: JSX.IntrinsicAttributes & LitProps<"x">) => "y"
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->p => "y" : (p: JSX.IntrinsicAttributes & LitProps<"x">) => "y"
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>children : (p: JSX.IntrinsicAttributes & LitProps<"x">) => string
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>p => "y" : (p: JSX.IntrinsicAttributes & LitProps<"x">) => string
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >p : JSX.IntrinsicAttributes & LitProps<"x">
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >"y" : "y"
@@ -226,8 +226,8 @@ const argchild = <ElemLit prop="x">{p => "y"}</ElemLit>
 >        : ^ ^^^^^^^^^^^^^^^^^ ^^           ^^^^^^^^^^^^^^^^
 >prop : "x"
 >     : ^^^
->p => "y" : (p: JSX.IntrinsicAttributes & LitProps<"x">) => "y"
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>p => "y" : (p: JSX.IntrinsicAttributes & LitProps<"x">) => string
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >p : JSX.IntrinsicAttributes & LitProps<"x">
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >"y" : "y"

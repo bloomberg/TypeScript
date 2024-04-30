@@ -43,17 +43,23 @@ export class Bar {
 }
 
 === file2.ts ===
-export function foo(p = (ip = 10, v: number): void => {}): void{
->foo : (p?: (ip: number | undefined, v: number) => void) => void
->    : ^ ^^^^  ^^^^^^^^^^^^^^^^^^^^^^ ^^      ^^^^^    ^^^^^    
->p : (ip: number | undefined, v: number) => void
->  : ^  ^^^^^^^^^^^^^^^^^^^^^^ ^^      ^^^^^    
->(ip = 10, v: number): void => {} : (ip: number | undefined, v: number) => void
->                                 : ^  ^^^^^^^^^^^^^^^^^^^^^^ ^^      ^^^^^    
->ip : number
->   : ^^^^^^
->10 : 10
->   : ^^
+type N = 1;
+>N : 1
+>  : ^
+
+export function foo(p = (ip = 1 as N, v: number): void => {}): void{
+>foo : (p?: (ip: N | undefined, v: number) => void) => void
+>    : ^ ^^^^     ^^^^^^^^^^^^^^         ^^^^^    ^^^^^    
+>p : (ip: N | undefined, v: number) => void
+>  : ^  ^^ ^^^^^^^^^^^^^^ ^^      ^^^^^    
+>(ip = 1 as N, v: number): void => {} : (ip: N | undefined, v: number) => void
+>                                     : ^  ^^ ^^^^^^^^^^^^^^ ^^      ^^^^^    
+>ip : 1
+>   : ^
+>1 as N : 1
+>       : ^
+>1 : 1
+>  : ^
 >v : number
 >  : ^^^^^^
 }

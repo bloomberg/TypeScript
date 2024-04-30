@@ -23,7 +23,7 @@ const bar = foo.flatMap(bar => bar as Foo);
 >flatMap : <U, This = undefined>(callback: (this: This, value: unknown, index: number, array: unknown[]) => U | readonly U[], thisArg?: This | undefined) => U[]
 >        : ^^^^^^^^^^^^^^^^^^^^^^        ^^^    ^^^^^^^^     ^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >bar => bar as Foo : (this: undefined, bar: unknown) => Foo
->                  : ^    ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^   
+>                  : ^    ^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^
 >bar : unknown
 >    : ^^^^^^^
 >bar as Foo : Foo
@@ -69,11 +69,11 @@ const repro_43249 = (value: unknown) => {
 >value.match(/anything/) : RegExpMatchArray | null
 >                        : ^^^^^^^^^^^^^^^^^^^^^^^
 >value.match : { (regexp: string | RegExp): RegExpMatchArray | null; (matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null; }
->            : ^^^      ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^^                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>            : ^^^      ^^               ^^^                       ^^^       ^^                                                            ^^^                       ^^^
 >value : string
 >      : ^^^^^^
 >match : { (regexp: string | RegExp): RegExpMatchArray | null; (matcher: { [Symbol.match](string: string): RegExpMatchArray | null; }): RegExpMatchArray | null; }
->      : ^^^      ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^^                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>      : ^^^      ^^               ^^^                       ^^^       ^^                                                            ^^^                       ^^^
 >/anything/ : RegExp
 >           : ^^^^^^
 >[] : []

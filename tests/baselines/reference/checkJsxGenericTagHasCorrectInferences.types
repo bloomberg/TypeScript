@@ -90,10 +90,10 @@ let c = <GenericComponent initialValues={{ x: "y" }} nextValues={a => ({ x: a.x 
 >  : ^^^^^^
 >"y" : "y"
 >    : ^^^
->nextValues : (a: { x: string; }) => { x: string; }
->           : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->a => ({ x: a.x }) : (a: { x: string; }) => { x: string; }
->                  : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>nextValues : (a: { x: string; }) => {    x: string;}
+>           : ^ ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
+>a => ({ x: a.x }) : (a: { x: string; }) => {    x: string;}
+>                  : ^ ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 >a : { x: string; }
 >  : ^^^^^^^^^^^^^^
 >({ x: a.x }) : { x: string; }

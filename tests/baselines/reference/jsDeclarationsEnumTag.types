@@ -4,9 +4,9 @@
 /** @enum {string} */
 export const Target = {
 >Target : { START: string; MIDDLE: string; END: string; OK_I_GUESS: number; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{    START: "start",    MIDDLE: "middle",    END: "end",    /** @type {number} */    OK_I_GUESS: 2} : { START: string; MIDDLE: string; END: string; OK_I_GUESS: number; }
->                                                                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
+>                                                                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     START: "start",
 >START : string
@@ -36,9 +36,9 @@ export const Target = {
 /** @enum number */
 export const Second = {
 >Second : { OK: number; FINE: number; }
->       : ^^^^^^^^^^^^^^^^^^^^      ^^^
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{    OK: 1,    /** @type {number} */    FINE: 2,} : { OK: number; FINE: number; }
->                                                  : ^^^^^^^^^^^^^^^^^^^^      ^^^
+>                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     OK: 1,
 >OK : number
@@ -124,7 +124,7 @@ export function consume(t,s,f) {
     /** @type {(n: number) => number} */
     var fun = f
 >fun : (n: number) => number
->    : ^ ^^      ^^^^^^^^^^^
+>    : ^ ^^      ^^^^^      
 >f : Fs
 >  : ^^
 

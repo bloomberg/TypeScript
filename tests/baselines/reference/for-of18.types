@@ -6,8 +6,8 @@ class StringIterator {
 >               : ^^^^^^^^^^^^^^
 
     next() {
->next : () => { value: string; done: boolean; }
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>next : () => {    value: string;    done: boolean;}
+>     : ^^^^^^^         ^^^^^^^^^        ^^^^^^^^^^^
 
         return {
 >{            value: "",            done: false        } : { value: string; done: boolean; }

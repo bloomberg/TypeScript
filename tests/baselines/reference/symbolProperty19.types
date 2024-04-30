@@ -2,10 +2,10 @@
 
 === symbolProperty19.ts ===
 var i = {
->i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): { p: any; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->{    [Symbol.iterator]: { p: null },    [Symbol.toStringTag]() { return { p: undefined }; }} : { [Symbol.iterator]: { p: null; }; [Symbol.toStringTag](): { p: any; }; }
->                                                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): {    p: any;}; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
+>{    [Symbol.iterator]: { p: null },    [Symbol.toStringTag]() { return { p: undefined }; }} : { [Symbol.iterator]: { p: null; }; [Symbol.toStringTag](): {    p: any;}; }
+>                                                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 
     [Symbol.iterator]: { p: null },
 >[Symbol.iterator] : { p: null; }
@@ -22,8 +22,8 @@ var i = {
 >  : ^^^^
 
     [Symbol.toStringTag]() { return { p: undefined }; }
->[Symbol.toStringTag] : () => { p: any; }
->                     : ^^^^^^^^^^^^^^^^^
+>[Symbol.toStringTag] : () => {    p: any;}
+>                     : ^^^^^^^     ^^^^^^^
 >Symbol.toStringTag : unique symbol
 >                   : ^^^^^^^^^^^^^
 >Symbol : SymbolConstructor
@@ -43,8 +43,8 @@ var it = i[Symbol.iterator];
 >   : ^^^^^^^^^^^
 >i[Symbol.iterator] : { p: any; }
 >                   : ^^^^^^^^^^^
->i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): { p: any; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): {    p: any;}; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 >Symbol.iterator : unique symbol
 >                : ^^^^^^^^^^^^^
 >Symbol : SymbolConstructor
@@ -57,10 +57,10 @@ var str = i[Symbol.toStringTag]();
 >    : ^^^^^^^^^^^
 >i[Symbol.toStringTag]() : { p: any; }
 >                        : ^^^^^^^^^^^
->i[Symbol.toStringTag] : () => { p: any; }
->                      : ^^^^^^^^^^^^^^^^^
->i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): { p: any; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>i[Symbol.toStringTag] : () => {    p: any;}
+>                      : ^^^^^^^     ^^^^^^^
+>i : { [Symbol.iterator]: { p: any; }; [Symbol.toStringTag](): {    p: any;}; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^
 >Symbol.toStringTag : unique symbol
 >                   : ^^^^^^^^^^^^^
 >Symbol : SymbolConstructor

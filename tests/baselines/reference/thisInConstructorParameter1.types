@@ -7,13 +7,10 @@ class Foo {
 
     public y;
 >y : any
->  : ^^^
 
     constructor(x = this.y) { }
 >x : any
->  : ^^^
 >this.y : any
->       : ^^^
 >this : this
 >     : ^^^^
 >y : any

@@ -221,7 +221,7 @@ let {x4} = { x4: <any>undefined }, {y4} = { y4: <any>null }; // no error
 >x4 : any
 >   : ^^^
 >{ x4: <any>undefined } : { x4: any; }
->                       : ^^^^^^   ^^^
+>                       : ^^^^^^^^^^^^
 >x4 : any
 ><any>undefined : any
 >undefined : undefined
@@ -229,7 +229,7 @@ let {x4} = { x4: <any>undefined }, {y4} = { y4: <any>null }; // no error
 >y4 : any
 >   : ^^^
 >{ y4: <any>null } : { y4: any; }
->                  : ^^^^^^   ^^^
+>                  : ^^^^^^^^^^^^
 >y4 : any
 ><any>null : any
 

@@ -3,9 +3,9 @@
 === literalTypesAndTypeAssertions.ts ===
 const obj = {
 >obj : { a: "foo"; b: "foo"; c: string; }
->    : ^^^^^     ^^^^^     ^^^^^^^^^^^^^^
+>    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{    a: "foo" as "foo",    b: <"foo">"foo",    c: "foo"} : { a: "foo"; b: "foo"; c: string; }
->                                                         : ^^^^^     ^^^^^     ^^^^^^^^^^^^^^
+>                                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     a: "foo" as "foo",
 >a : "foo"
@@ -77,7 +77,7 @@ let { c = "foo" } = { c: "bar" as "bar" };
 >"foo" : "foo"
 >      : ^^^^^
 >{ c: "bar" as "bar" } : { c?: "bar"; }
->                      : ^^^^^^     ^^^
+>                      : ^^^^^^^^^^^^^^
 >c : "bar"
 >  : ^^^^^
 >"bar" as "bar" : "bar"
@@ -93,7 +93,7 @@ let { d = "foo" as "foo" } = { d: "bar" as "bar" };
 >"foo" : "foo"
 >      : ^^^^^
 >{ d: "bar" as "bar" } : { d?: "bar"; }
->                      : ^^^^^^     ^^^
+>                      : ^^^^^^^^^^^^^^
 >d : "bar"
 >  : ^^^^^
 >"bar" as "bar" : "bar"

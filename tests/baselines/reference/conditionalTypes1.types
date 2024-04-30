@@ -172,7 +172,7 @@ type Options = { k: "a", a: number } | { k: "b", b: string } | { k: "c", c: bool
 
 type T10 = Exclude<Options, { k: "a" | "b" }>;  // { k: "c", c: boolean }
 >T10 : { k: "c"; c: boolean; }
->    : ^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^^^^^   ^^^^^       ^^^
 >k : "a" | "b"
 >  : ^^^^^^^^^
 
@@ -184,7 +184,7 @@ type T11 = Extract<Options, { k: "a" | "b" }>;  // { k: "a", a: number } | { k: 
 
 type T12 = Exclude<Options, { k: "a" } | { k: "b" }>;  // { k: "c", c: boolean }
 >T12 : { k: "c"; c: boolean; }
->    : ^^^^^^^^^^^^^^^^^^^^^^^
+>    : ^^^^^   ^^^^^       ^^^
 >k : "a"
 >  : ^^^
 >k : "b"
@@ -220,11 +220,11 @@ declare function f5<T extends Options, K extends string>(p: K): Extract<T, { k: 
 
 let x0 = f5("a");  // { k: "a", a: number }
 >x0 : { k: "a"; a: number; }
->   : ^^^^^^^^^^^^^^^^^^^^^^
+>   : ^^^^^   ^^^^^      ^^^
 >f5("a") : { k: "a"; a: number; }
->        : ^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^   ^^^^^      ^^^
 >f5 : <T extends Options, K extends string>(p: K) => Extract<T, { k: K; }>
->   : ^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^ ^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>   : ^ ^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^ ^^ ^^^^^                     
 >"a" : "a"
 >    : ^^^
 
@@ -673,7 +673,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(5) : 0
 >          : ^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >5 : 5
 >  : ^
 
@@ -681,7 +681,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf("hello") : ""
 >                : ^^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >"hello" : "hello"
 >        : ^^^^^^^
 
@@ -689,7 +689,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(true) : false
 >             : ^^^^^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >true : true
 >     : ^^^^
 
@@ -697,7 +697,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(n) : 0
 >          : ^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >n : number
 >  : ^^^^^^
 
@@ -705,7 +705,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(b) : false
 >          : ^^^^^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >b : boolean
 >  : ^^^^^^^
 
@@ -713,7 +713,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(x) : false | 0
 >          : ^^^^^^^^^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >x : number | boolean
 >  : ^^^^^^^^^^^^^^^^
 
@@ -721,7 +721,7 @@ function f20<T extends string>(n: number, b: boolean, x: number | boolean, y: T)
 >zeroOf(y) : ZeroOf<T>
 >          : ^^^^^^^^^
 >zeroOf : <T_1 extends string | number | boolean>(value: T_1) => ZeroOf<T_1>
->       : ^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^   ^^^^^           
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^       ^^^ 
 >y : T
 >  : ^
 }
@@ -1577,7 +1577,7 @@ assign(a, {o: 2, c: {0: {a: 2, c: '213123'}}})
 >assign(a, {o: 2, c: {0: {a: 2, c: '213123'}}}) : void
 >                                               : ^^^^
 >assign : <T>(o: T, a: RecursivePartial<T>) => void
->       : ^ ^^ ^^ ^^ ^^                   ^^^^^^^^^
+>       : ^ ^^ ^^ ^^ ^^                   ^^^^^    
 >a : { o: number; b: number; c: { a: number; c: string; }[]; }
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{o: 2, c: {0: {a: 2, c: '213123'}}} : { o: number; c: { 0: { a: number; c: string; }; }; }

@@ -6,8 +6,8 @@ class StringIterator {
 >               : ^^^^^^^^^^^^^^
 
     next() {
->next : () => { value: string; }
->     : ^^^^^^^^^^^^^^^^^^^^^^^^
+>next : () => {    value: string;}
+>     : ^^^^^^^         ^^^^^^^^^^
 
         return {
 >{            // no done property            value: ""        } : { value: string; }

@@ -29,11 +29,11 @@ const isIt = Math.random() > 0.5;
 >Math.random() : number
 >              : ^^^^^^
 >Math.random : () => number
->            : ^^^^^^^^^^^^
+>            : ^^^^^^      
 >Math : Math
 >     : ^^^^
 >random : () => number
->       : ^^^^^^^^^^^^
+>       : ^^^^^^      
 >0.5 : 0.5
 >    : ^^^
 
@@ -197,9 +197,9 @@ let Fail3 = () => <Funk mandatoryFn={() => { }} optionalBool={True} />
 
 let attrs2 = { optionalBool: true as true, mandatoryFn: () => { } }
 >attrs2 : { optionalBool: true; mandatoryFn: () => void; }
->       : ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{ optionalBool: true as true, mandatoryFn: () => { } } : { optionalBool: true; mandatoryFn: () => void; }
->                                                       : ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >optionalBool : true
 >             : ^^^^
 >true as true : true
@@ -223,5 +223,5 @@ let Success = () => <Funk {...attrs2} />
 >Funk : (_props: ComponentProps) => JSX.Element
 >     : ^      ^^              ^^^^^^^^^^^^^^^^
 >attrs2 : { optionalBool: true; mandatoryFn: () => void; }
->       : ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

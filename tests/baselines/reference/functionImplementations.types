@@ -117,7 +117,7 @@ function rec4() {
 >rec3() : number
 >       : ^^^^^^
 >rec3 : () => number
->     : ^^^^^^^^^^^^
+>     : ^^^^^^      
 }
 var n: number;
 >n : number
@@ -129,7 +129,7 @@ var n = rec3();
 >rec3() : number
 >       : ^^^^^^
 >rec3 : () => number
->     : ^^^^^^^^^^^^
+>     : ^^^^^^      
 
 var n = rec4();
 >n : number
@@ -371,8 +371,8 @@ function opt1(n = 4) {
 
 // Function signature with optional parameter, no type annotation and initializer has initializer's widened type
 function opt2(n = { x: null, y: undefined }) {
->opt2 : (n?: { x: any; y: any; }) => void
->     : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>opt2 : (n?: {    x: any;    y: any;}) => void
+>     : ^ ^^^^     ^^^^^^     ^^^^^^^^^^^^^^^^
 >n : { x: any; y: any; }
 >  : ^^^^^^^^^^^^^^^^^^^
 >{ x: null, y: undefined } : { x: null; y: undefined; }
@@ -473,11 +473,11 @@ var f7: (x: number) => string | number = x => { // should be (x: number) => numb
 >x.toString() : string
 >             : ^^^^^^
 >x.toString : (radix?: number) => string
->           : ^     ^^^      ^^^^^^^^^^^
+>           : ^     ^^^      ^^^^^      
 >x : number
 >  : ^^^^^^
 >toString : (radix?: number) => string
->         : ^     ^^^      ^^^^^^^^^^^
+>         : ^     ^^^      ^^^^^      
 }
 var f8: (x: number) => any = x => { // should be (x: number) => Base
 >f8 : (x: number) => any

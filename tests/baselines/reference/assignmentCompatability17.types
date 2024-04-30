@@ -31,9 +31,9 @@ module __test2__ {
 
     export var obj = {two: <any[]>[1]};
 >obj : { two: any[]; }
->    : ^^^^^^^     ^^^
+>    : ^^^^^^^^^^^^^^^
 >{two: <any[]>[1]} : { two: any[]; }
->                  : ^^^^^^^     ^^^
+>                  : ^^^^^^^^^^^^^^^
 >two : any[]
 >    : ^^^^^
 ><any[]>[1] : any[]
@@ -45,19 +45,19 @@ module __test2__ {
 
     export var __val__obj = obj;
 >__val__obj : { two: any[]; }
->           : ^^^^^^^     ^^^
+>           : ^^^^^^^^^^^^^^^
 >obj : { two: any[]; }
->    : ^^^^^^^     ^^^
+>    : ^^^^^^^^^^^^^^^
 }
 __test2__.__val__obj = __test1__.__val__obj4
 >__test2__.__val__obj = __test1__.__val__obj4 : __test1__.interfaceWithPublicAndOptional<number, string>
 >                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >__test2__.__val__obj : { two: any[]; }
->                     : ^^^^^^^     ^^^
+>                     : ^^^^^^^^^^^^^^^
 >__test2__ : typeof __test2__
 >          : ^^^^^^^^^^^^^^^^
 >__val__obj : { two: any[]; }
->           : ^^^^^^^     ^^^
+>           : ^^^^^^^^^^^^^^^
 >__test1__.__val__obj4 : __test1__.interfaceWithPublicAndOptional<number, string>
 >                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >__test1__ : typeof __test1__

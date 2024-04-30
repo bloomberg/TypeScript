@@ -166,8 +166,8 @@ var z: {
 }
 
 function f() {
->f : () => { readonly x: number; y: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>f : () => {    readonly x: number;    y: number;}
+>  : ^^^^^^^    ^^^^^^^^^ ^^^^^^^^^     ^^^^^^^^^^
 
     return {
 >{        get x() { return 1; },        get y() { return 1; },        set y(value) { }    } : { readonly x: number; y: number; }
@@ -211,5 +211,5 @@ function g() {
     }
     return x;
 >x : { readonly [x: string]: Object; readonly a: string; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
 }

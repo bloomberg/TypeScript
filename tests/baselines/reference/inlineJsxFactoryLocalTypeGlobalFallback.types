@@ -95,7 +95,7 @@ export default <h></h>
 /** @jsx dom */
 import { dom } from "./renderer"
 >dom : () => JSX.Element
->    : ^^^^^^^^^^^^^^^^^
+>    : ^^^^^^           
 
 import prerendered from "./component";
 >prerendered : import("renderer2").predom.JSX.Element

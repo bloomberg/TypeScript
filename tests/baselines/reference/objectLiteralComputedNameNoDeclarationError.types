@@ -3,9 +3,9 @@
 === objectLiteralComputedNameNoDeclarationError.ts ===
 const Foo = {
 >Foo : { BANANA: "banana"; }
->    : ^^^^^^^^^^        ^^^
+>    : ^^^^^^^^^^^^^^^^^^^^^
 >{    BANANA: 'banana' as 'banana',} : { BANANA: "banana"; }
->                                    : ^^^^^^^^^^        ^^^
+>                                    : ^^^^^^^^^^^^^^^^^^^^^
 
     BANANA: 'banana' as 'banana',
 >BANANA : "banana"
@@ -28,7 +28,7 @@ export const Baa = {
 >Foo.BANANA : "banana"
 >           : ^^^^^^^^
 >Foo : { BANANA: "banana"; }
->    : ^^^^^^^^^^        ^^^
+>    : ^^^^^^^^^^^^^^^^^^^^^
 >BANANA : "banana"
 >       : ^^^^^^^^
 >1 : 1
