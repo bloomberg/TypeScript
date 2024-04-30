@@ -67,6 +67,7 @@ import {
     isLiteralTypeNode,
     isMappedTypeNode,
     isNamedTupleMember,
+    isNewScopeNode,
     isParameter,
     isPartOfParameterDeclaration,
     isPrimitiveLiteralValue,
@@ -144,12 +145,6 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const transformed = visitNode(existing, visitExistingNodeTreeSymbols, isTypeNode);
         context.approximateLength += existing.end - existing.pos;
         return transformed;
-
-        function isNewScopeNode(node: Node): node is IntroducesNewScopeNode {
-            return isFunctionLike(node)
-                || isJSDocSignature(node)
-                || isMappedTypeNode(node);
-        }
 
         function visitExistingNodeTreeSymbols(node: Node): Node | undefined {
             const onExitNewScope = isNewScopeNode(node) ? onEnterNewScope(node) : undefined;
@@ -315,7 +310,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             if (isComputedPropertyName(node) && isEntityNameExpression(node.expression)) {
                 const { node: result, introducesError } = resolver.trackExistingEntityName(context, node.expression);
                 if (!introducesError) {
-                    return result;
+                    return factory.updateComputedPropertyName(node, result);
                 }
                 else {
                     const computedPropertyNameType = resolver.serializeTypeOfExpression(context, node.expression);

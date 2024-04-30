@@ -593,6 +593,8 @@ import {
     WriteFileCallback,
     WriteFileCallbackData,
     YieldExpression,
+    isMappedTypeNode,
+    IntroducesNewScopeNode,
 } from "./_namespaces/ts";
 
 /** @internal */
@@ -11083,7 +11085,8 @@ export function createNameResolver({
                         if (meaning & result.flags & SymbolFlags.Type && lastLocation.kind !== SyntaxKind.JSDoc) {
                             useResult = result.flags & SymbolFlags.TypeParameter
                                 // type parameters are visible in parameter list, return type and type parameter list
-                                ? lastLocation === (location as FunctionLikeDeclaration).type ||
+                                ? nodeIsSynthesized(lastLocation) || // Synthetic fake scopes are added for signatures so type parameters are accessible from them
+                                    lastLocation === (location as FunctionLikeDeclaration).type ||
                                     lastLocation.kind === SyntaxKind.Parameter ||
                                     lastLocation.kind === SyntaxKind.JSDocParameterTag ||
                                     lastLocation.kind === SyntaxKind.JSDocReturnTag ||
@@ -11959,4 +11962,11 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
     }
 
     return { hasVisibleDeclarations, isEntityNameVisible, collectLinkedAliases };
+}
+
+/** @internal */
+export function isNewScopeNode(node: Node): node is IntroducesNewScopeNode {
+    return isFunctionLike(node)
+        || isJSDocSignature(node)
+        || isMappedTypeNode(node);
 }

@@ -1101,6 +1101,7 @@ import {
     WideningContext,
     WithStatement,
     YieldExpression,
+    isNewScopeNode,
 } from "./_namespaces/ts";
 import * as moduleSpecifiers from "./_namespaces/ts.moduleSpecifiers";
 import * as performance from "./_namespaces/ts.performance";
@@ -2809,7 +2810,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         if (meaning) {
             const symbol = getMergedSymbol(symbols.get(name));
             if (symbol) {
-                Debug.assert((getCheckFlags(symbol) & CheckFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
                 if (symbol.flags & meaning) {
                     return symbol;
                 }
@@ -4414,7 +4414,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         else {
             Debug.assertNever(name, "Unknown entity name kind.");
         }
-        Debug.assert((getCheckFlags(symbol) & CheckFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
         if (!nodeIsSynthesized(name) && isEntityName(name) && (symbol.flags & SymbolFlags.Alias || name.parent.kind === SyntaxKind.ExportAssignment)) {
             markSymbolOfAliasDeclarationIfTypeOnly(getAliasDeclarationFromName(name), symbol, /*finalTarget*/ undefined, /*overwriteEmpty*/ true);
         }
@@ -7852,6 +7851,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
 
         function typeParameterToName(type: TypeParameter, context: NodeBuilderContext) {
+            if(type.target) {
+                type = type.target;
+            }
+            
             if (context.flags & NodeBuilderFlags.GenerateNamesForShadowedTypeParams && context.typeParameterNames) {
                 const cached = context.typeParameterNames.get(getTypeId(type));
                 if (cached) {
@@ -8122,7 +8125,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 if (isAccessor(decl)) {
                     result = syntacticNodeBuilder.serializeTypeOfAccessor(decl, context);
                 }
-                else if (hasInferredType(decl) && !isTransientSymbol(symbol)) {
+                else if (hasInferredType(decl) 
+                    && (
+                        !isTransientSymbol(symbol) || 
+                        !isPropertyAssignment(decl)
+                    )
+                    && symbol.valueDeclaration 
+                    && getTypeOfSymbol(symbol) === getTypeOfSymbol(getSymbolOfDeclaration(symbol.valueDeclaration))
+                ) {
                     result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, context);
                 }
             }
@@ -8138,14 +8148,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (suppressAny) context.flags &= ~NodeBuilderFlags.SuppressAnyReturnType; // suppress only toplevel `any`s
             let returnTypeNode: TypeNode | undefined;
 
-            if (signature.declaration && !signature.target) {
-                const declaration = signature.declaration;
+            if (signature.declaration) {
                 const declarationSignature = getSignatureFromDeclaration(signature.declaration);
-                if (declarationSignature === signature) {
-                    const enclosingDeclarationIgnoringFakeScope = context.enclosingDeclaration && getEnclosingDeclarationIgnoringFakeScope(context.enclosingDeclaration);
-                    if (declaration && !!findAncestor(declaration, n => n === enclosingDeclarationIgnoringFakeScope)) {
-                        returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
-                    }
+                if (declarationSignature === signature || getReturnTypeOfSignature(declarationSignature) === getReturnTypeOfSignature(signature)) {
+                    returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
                 }
             }
             if (!returnTypeNode) {
@@ -8203,7 +8209,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 (getNodeLinks(enclosingDeclaration).fakeScopeForSignatureDeclaration || !findAncestor(node, n => n === enclosingDeclaration))
             ) {
                 const symAtLocation = resolveEntityName(leftmost, meaning, /*ignoreErrors*/ true, /*dontResolveAlias*/ true, enclosingDeclaration);
-                if (symAtLocation !== sym || symAtLocation === unknownSymbol) {
+                if ((symAtLocation !== sym && (!symAtLocation || !isTransientSymbol(symAtLocation) || symAtLocation.links.target !== sym)) || symAtLocation === unknownSymbol) {
                     introducesError = true;
                     return { introducesError, node, sym };
                 }
