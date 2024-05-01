@@ -44,8 +44,8 @@ class Chain2<T extends { length: number }> {
 >                                                              : ^^^^^^^^^^^^^^^^^^^^^  ^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >this.then(x => result)/*S*/.then(x => "abc") : Chain2<Function>
 >                                             : ^^^^^^^^^^^^^^^^
->this.then(x => result)/*S*/.then : <S extends Function>(cb: (x: S) => S) => Chain2<S>
->                                 : ^^^^^^^^^^^^^^^^^^^^^  ^^^ ^^^^^^^^^^^^^^^^^^^^^^^
+>this.then(x => result)/*S*/.then : <S extends Function>(cb: (x: S_1) => S) => Chain2<S>
+>                                 : ^^^^^^^^^^^^^^^^^^^^^  ^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^
 >this.then(x => result) : Chain2<S>
 >                       : ^^^^^^^^^
 >this.then : <S extends Function>(cb: (x: T) => S) => Chain2<S>
@@ -60,8 +60,8 @@ class Chain2<T extends { length: number }> {
 >  : ^
 >result : S
 >       : ^
->then : <S extends Function>(cb: (x: S) => S) => Chain2<S>
->     : ^^^^^^^^^^^^^^^^^^^^^  ^^^ ^^^^^^^^^^^^^^^^^^^^^^^
+>then : <S extends Function>(cb: (x: S_1) => S) => Chain2<S>
+>     : ^^^^^^^^^^^^^^^^^^^^^  ^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^
 >x => "abc" : (x: S) => string
 >           : ^ ^^^^^^^^^^^^^^
 >x : S
