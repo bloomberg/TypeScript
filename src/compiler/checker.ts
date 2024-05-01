@@ -5858,7 +5858,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return isEntityNameVisible(entityName, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible);
             },
             serializeExistingTypeNode(context: NodeBuilderContext, typeNode, addUndefined) {
-                const type = getTypeFromTypeNode(typeNode);
+                const type = tryMapTypeInContext(context, getTypeFromTypeNode(typeNode));
                 if (
                     addUndefined &&
                     !someType(type, t => !!(t.flags & TypeFlags.Undefined)) &&
@@ -5873,18 +5873,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             },
             serializeReturnTypeForSignature(context: NodeBuilderContext, signatureDeclaration) {
                 const signature = getSignatureFromDeclaration(signatureDeclaration);
-                const returnType = context.mapper ? getMappedType(getReturnTypeOfSignature(signature), context.mapper): getReturnTypeOfSignature(signature);
+                const returnType = tryMapTypeInContext(context, getReturnTypeOfSignature(signature));
                 return serializeInferredReturnTypeForSignature(context, signature, returnType);
             },
             serializeTypeOfExpression(context: NodeBuilderContext, expr) {
                 const type = getWidenedType(getRegularTypeOfExpression(expr));
-                return typeToTypeNodeHelper(type, context);
+                return typeToTypeNodeHelper(tryMapTypeInContext(context, type), context);
             },
             serializeTypeOfDeclaration(context: NodeBuilderContext, declaration) {
                 // Get type of the symbol if this is the valid symbol otherwise get type at location
                 const symbol = getSymbolOfDeclaration(declaration);
                 const type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
-                    ? getTypeOfSymbol(symbol)
+                    ? tryMapTypeInContext(context, getTypeOfSymbol(symbol))
                     : errorType;
                 return serializeInferredTypeForDeclaration(symbol, context, type);
             },
@@ -5892,17 +5892,17 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 return parameterToParameterDeclarationName(getSymbolOfDeclaration(parameter), parameter, context);
             },
             serializeEntityName(context: NodeBuilderContext, node) {
-                const symbol = getSymbolAtLocation(node, true);
+                const symbol = getSymbolAtLocation(node, /*ignoreErrors*/ true);
                 if(!symbol) return undefined;
                 if(!isValueSymbolAccessible(symbol, context.enclosingDeclaration)) return undefined;
                 return symbolToExpression(symbol, context, SymbolFlags.Value | SymbolFlags.ExportValue);
             },
             serializeTypeName(context: NodeBuilderContext, node, isTypeof, typeArguments) {
-                const symbol = getSymbolAtLocation(node, true);
+                const symbol = getSymbolAtLocation(node, /*ignoreErrors*/ true);
                 if(!symbol) return undefined;
                 const resolvedSymbol = symbol.flags & SymbolFlags.Alias ? resolveAlias(symbol) : symbol;
                 const meaning = isTypeof ? SymbolFlags.Value: SymbolFlags.Type
-                if(isSymbolAccessible(symbol, context.enclosingDeclaration, meaning, false).accessibility !== SymbolAccessibility.Accessible) return undefined;
+                if(isSymbolAccessible(symbol, context.enclosingDeclaration, meaning, /*shouldComputeAliasesToMakeVisible*/ false).accessibility !== SymbolAccessibility.Accessible) return undefined;
                 return symbolToTypeNode(resolvedSymbol, context, meaning, typeArguments);
             },
             getJsDocPropertyOverride(context: NodeBuilderContext, jsDocTypeLiteral, jsDocProperty) {
@@ -5933,11 +5933,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             },
             canReuseTypeNode(context: NodeBuilderContext, existing: TypeNode) {
                 if (isInJSFile(existing)) {
-                    if (isTypeReferenceNode(existing)) {
-                        return existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, getTypeFromTypeNode(existing))
-                            && !getIntendedTypeFromJSDocTypeReference(existing) // We should probably allow the reuse of JSDoc reference types such as String Number etc
-                            && resolveTypeReferenceName(existing, SymbolFlags.Type, /*ignoreErrors*/ true) !== unknownSymbol; // JSDoc type annotations can reference values (meaning typeof value) as well as types. We only reuse type nodes
-                    }
                     if (isLiteralImportTypeNode(existing)) {
                         getTypeFromImportTypeNode(existing);
                         // This was existing code. Should we call getTypeFromImportTypeNode to make sure teh symbol is actually there ?
@@ -5954,10 +5949,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     }
                 }
                 if (isTypeReferenceNode(existing)) {
-                    const symbolAtDefinition = resolveTypeReferenceName(existing, SymbolFlags.Type, /*ignoreErrors*/ true);
-                    if (!(symbolAtDefinition.flags & SymbolFlags.TypeParameter)) return true;
-                    const symbolInDeclaration = resolveEntityName(getTypeReferenceName(existing)!, SymbolFlags.Type, /*ignoreErrors*/ true, /*dontResolveAlias*/ undefined, context.enclosingDeclaration);
-                    return symbolAtDefinition === symbolInDeclaration;
+                    const symbol = resolveTypeReferenceName(existing, SymbolFlags.Type, /*ignoreErrors*/ true);
+                    if (symbol.flags & SymbolFlags.TypeParameter) {
+                        const type = getDeclaredTypeOfSymbol(symbol);
+                        if(tryMapTypeInContext(context, type) !== type) {
+                            return false
+                        }
+                    }
+                    if(isInJSDoc(existing)) {
+                        return existingTypeNodeIsNotReferenceOrIsReferenceWithCompatibleTypeArgumentCount(existing, getTypeFromTypeNode(existing))
+                            && !getIntendedTypeFromJSDocTypeReference(existing) // We should probably allow the reuse of JSDoc reference types such as String Number etc
+                            && resolveTypeReferenceName(existing, SymbolFlags.Type, /*ignoreErrors*/ true) !== unknownSymbol; // JSDoc type annotations can reference values (meaning typeof value) as well as types. We only reuse type nodes
+                    }
                 }
                 if (
                     isTypeOperatorNode(existing) &&
@@ -5988,7 +5991,10 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             symbolToNode: (symbol: Symbol, meaning: SymbolFlags, enclosingDeclaration?: Node, flags?: NodeBuilderFlags, tracker?: SymbolTracker) => withContext(enclosingDeclaration, flags, tracker, context => symbolToNode(symbol, context, meaning)),
         };
 
-        /**
+        function tryMapTypeInContext(context: NodeBuilderContext, type: Type) {
+            return context.mapper ? getMappedType(type, context.mapper) : type
+        }
+        /** 
          * Unlike the utilities `setTextRange`, this checks if the `location` we're trying to set on `range` is within the
          * same file as the active context. If not, the range is not applied. This prevents us from copying ranges across files,
          * which will confuse the node printer (as it assumes all node ranges are within the current file).
@@ -8250,7 +8256,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             function attachSymbolToLeftmostIdentifier(node: Node): Node {
                 if (node === leftmost) {
                     const type = getDeclaredTypeOfSymbol(sym!);
-                    const name = sym!.flags & SymbolFlags.TypeParameter ? typeParameterToName(context.mapper ? getMappedType(type, context.mapper) : type, context) : factory.cloneNode(node as Identifier);
+                    const name = sym!.flags & SymbolFlags.TypeParameter ? typeParameterToName(type, context) : factory.cloneNode(node as Identifier);
                     name.symbol = sym!; // for quickinfo, which uses identifier symbol information
                     return setTextRange(context, setEmitFlags(name, EmitFlags.NoAsciiEscaping), node);
                 }

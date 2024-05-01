@@ -273,11 +273,11 @@ const arrayFilter = <T>(f: (x: T) => boolean) => (a: T[]) => a.filter(f);
 >a.filter(f) : T[]
 >            : ^^^
 >a.filter : { <S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[]; (predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[]; }
->         : ^^^ ^^^^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^          ^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^
+>         : ^^^^^^^^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^         ^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^
 >a : T[]
 >  : ^^^
 >filter : { <S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): S[]; (predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): T[]; }
->       : ^^^ ^^^^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^          ^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^
+>       : ^^^^^^^^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^         ^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^     ^^      ^^     ^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^
 >f : (x: T) => boolean
 >  : ^ ^^ ^^^^^       
 

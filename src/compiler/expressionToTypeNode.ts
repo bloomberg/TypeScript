@@ -110,7 +110,6 @@ import {
     SetAccessorDeclaration,
     setCommentRange,
     setEmitFlags,
-    setIdentifierTypeArguments,
     setOriginalNode,
     SignatureDeclaration,
     StringLiteral,
@@ -260,7 +259,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             }
             if (isTypeReferenceNode(node)) {
                 if (resolver.canReuseTypeNode(context, node)) {
-                    let { introducesError, node: newName } = resolver.trackExistingEntityName(context, node.typeName);
+                    const { introducesError, node: newName } = resolver.trackExistingEntityName(context, node.typeName);
                     const typeArguments = visitNodes(node.typeArguments, visitExistingNodeTreeSymbols, isTypeNode);
 
                     if (!introducesError) {
@@ -271,7 +270,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                         );
                     }
                     else {
-                        const serializedName = resolver.serializeTypeName(context, node.typeName, false, typeArguments);
+                        const serializedName = resolver.serializeTypeName(context, node.typeName, /*isTypeOf*/ false, typeArguments);
                         if(serializedName) {
                             return serializedName;
                         }
@@ -312,7 +311,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             if (isTypeQueryNode(node)) {
                 const { introducesError, node: exprName } = resolver.trackExistingEntityName(context, node.exprName);
                 if (introducesError) {
-                    const serializedName = resolver.serializeTypeName(context, node.exprName, true);
+                    const serializedName = resolver.serializeTypeName(context, node.exprName, /*isTypeOf*/ true);
                     if(serializedName) {
                         return serializedName;
                     }
