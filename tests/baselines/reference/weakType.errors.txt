@@ -1,4 +1,4 @@
-weakType.ts(15,13): error TS2560: Value of type '() => { timeout: number; }' has no properties in common with type 'Settings'. Did you mean to call it?
+weakType.ts(15,13): error TS2560: Value of type '() => {    timeout: number;}' has no properties in common with type 'Settings'. Did you mean to call it?
 weakType.ts(16,13): error TS2560: Value of type '() => { timeout: number; }' has no properties in common with type 'Settings'. Did you mean to call it?
 weakType.ts(17,13): error TS2560: Value of type 'CtorOnly' has no properties in common with type 'Settings'. Did you mean to call it?
 weakType.ts(18,13): error TS2559: Type '12' has no properties in common with type 'Settings'.
@@ -27,7 +27,7 @@ weakType.ts(62,5): error TS2322: Type '{ properties: { wrong: string; }; }' is n
     // forgot to call `getDefaultSettings`
     doSomething(getDefaultSettings);
                 ~~~~~~~~~~~~~~~~~~
-!!! error TS2560: Value of type '() => { timeout: number; }' has no properties in common with type 'Settings'. Did you mean to call it?
+!!! error TS2560: Value of type '() => {    timeout: number;}' has no properties in common with type 'Settings'. Did you mean to call it?
 !!! related TS6212 weakType.ts:15:13: Did you mean to call this expression?
     doSomething(() => ({ timeout: 1000 }));
                 ~~~~~~~~~~~~~~~~~~~~~~~~~

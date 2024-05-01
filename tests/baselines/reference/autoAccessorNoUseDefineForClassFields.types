@@ -31,18 +31,22 @@ class C3 {
 >   : ^^
 
     static accessor #x = 0;
->x : number
->  : ^^^^^^
+>#x : number
+>   : ^^^^^^
 >0 : 0
 >  : ^
 
     accessor #y = 0;
+>#y : number
+>   : ^^^^^^
+>0 : 0
+>  : ^
 }
 
-=== file3.ts ===
-class C3 {
->C3 : C3
->   : ^^
+=== file3-2.ts ===
+class C32 {
+>C32 : C32
+>    : ^^^
 
     accessor x = 0;
 >x : number

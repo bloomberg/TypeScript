@@ -67,11 +67,11 @@ declare function f3(x: "a" | "b"): {
 ===================================================================
 --- Expected	The full check baseline
 +++ Actual	with noCheck set
-@@ -15,8 +15,8 @@
-     [P in A | B]: any;
- };
+@@ -13,8 +13,8 @@
+ }, 'b'>;
+ declare function f1<A extends string, B extends string>(a: A, b: B): { [P in A | B]: any; };
  declare function f2<A extends string>(a: A): { [P in A | "x"]: any; };
- declare function f3(x: 'a' | 'b'): {
+ declare function f3(x: "a" | "b"): {
 +    x: any;
      a: any;
      b: any;

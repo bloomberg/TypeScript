@@ -377,7 +377,7 @@ export declare function foo(p: "l0"): (p: string, cb?: (p: "l2", cb?: (p: "l3") 
 }) => any;
 //// [v10.d.ts]
 export declare function foo(): (p: string, cb?: (cb?: (p: "l3") => {
-    l3: 0;
+    [p]: 0;
 }) => {
     l0: 0;
 }) => any;
