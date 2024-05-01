@@ -7,7 +7,6 @@ const {myTypes} = require('./file.js');
 >require('./file.js') : typeof import("file")
 >                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >require : any
->        : ^^^
 >'./file.js' : "./file.js"
 >            : ^^^^^^^^^^^
 

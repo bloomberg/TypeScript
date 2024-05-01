@@ -1,0 +1,44 @@
+//// [tests/cases/compiler/declarationEmitShdowedParameters.ts] ////
+
+=== declarationEmitShdowedParameters.ts ===
+const x = 1;
+>x : 1
+>  : ^
+>1 : 1
+>  : ^
+
+export const foo = (cb: (x: number) => typeof x): void => {
+>foo : (cb: (x: number) => typeof x) => void
+>    : ^  ^^                       ^^^^^    
+>(cb: (x: number) => typeof x): void => {} : (cb: (x: number) => typeof x) => void
+>                                          : ^  ^^                       ^^^^^    
+>cb : (x: number) => typeof x
+>   : ^ ^^      ^^^^^        
+>x : number
+>  : ^^^^^^
+>x : number
+>  : ^^^^^^
+}
+
+const y = 1;
+>y : 1
+>  : ^
+>1 : 1
+>  : ^
+
+export const foo2 = (cb: (y: number) => void) : typeof y => {
+>foo2 : (cb: (y: number) => void) => typeof y
+>     : ^  ^^                   ^^^^^        
+>(cb: (y: number) => void) : typeof y => {    return y;} : (cb: (y: number) => void) => typeof y
+>                                                        : ^  ^^                   ^^^^^        
+>cb : (y: number) => void
+>   : ^ ^^      ^^^^^    
+>y : number
+>  : ^^^^^^
+>y : 1
+>  : ^
+
+    return y;
+>y : 1
+>  : ^
+}

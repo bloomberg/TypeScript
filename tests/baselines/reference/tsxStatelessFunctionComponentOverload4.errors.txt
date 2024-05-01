@@ -70,7 +70,7 @@ file.tsx(35,13): error TS2769: No overload matches this call.
     Type 'string' is not assignable to type 'boolean'.
 file.tsx(36,13): error TS2769: No overload matches this call.
   Overload 1 of 3, '(a: { y1?: string; y2?: number; }): JSX.Element', gave the following error.
-    Type '{ children: any; y1: string; y2: number; }' is not assignable to type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
+    Type '{ children: string; y1: string; y2: number; }' is not assignable to type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
       Property 'children' does not exist on type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
   Overload 2 of 3, '(a: { y1?: string; y2?: number; children: JSX.Element; }): JSX.Element', gave the following error.
     'TestingOptional' components don't accept text as child elements. Text in JSX has the type 'string', but the expected type of 'children' is 'Element'.
@@ -208,7 +208,7 @@ file.tsx(36,13): error TS2769: No overload matches this call.
                 ~~~~~~~~~~~~~~~
 !!! error TS2769: No overload matches this call.
 !!! error TS2769:   Overload 1 of 3, '(a: { y1?: string; y2?: number; }): JSX.Element', gave the following error.
-!!! error TS2769:     Type '{ children: any; y1: string; y2: number; }' is not assignable to type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
+!!! error TS2769:     Type '{ children: string; y1: string; y2: number; }' is not assignable to type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
 !!! error TS2769:       Property 'children' does not exist on type 'IntrinsicAttributes & { y1?: string; y2?: number; }'.
 !!! error TS2769:   Overload 2 of 3, '(a: { y1?: string; y2?: number; children: JSX.Element; }): JSX.Element', gave the following error.
 !!! error TS2769:     'TestingOptional' components don't accept text as child elements. Text in JSX has the type 'string', but the expected type of 'children' is 'Element'.

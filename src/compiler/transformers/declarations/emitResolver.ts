@@ -443,6 +443,8 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         getAllAccessorDeclarations: notImplemented,
         getJsDocPropertyOverride: notImplemented,
         getModuleSpecifierOverride: notImplemented,
+        serializeEntityName: notImplemented,
+        serializeTypeName: notImplemented,
         isEntityNameVisible(context, name, shouldComputeAliasToMakeVisible) {
             return isEntityNameVisible(name, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible);
         },

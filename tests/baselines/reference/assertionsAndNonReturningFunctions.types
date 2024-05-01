@@ -55,7 +55,7 @@ function assertIsString(x) {
 */
 function assert2(check) {
 >assert2 : (check: boolean) => asserts check
->        : ^     ^^       ^^^^^             
+>        : ^     ^^       ^^^^^^^^^^^^^^^^^^
 >check : boolean
 >      : ^^^^^^^
 
@@ -135,7 +135,7 @@ function f1(x) {
 >assert2(typeof x === "string") : void
 >                               : ^^^^
 >assert2 : (check: boolean) => asserts check
->        : ^     ^^       ^^^^^             
+>        : ^     ^^       ^^^^^^^^^^^^^^^^^^
 >typeof x === "string" : boolean
 >                      : ^^^^^^^
 >typeof x : "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function"

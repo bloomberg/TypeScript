@@ -213,12 +213,12 @@ module.exports.f.self = module.exports.f;
  * @param {{y: typeof module.exports.b}} b
  */
 function g(a, b) {
->g : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >a : { x: string; }
 >  : ^^^^^      ^^^
->b : { y: { (): void; cat: string; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     return a.x && b.y();
 >a.x && b.y() : void
@@ -233,39 +233,39 @@ function g(a, b) {
 >      : ^^^^
 >b.y : { (): void; cat: string; }
 >    : ^^^^^^^^^^^^^^^^^^^^^^^^^^
->b : { y: { (): void; cat: string; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >y : { (): void; cat: string; }
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^
 }
 
 module.exports.g = g;
->module.exports.g = g : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->                     : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
->module.exports.g : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->                 : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>module.exports.g = g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>                     : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>module.exports.g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>                 : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >module.exports : typeof module.exports
 >               : ^^^^^^^^^^^^^^^^^^^^^
 >module : { exports: typeof module.exports; }
 >       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >exports : typeof module.exports
 >        : ^^^^^^^^^^^^^^^^^^^^^
->g : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
->g : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 
 /**
  * @param {{x: string}} a
  * @param {{y: typeof module.exports.b}} b
  */
 function hh(a, b) {
->hh : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>hh : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >a : { x: string; }
 >  : ^^^^^      ^^^
->b : { y: { (): void; cat: string; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     return a.x && b.y();
 >a.x && b.y() : void
@@ -280,27 +280,27 @@ function hh(a, b) {
 >      : ^^^^
 >b.y : { (): void; cat: string; }
 >    : ^^^^^^^^^^^^^^^^^^^^^^^^^^
->b : { y: { (): void; cat: string; }; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >y : { (): void; cat: string; }
 >  : ^^^^^^^^^^^^^^^^^^^^^^^^^^
 }
 
 module.exports.h = hh;
->module.exports.h = hh : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->                      : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
->module.exports.h : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->                 : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>module.exports.h = hh : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>                      : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>module.exports.h : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>                 : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >module.exports : typeof module.exports
 >               : ^^^^^^^^^^^^^^^^^^^^^
 >module : { exports: typeof module.exports; }
 >       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >exports : typeof module.exports
 >        : ^^^^^^^^^^^^^^^^^^^^^
->h : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
->hh : (a: { x: string; }, b: { y: { (): void; cat: string; }; }) => void
->   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>h : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>hh : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 
 module.exports.i = function i() {}
 >module.exports.i = function i() {} : () => void

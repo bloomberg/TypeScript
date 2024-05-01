@@ -10314,6 +10314,8 @@ export interface SyntacticTypeNodeBuilderResolver {
     serializeTypeOfExpression(context: SyntacticTypeNodeBuilderContext, expr: Expression): TypeNode | undefined;
     serializeTypeOfDeclaration(context: SyntacticTypeNodeBuilderContext, node: HasInferredType): TypeNode | undefined;
     serializeNameOfParameter(context: SyntacticTypeNodeBuilderContext, parameter: ParameterDeclaration): BindingName | string;
+    serializeTypeName(context: SyntacticTypeNodeBuilderContext, node: EntityName, isTypeOf?: boolean, typeArguments?: readonly TypeNode[]): TypeNode | undefined;
+    serializeEntityName(context: SyntacticTypeNodeBuilderContext, node: EntityNameExpression): Expression | undefined;
     getJsDocPropertyOverride(context: SyntacticTypeNodeBuilderContext, jsDocTypeLiteral: JSDocTypeLiteral, jsDocProperty: JSDocPropertyLikeTag): TypeNode | undefined;
     enterNewScope(context: SyntacticTypeNodeBuilderContext, node: IntroducesNewScopeNode | ConditionalTypeNode): {
         context: SyntacticTypeNodeBuilderContext;

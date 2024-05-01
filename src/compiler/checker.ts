@@ -1101,7 +1101,6 @@ import {
     WideningContext,
     WithStatement,
     YieldExpression,
-    isNewScopeNode,
 } from "./_namespaces/ts";
 import * as moduleSpecifiers from "./_namespaces/ts.moduleSpecifiers";
 import * as performance from "./_namespaces/ts.performance";
@@ -1554,7 +1553,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         setRequiresScopeChangeCache,
         lookup: getSuggestionForSymbolNameLookup,
     });
-
     // for public members that accept a Node or one of its subtypes, we must guard against
     // synthetic nodes created during transformations by calling `getParseTreeNode`.
     // for most of these, we perform the guard only on `checker` to avoid any possible
@@ -5861,7 +5859,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             },
             serializeExistingTypeNode(context: NodeBuilderContext, typeNode, addUndefined) {
                 const type = getTypeFromTypeNode(typeNode);
-
                 if (
                     addUndefined &&
                     !someType(type, t => !!(t.flags & TypeFlags.Undefined)) &&
@@ -5876,7 +5873,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             },
             serializeReturnTypeForSignature(context: NodeBuilderContext, signatureDeclaration) {
                 const signature = getSignatureFromDeclaration(signatureDeclaration);
-                return serializeInferredReturnTypeForSignature(context, signature);
+                const returnType = context.mapper ? getMappedType(getReturnTypeOfSignature(signature), context.mapper): getReturnTypeOfSignature(signature);
+                return serializeInferredReturnTypeForSignature(context, signature, returnType);
             },
             serializeTypeOfExpression(context: NodeBuilderContext, expr) {
                 const type = getWidenedType(getRegularTypeOfExpression(expr));
@@ -5885,10 +5883,27 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             serializeTypeOfDeclaration(context: NodeBuilderContext, declaration) {
                 // Get type of the symbol if this is the valid symbol otherwise get type at location
                 const symbol = getSymbolOfDeclaration(declaration);
-                return serializeInferredTypeForDeclaration(symbol, context);
+                const type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
+                    ? getTypeOfSymbol(symbol)
+                    : errorType;
+                return serializeInferredTypeForDeclaration(symbol, context, type);
             },
             serializeNameOfParameter(context: NodeBuilderContext, parameter) {
                 return parameterToParameterDeclarationName(getSymbolOfDeclaration(parameter), parameter, context);
+            },
+            serializeEntityName(context: NodeBuilderContext, node) {
+                const symbol = getSymbolAtLocation(node, true);
+                if(!symbol) return undefined;
+                if(!isValueSymbolAccessible(symbol, context.enclosingDeclaration)) return undefined;
+                return symbolToExpression(symbol, context, SymbolFlags.Value | SymbolFlags.ExportValue);
+            },
+            serializeTypeName(context: NodeBuilderContext, node, isTypeof, typeArguments) {
+                const symbol = getSymbolAtLocation(node, true);
+                if(!symbol) return undefined;
+                const resolvedSymbol = symbol.flags & SymbolFlags.Alias ? resolveAlias(symbol) : symbol;
+                const meaning = isTypeof ? SymbolFlags.Value: SymbolFlags.Type
+                if(isSymbolAccessible(symbol, context.enclosingDeclaration, meaning, false).accessibility !== SymbolAccessibility.Accessible) return undefined;
+                return symbolToTypeNode(resolvedSymbol, context, meaning, typeArguments);
             },
             getJsDocPropertyOverride(context: NodeBuilderContext, jsDocTypeLiteral, jsDocProperty) {
                 const name = isIdentifier(jsDocProperty.name) ? jsDocProperty.name : jsDocProperty.name.right;
@@ -5896,17 +5911,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 const overrideTypeNode = typeViaParent && jsDocProperty.typeExpression && getTypeFromTypeNode(jsDocProperty.typeExpression.type) !== typeViaParent ? typeToTypeNodeHelper(typeViaParent, context) : undefined;
                 return overrideTypeNode;
             },
-            enterNewScope(oldContext: NodeBuilderContext, node) {
-                const context = cloneNodeBuilderContext(oldContext);
-                const cleanup = enterNewScope(context, node, getParametersInScope(node), getTypeParametersInScope(node));
-                return {
-                    context,
-                    cleanup: () => {
-                        oldContext.approximateLength = context.approximateLength;
-                        oldContext.truncating = context.truncating;
-                        cleanup?.();
-                    },
-                };
+            enterNewScope(context: NodeBuilderContext, node) {
+                return enterNewScope(context, node, getParametersInScope(node), getTypeParametersInScope(node));
             },
             markNodeReuse<T extends Node>(context: NodeBuilderContext, range: T, location: Node | undefined) {
                 return setTextRange(context, range, location);
@@ -6038,6 +6044,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 approximateLength: 0,
                 trackedSymbols: undefined,
                 bundled: !!compilerOptions.outFile && !!enclosingDeclaration && isExternalOrCommonJsModule(getSourceFileOfNode(enclosingDeclaration)),
+                mapper: undefined,
             };
             context.tracker = new SymbolTrackerImpl(context, tracker, moduleResolverHost);
             const resultingNode = cb(context);
@@ -7002,7 +7009,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     context.reverseMappedStack ||= [];
                     context.reverseMappedStack.push(propertySymbol as ReverseMappedSymbol);
                 }
-                propertyTypeNode = serializeTypeForDeclaration(context, /*declaration*/ undefined, propertySymbol);
+                propertyTypeNode = serializeTypeForDeclaration(context, /*declaration*/ undefined, propertyType, propertySymbol);
                 if (propertyIsReverseMapped) {
                     context.reverseMappedStack!.pop();
                 }
@@ -7138,10 +7145,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             questionToken?: QuestionToken;
         }
 
-        function signatureToSignatureDeclarationHelper(signature: Signature, kind: SignatureDeclaration["kind"], context: NodeBuilderContext, options?: SignatureToSignatureDeclarationOptions): SignatureDeclaration {
-            context.approximateLength += 3; // Usually a signature contributes a few more characters than this, but 3 is the minimum
+        function signatureToSignatureDeclarationHelper(signature: Signature, kind: SignatureDeclaration["kind"], oldContext: NodeBuilderContext, options?: SignatureToSignatureDeclarationOptions): SignatureDeclaration {
             let typeParameters: TypeParameterDeclaration[] | undefined;
             let typeArguments: TypeNode[] | undefined;
+            
+            const expandedParams = getExpandedParameters(signature, /*skipUnionExpanding*/ true)[0];
+            const { context, cleanup } = enterNewScope(oldContext, signature.declaration, expandedParams, signature.typeParameters, signature.parameters, signature.mapper);
+            context.approximateLength += 3; // Usually a signature contributes a few more characters than this, but 3 is the minimum
+
             if (context.flags & NodeBuilderFlags.WriteTypeArgumentsOfSignature && signature.target && signature.mapper && signature.target.typeParameters) {
                 typeArguments = signature.target.typeParameters.map(parameter => typeToTypeNodeHelper(instantiateType(parameter, signature.mapper), context));
             }
@@ -7149,8 +7160,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 typeParameters = signature.typeParameters && signature.typeParameters.map(parameter => typeParameterToDeclaration(parameter, context));
             }
 
-            const expandedParams = getExpandedParameters(signature, /*skipUnionExpanding*/ true)[0];
-            const cleanup = enterNewScope(context, signature.declaration, expandedParams, signature.typeParameters, signature.parameters);
 
             const flags = context.flags;
             context.flags &= ~NodeBuilderFlags.SuppressAnyReturnType; // SuppressAnyReturnType should only apply to the signature `return` position
@@ -7208,12 +7217,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
 
         function enterNewScope(
-            context: NodeBuilderContext,
+            originalContext: NodeBuilderContext,
             declaration: IntroducesNewScopeNode | ConditionalTypeNode | undefined,
             expandedParams: readonly Symbol[] | undefined,
             typeParameters: readonly TypeParameter[] | undefined,
             originalParameters?: readonly Symbol[] | undefined,
+            mapper?: TypeMapper,
         ) {
+            const context = cloneNodeBuilderContext(originalContext);
             // For regular function/method declarations, the enclosing declaration will already be signature.declaration,
             // so this is a no-op, but for arrow functions and function expressions, the enclosing declaration will be
             // the declaration that the arrow function / function expression is assigned to.
@@ -7226,12 +7237,12 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             // accessible to the current enclosing declaration, or gain access to symbols not accessible to the current
             // enclosing declaration. To keep this chain accurate, insert a fake scope into the chain which makes the
             // function's parameters visible.
-            let cleanup: (() => void) | undefined;
-            if (
-                context.enclosingDeclaration
-                && declaration
-                && declaration !== context.enclosingDeclaration
-            ) {
+            let cleanupParams: (() => void) | undefined;
+            let cleanupTypeParams: (() => void) | undefined;
+            if(mapper) {
+                context.mapper = mapper;
+            }
+            if (context.enclosingDeclaration && declaration) {
                 // As a performance optimization, reuse the same fake scope within this chain.
                 // This is especially needed when we are working on an excessively deep type;
                 // if we don't do this, then we spend all of our time adding more and more
@@ -7248,7 +7259,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 // Note that we only check the most immediate enclosingDeclaration; the only place we
                 // could potentially add another fake scope into the chain is right here, so we don't
                 // traverse all ancestors.
-                pushFakeScope(
+                cleanupParams = pushFakeScope(
                     "params",
                     add => {
                         if (!expandedParams) return;
@@ -7292,8 +7303,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 );
 
                 if (context.flags & NodeBuilderFlags.GenerateNamesForShadowedTypeParams) {
-                    // TODO(jakebailey): should this instead be done before walking type parameters?
-                    pushFakeScope(
+                    cleanupTypeParams = pushFakeScope(
                         "typeParams",
                         add => {
                             for (const typeParam of typeParameters ?? emptyArray) {
@@ -7303,8 +7313,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         },
                     );
                 }
-
-                return cleanup;
 
                 function pushFakeScope(kind: "params" | "typeParams", addAll: (addSymbol: (name: __String, symbol: Symbol) => void) => void) {
                     // We only ever need to look two declarations upward.
@@ -7332,34 +7340,34 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         locals.set(name, symbol);
                     });
 
-                    const oldCleanup = cleanup;
-                    function undo() {
-                        forEach(newLocals, s => locals.delete(s));
-                        forEach(oldLocals, s => locals.set(s.name, s.oldSymbol));
-                        oldCleanup?.();
-                    }
-
-                    if (existingFakeScope) {
-                        cleanup = undo;
-                    }
-                    else {
+                    
+                    if (!existingFakeScope) {
                         // Use a Block for this; the type of the node doesn't matter so long as it
                         // has locals, and this is cheaper/easier than using a function-ish Node.
                         const fakeScope = parseNodeFactory.createBlock(emptyArray);
                         getNodeLinks(fakeScope).fakeScopeForSignatureDeclaration = kind;
                         fakeScope.locals = locals;
 
-                        const saveEnclosingDeclaration = context.enclosingDeclaration;
-                        setParent(fakeScope, saveEnclosingDeclaration);
+                        setParent(fakeScope, context.enclosingDeclaration);
                         context.enclosingDeclaration = fakeScope;
-
-                        cleanup = () => {
-                            context.enclosingDeclaration = saveEnclosingDeclaration;
-                            undo();
-                        };
+                    }
+                    return function undo() {
+                        forEach(newLocals, s => locals.delete(s));
+                        forEach(oldLocals, s => locals.set(s.name, s.oldSymbol));
                     }
                 }
             }
+            
+            return { 
+                context,
+                cleanup: () => {
+                    originalContext.approximateLength = context.approximateLength;
+                    originalContext.truncating = context.truncating;
+                    originalContext.reportedDiagnostic = context.reportedDiagnostic;
+                    cleanupParams?.();
+                    cleanupTypeParams?.();
+                },
+            };
         }
 
         function tryGetThisParameterDeclaration(signature: Signature, context: NodeBuilderContext) {
@@ -7420,7 +7428,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         function symbolToParameterDeclaration(parameterSymbol: Symbol, context: NodeBuilderContext, preserveModifierFlags?: boolean): ParameterDeclaration {
             const parameterDeclaration = getEffectiveParameterDeclaration(parameterSymbol);
 
-            const parameterTypeNode = serializeTypeForDeclaration(context, parameterDeclaration, parameterSymbol);
+            const parameterType = getTypeOfSymbol(parameterSymbol);
+            const parameterTypeNode = serializeTypeForDeclaration(context, parameterDeclaration, parameterType, parameterSymbol);
 
             const modifiers = !(context.flags & NodeBuilderFlags.OmitParameterModifiers) && preserveModifierFlags && parameterDeclaration && canHaveModifiers(parameterDeclaration) ? map(getModifiers(parameterDeclaration), factory.cloneNode) : undefined;
             const isRest = parameterDeclaration && isRestParameter(parameterDeclaration) || getCheckFlags(parameterSymbol) & CheckFlags.RestParameter;
@@ -7851,10 +7860,6 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
 
         function typeParameterToName(type: TypeParameter, context: NodeBuilderContext) {
-            if(type.target) {
-                type = type.target;
-            }
-            
             if (context.flags & NodeBuilderFlags.GenerateNamesForShadowedTypeParams && context.typeParameterNames) {
                 const cached = context.typeParameterNames.get(getTypeId(type));
                 if (cached) {
@@ -8085,11 +8090,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             return enclosingDeclaration;
         }
 
-        function serializeInferredTypeForDeclaration(symbol: Symbol, context: NodeBuilderContext, useWriteType = false) {
-            let type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
-                ? (useWriteType ? getWriteTypeOfSymbol(symbol) : getTypeOfSymbol(symbol))
-                : errorType;
-
+        function serializeInferredTypeForDeclaration(symbol: Symbol, context: NodeBuilderContext, type: Type) {
             if (
                 symbol.valueDeclaration
                 && (isParameter(symbol.valueDeclaration) || isJSDocParameterTag(symbol.valueDeclaration))
@@ -8118,7 +8119,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
          * @param declaration - The preferred declaration to pull existing type nodes from (the symbol will be used as a fallback to find any annotated declaration)
          * @param symbol - The symbol is used both to find an existing annotation if declaration is not provided, and to determine if `unique symbol` should be printed
          */
-        function serializeTypeForDeclaration(context: NodeBuilderContext, declaration: Declaration | undefined, symbol: Symbol) {
+        function serializeTypeForDeclaration(context: NodeBuilderContext, declaration: Declaration | undefined, type: Type, symbol: Symbol) {
             let result;
             const decl = declaration ?? symbol.valueDeclaration ?? symbol.declarations?.[0];
             if (decl) {
@@ -8131,13 +8132,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         !isPropertyAssignment(decl)
                     )
                     && symbol.valueDeclaration 
-                    && getTypeOfSymbol(symbol) === getTypeOfSymbol(getSymbolOfDeclaration(symbol.valueDeclaration))
+                    && !nodeIsSynthesized(symbol.valueDeclaration)
+                    && type === getTypeOfSymbol(getSymbolOfDeclaration(symbol.valueDeclaration))
                 ) {
                     result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, context);
                 }
             }
             if (!result) {
-                result = serializeInferredTypeForDeclaration(symbol, context, declaration?.kind === SyntaxKind.SetAccessor);
+                result = serializeInferredTypeForDeclaration(symbol, context, type);
             }
             return result ?? factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
         }
@@ -8148,16 +8150,16 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             if (suppressAny) context.flags &= ~NodeBuilderFlags.SuppressAnyReturnType; // suppress only toplevel `any`s
             let returnTypeNode: TypeNode | undefined;
 
-            if (signature.declaration) {
+            const returnType = getReturnTypeOfSignature(signature);
+            if (signature.declaration && !nodeIsSynthesized(signature.declaration)) {
                 const declarationSignature = getSignatureFromDeclaration(signature.declaration);
-                if (declarationSignature === signature || getReturnTypeOfSignature(declarationSignature) === getReturnTypeOfSignature(signature)) {
+                if (declarationSignature === signature || getReturnTypeOfSignature(declarationSignature) === returnType) {
                     returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
                 }
             }
             if (!returnTypeNode) {
-                const returnType = getReturnTypeOfSignature(signature);
                 if (returnType && !(suppressAny && isTypeAny(returnType))) {
-                    returnTypeNode = serializeInferredReturnTypeForSignature(context, signature);
+                    returnTypeNode = serializeInferredReturnTypeForSignature(context, signature, returnType);
                 }
                 else if (!suppressAny) {
                     returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
@@ -8167,14 +8169,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             context.flags = flags;
             return returnTypeNode;
         }
-        function serializeInferredReturnTypeForSignature(context: NodeBuilderContext, signature: Signature) {
+        function serializeInferredReturnTypeForSignature(context: NodeBuilderContext, signature: Signature, returnType: Type) {
             context.suppressReportInferenceFallback = true;
             const typePredicate = getTypePredicateOfSignature(signature);
-            const returnType = typePredicate ?
+            const returnTypeNode = typePredicate ?
                 typePredicateToTypePredicateNodeHelper(typePredicate, context) :
-                typeToTypeNodeHelper(getReturnTypeOfSignature(signature), context);
+                typeToTypeNodeHelper(returnType, context);
             context.suppressReportInferenceFallback = false;
-            return returnType;
+            return returnTypeNode;
         }
 
         function trackExistingEntityName<T extends EntityNameOrEntityNameExpression>(node: T, context: NodeBuilderContext, enclosingDeclaration = context.enclosingDeclaration) {
@@ -8221,7 +8223,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     sym.flags & SymbolFlags.FunctionScopedVariable
                     && sym.valueDeclaration
                 ) {
-                    if (isPartOfParameterDeclaration(sym.valueDeclaration)) {
+                    if (isPartOfParameterDeclaration(sym.valueDeclaration) || isJSDocParameterTag(sym.valueDeclaration)) {
                         return { introducesError, node: attachSymbolToLeftmostIdentifier(node) as T };
                     }
                 }
@@ -8248,7 +8250,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             function attachSymbolToLeftmostIdentifier(node: Node): Node {
                 if (node === leftmost) {
                     const type = getDeclaredTypeOfSymbol(sym!);
-                    const name = sym!.flags & SymbolFlags.TypeParameter ? typeParameterToName(type, context) : factory.cloneNode(node as Identifier);
+                    const name = sym!.flags & SymbolFlags.TypeParameter ? typeParameterToName(context.mapper ? getMappedType(type, context.mapper) : type, context) : factory.cloneNode(node as Identifier);
                     name.symbol = sym!; // for quickinfo, which uses identifier symbol information
                     return setTextRange(context, setEmitFlags(name, EmitFlags.NoAsciiEscaping), node);
                 }
@@ -8644,7 +8646,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                     factory.createVariableStatement(
                                         /*modifiers*/ undefined,
                                         factory.createVariableDeclarationList([
-                                            factory.createVariableDeclaration(name, /*exclamationToken*/ undefined, serializeTypeForDeclaration(context, /*declaration*/ undefined, symbol)),
+                                            factory.createVariableDeclaration(name, /*exclamationToken*/ undefined, serializeTypeForDeclaration(context, /*declaration*/ undefined, type, symbol)),
                                         ], flags),
                                     ),
                                     textRange,
@@ -8799,7 +8801,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
 
             function serializeTypeAlias(symbol: Symbol, symbolName: string, modifierFlags: ModifierFlags) {
-                const typeParams = getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(symbol);
+                const aliasType = getDeclaredTypeOfTypeAlias(symbol);
+                const typeParams = getSymbolLinks(symbol).typeParameters;
                 const typeParamDecls = map(typeParams, p => typeParameterToDeclaration(p, context));
                 const jsdocAliasDecl = symbol.declarations?.find(isJSDocTypeAlias);
                 const commentText = getTextOfJSDocComment(jsdocAliasDecl ? jsdocAliasDecl.comment || jsdocAliasDecl.parent.comment : undefined);
@@ -8810,7 +8813,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 const typeNode = jsdocAliasDecl && jsdocAliasDecl.typeExpression
                         && isJSDocTypeExpression(jsdocAliasDecl.typeExpression)
                         && syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(context, jsdocAliasDecl.typeExpression.type)
-                    || typeToTypeNodeHelper(getDeclaredTypeOfTypeAlias(symbol), context);
+                    || typeToTypeNodeHelper(aliasType, context);
                 addResult(
                     setSyntheticLeadingComments(
                         factory.createTypeAliasDeclaration(/*modifiers*/ undefined, getInternalSymbolName(symbol, symbolName), typeParamDecls, typeNode),
@@ -9469,7 +9472,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         const statement = factory.createVariableStatement(
                             /*modifiers*/ undefined,
                             factory.createVariableDeclarationList([
-                                factory.createVariableDeclaration(varName, /*exclamationToken*/ undefined, serializeTypeForDeclaration(context, /*declaration*/ undefined, symbol)),
+                                factory.createVariableDeclaration(varName, /*exclamationToken*/ undefined, serializeTypeForDeclaration(context, /*declaration*/ undefined, typeToSerialize, symbol)),
                             ], flags),
                         );
                         // Inlined JSON types exported with [module.]exports= will already emit an export=, so should use `declare`.
@@ -9606,7 +9609,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                         /*dotDotDotToken*/ undefined,
                                         paramSymbol ? parameterToParameterDeclarationName(paramSymbol, getEffectiveParameterDeclaration(paramSymbol), context) : "value",
                                         /*questionToken*/ undefined,
-                                        isPrivate ? undefined : serializeTypeForDeclaration(context, setterDeclaration, p),
+                                        isPrivate ? undefined : serializeTypeForDeclaration(context, setterDeclaration, getWriteTypeOfSymbol(p), p),
                                     )],
                                     /*body*/ undefined,
                                 ),
@@ -9622,7 +9625,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                     factory.createModifiersFromModifierFlags(flag),
                                     name,
                                     [],
-                                    isPrivate ? undefined : serializeTypeForDeclaration(context, getterDeclaration, p),
+                                    isPrivate ? undefined : serializeTypeForDeclaration(context, getterDeclaration, getTypeOfSymbol(p), p),
                                     /*body*/ undefined,
                                 ),
                                 getterDeclaration ?? firstPropertyLikeDecl,
@@ -9639,7 +9642,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                                 factory.createModifiersFromModifierFlags((isReadonlySymbol(p) ? ModifierFlags.Readonly : 0) | flag),
                                 name,
                                 p.flags & SymbolFlags.Optional ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
-                                isPrivate ? undefined : serializeTypeForDeclaration(context, p.declarations?.find(isSetAccessorDeclaration), p),
+                                isPrivate ? undefined : serializeTypeForDeclaration(context, p.declarations?.find(isSetAccessorDeclaration), getWriteTypeOfSymbol(p), p),
                                 // TODO: https://github.com/microsoft/TypeScript/pull/32372#discussion_r328386357
                                 // interface members can't have initializers, however class members _can_
                                 /*initializer*/ undefined,
@@ -50709,6 +50712,7 @@ interface NodeBuilderContext extends SyntacticTypeNodeBuilderContext {
     reverseMappedStack?: ReverseMappedSymbol[];
     bundled?: boolean;
     suppressReportInferenceFallback: boolean;
+    mapper: TypeMapper | undefined
 }
 
 class SymbolTrackerImpl implements SymbolTracker {

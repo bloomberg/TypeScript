@@ -2,8 +2,8 @@
 
 === spreadParameterTupleType.ts ===
 function f1() {
->f1 : () => (...args: C) => void
->   : ^^^^^^^         ^^^^^^^^^^
+>f1 : () => (...args: [s: string, s: string]) => void
+>   : ^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     type A = [s: string];
 >A : [s: string]
@@ -23,8 +23,8 @@ function f1() {
 }
 
 function f2() {
->f2 : () => (...args: D) => void
->   : ^^^^^^^         ^^^^^^^^^^
+>f2 : () => (...args: [a: string, a: string, b: string, a: string, b: string, b: string, a: string, c: string]) => void
+>   : ^^^^^^^         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     type A = [a: string];
 >A : [a: string]

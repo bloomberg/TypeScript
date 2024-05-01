@@ -326,7 +326,7 @@ export namespace Compiler {
                 if (value === undefined) {
                     throw new Error(`Cannot have undefined value for compiler option '${name}'.`);
                 }
-                if (name === "typeScriptVersion") {
+                if (name === "typeScriptVersion" || name === "isolatedDeclarationDiffReason" || name === "isolatedDeclarationFixedDiffReason") {
                     continue;
                 }
                 const option = getCommandLineOption(name);

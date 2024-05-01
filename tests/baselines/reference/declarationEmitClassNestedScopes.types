@@ -1,0 +1,67 @@
+//// [tests/cases/compiler/declarationEmitClassNestedScopes.ts] ////
+
+=== index.js ===
+const  cb = {
+>cb : { o: <T>(name: string) => { name: T; }; }
+>   : ^^^^^^ ^^    ^^      ^^^^^            ^^^
+>{  o:  /**     @template T    @param {string} name     @return {{name: T }}  */ function (name) {    return /** @type {any} */(null);  }} : { o: <T>(name: string) => { name: T; }; }
+>                                                                                                                                          : ^^^^^^ ^^    ^^      ^^^^^            ^^^
+
+  o:  /** 
+>o : <T>(name: string) => { name: T; }
+>  : ^ ^^    ^^      ^^^^^            
+
+    @template T
+    @param {string} name 
+    @return {{name: T }}
+  */ function (name) {
+>function (name) {    return /** @type {any} */(null);  } : <T>(name: string) => { name: T; }
+>                                                         : ^ ^^    ^^      ^^^^^            
+>name : string
+>     : ^^^^^^
+
+    return /** @type {any} */(null);
+>(null) : any
+  }
+};
+
+
+=== index2.ts ===
+const  cb2 = () => Math.random() ? null:  ({
+>cb2 : () => { o: <T>(name: string) => { name: T; }; } | null
+>    : ^^^^^^^^^^^^ ^^    ^^      ^^^^^            ^^^^^^^^^^
+>() => Math.random() ? null:  ({  o: function <T>(name: string): { name: T } {    return null!;  }}) : () => { o: <T>(name: string) => { name: T; }; } | null
+>                                                                                                    : ^^^^^^^^^^^^ ^^    ^^      ^^^^^            ^^^^^^^^^^
+>Math.random() ? null:  ({  o: function <T>(name: string): { name: T } {    return null!;  }}) : { o: <T>(name: string) => { name: T; }; } | null
+>                                                                                              : ^^^^^^ ^^    ^^      ^^^^^            ^^^^^^^^^^
+>Math.random() : number
+>              : ^^^^^^
+>Math.random : () => number
+>            : ^^^^^^      
+>Math : Math
+>     : ^^^^
+>random : () => number
+>       : ^^^^^^      
+>({  o: function <T>(name: string): { name: T } {    return null!;  }}) : { o: <T>(name: string) => { name: T; }; }
+>                                                                       : ^^^^^^ ^^    ^^      ^^^^^            ^^^
+>{  o: function <T>(name: string): { name: T } {    return null!;  }} : { o: <T>(name: string) => { name: T; }; }
+>                                                                     : ^^^^^^ ^^    ^^      ^^^^^            ^^^
+
+  o: function <T>(name: string): { name: T } {
+>o : <T>(name: string) => { name: T; }
+>  : ^ ^^    ^^      ^^^^^            
+>function <T>(name: string): { name: T } {    return null!;  } : <T>(name: string) => { name: T; }
+>                                                              : ^ ^^    ^^      ^^^^^            
+>name : string
+>     : ^^^^^^
+>name : T
+>     : ^
+
+    return null!;
+>null! : never
+>      : ^^^^^
+  }
+});
+
+
+

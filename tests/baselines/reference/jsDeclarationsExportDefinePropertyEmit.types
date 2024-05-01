@@ -238,12 +238,12 @@ Object.defineProperty(module.exports.f, "self", { value: module.exports.f });
  * @param {{y: typeof module.exports.b}} b
  */
 function g(a, b) {
->g : (a: { x: string; }, b: { y: () => void; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
+>g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >a : { x: string; }
 >  : ^^^^^      ^^^
->b : { y: () => void; }
->  : ^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     return a.x && b.y();
 >a.x && b.y() : void
@@ -258,8 +258,8 @@ function g(a, b) {
 >      : ^^^^
 >b.y : () => void
 >    : ^^^^^^^^^^
->b : { y: () => void; }
->  : ^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >y : () => void
 >  : ^^^^^^^^^^
 }
@@ -280,12 +280,12 @@ Object.defineProperty(module.exports, "g", { value: g });
 >        : ^^^^^^^^^^^^^^^^^^^^^
 >"g" : "g"
 >    : ^^^
->{ value: g } : { value: (a: { x: string; }, b: { y: () => void; }) => void; }
->             : ^^^^^^^^^^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^^^^
->value : (a: { x: string; }, b: { y: () => void; }) => void
->      : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
->g : (a: { x: string; }, b: { y: () => void; }) => void
->  : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
+>{ value: g } : { value: (a: { x: string; }, b: { y: typeof import("index").b; }) => void; }
+>             : ^^^^^^^^^^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^
+>value : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>      : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>g : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>  : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 
 
 /**
@@ -293,12 +293,12 @@ Object.defineProperty(module.exports, "g", { value: g });
  * @param {{y: typeof module.exports.b}} b
  */
 function hh(a, b) {
->hh : (a: { x: string; }, b: { y: () => void; }) => void
->   : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
+>hh : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 >a : { x: string; }
 >  : ^^^^^      ^^^
->b : { y: () => void; }
->  : ^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     return a.x && b.y();
 >a.x && b.y() : void
@@ -313,8 +313,8 @@ function hh(a, b) {
 >      : ^^^^
 >b.y : () => void
 >    : ^^^^^^^^^^
->b : { y: () => void; }
->  : ^^^^^^^^^^^^^^^^^^
+>b : { y: typeof import("index").b; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >y : () => void
 >  : ^^^^^^^^^^
 }
@@ -335,12 +335,12 @@ Object.defineProperty(module.exports, "h", { value: hh });
 >        : ^^^^^^^^^^^^^^^^^^^^^
 >"h" : "h"
 >    : ^^^
->{ value: hh } : { value: (a: { x: string; }, b: { y: () => void; }) => void; }
->              : ^^^^^^^^^^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^^^^
->value : (a: { x: string; }, b: { y: () => void; }) => void
->      : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
->hh : (a: { x: string; }, b: { y: () => void; }) => void
->   : ^ ^^              ^^ ^^     ^^^^^^^^^^   ^^^^^^^^^
+>{ value: hh } : { value: (a: { x: string; }, b: { y: typeof import("index").b; }) => void; }
+>              : ^^^^^^^^^^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^
+>value : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>      : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
+>hh : (a: { x: string; }, b: { y: typeof import("index").b; }) => void
+>   : ^ ^^              ^^ ^^     ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^
 
 Object.defineProperty(module.exports, "i", { value: function i(){} });
 >Object.defineProperty(module.exports, "i", { value: function i(){} }) : typeof module.exports

@@ -24,18 +24,22 @@ export class Bar {
 }
 
 === file2.ts ===
-export function foo(p = (ip = 10, v: number): void => {}): void{
->foo : Symbol(foo, Decl(file2.ts, 0, 0))
->p : Symbol(p, Decl(file2.ts, 0, 20))
->ip : Symbol(ip, Decl(file2.ts, 0, 25))
->v : Symbol(v, Decl(file2.ts, 0, 33))
+type N = 1;
+>N : Symbol(N, Decl(file2.ts, 0, 0))
+
+export function foo(p = (ip = 1 as N, v: number): void => {}): void{
+>foo : Symbol(foo, Decl(file2.ts, 0, 11))
+>p : Symbol(p, Decl(file2.ts, 1, 20))
+>ip : Symbol(ip, Decl(file2.ts, 1, 25))
+>N : Symbol(N, Decl(file2.ts, 0, 0))
+>v : Symbol(v, Decl(file2.ts, 1, 37))
 }
 export class Bar2 {
->Bar2 : Symbol(Bar2, Decl(file2.ts, 1, 1))
+>Bar2 : Symbol(Bar2, Decl(file2.ts, 2, 1))
 
     readonly r = 1;
->r : Symbol(Bar2.r, Decl(file2.ts, 2, 19))
+>r : Symbol(Bar2.r, Decl(file2.ts, 3, 19))
 
     f = 2;
->f : Symbol(Bar2.f, Decl(file2.ts, 3, 19))
+>f : Symbol(Bar2.f, Decl(file2.ts, 4, 19))
 }
