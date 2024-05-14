@@ -6,6 +6,9 @@
     "./notes": "./dist/notes.js",
     "./read-line": "./dist/read-line.js"
   },
+  "scripts": {
+    "build": "tsc -p ./"
+  },
   "typesVersions": {
     "*": {
       "./notes": ["./dist/notes.d.ts"],
