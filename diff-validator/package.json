@@ -1,0 +1,24 @@
+{
+  "name": "diff-validator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/copy-paste": "^1.1.33",
+    "@types/diff-match-patch": "^1.0.36",
+    "@types/node": "^20.12.11",
+    "@types/readline-sync": "^1.4.7",
+    "ansi-escapes": "^6.2.0",
+    "chalk": "^4.1.2",
+    "cli-utils-lib": "file:../cli-utils-lib",
+    "copy-paste": "^1.5.3",
+    "diff-match-patch": "^1.0.5",
+    "figures": "^6.0.1"
+  }
+}

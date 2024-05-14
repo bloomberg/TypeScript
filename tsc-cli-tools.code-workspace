@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "diff-validator"
+		},
+		{
+			"path": "cases-parse"
+		},
+		{
+			"path": "cli-utils-lib"
+		}
+	],
+	"settings": {}
+}

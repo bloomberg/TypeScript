@@ -1,0 +1,25 @@
+{
+  "name": "cases-parse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/copy-paste": "^1.1.33",
+    "@types/node": "^20.9.1",
+    "@types/readline-sync": "^1.4.7",
+    "ansi-escapes": "^6.2.0",
+    "chalk": "^4.1.2",
+    "cli-utils-lib": "file:../cli-utils-lib",
+    "copy-paste": "^1.5.3",
+    "figures": "^6.0.1",
+    "readline-sync": "^1.4.10",
+    "source-map": "^0.7.4",
+    "typescript": "^5.2.2"
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "module": "NodeNext",
+        "sourceMap": true,
+        "target": "ES2022",
+        "rootDir": "./src",
+        "outDir": "./dist"
+    },
+}
