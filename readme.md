@@ -27,7 +27,7 @@ Shows the diffs for all type baseline file compared to a base commit. Options:
 ## Display
 
 - Short Type Diff (s) - Collapses the diff lines for node reuse in a single line, where green <span style="color:green">^^^</span> means new node reuse, and red <span style="color:red">^^^</span> means less node reuse
-- Hide trivial diff (t) - Only display diffs that are not new node reuse
+- Hide trivial diff (t) - Only display diffs that are not new node reuse in the current file (use filtering to show only files with at least one non trivial diff )
 - Show menu (m) - Show the menu a the bottom 
 
 ## Text navigation 

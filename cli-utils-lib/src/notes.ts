@@ -183,6 +183,115 @@ export function makeNoteService<T, TFilters extends { type: string, negate: bool
         return Object.entries(recordsWithCount).sort(([, a], [, b]) => b - a).map(([n]) => n);
     }
 
+    async function columnMenu(name: string) {
+        let actionSelection = await menu({
+            message: "Select column",
+            choices: [
+                { name: `Filter by ${name}`, type: "filter" as const },
+                { name: `Edit ${name}`, type: "edit" as const },
+            ]
+        });
+        if(!actionSelection) return;
+        if(actionSelection.type === 'filter') {
+            await filterColumn(name);
+        } else {
+            await editColumn(name);
+        }
+    }
+    async function editColumn(column:string) {
+        const testKey = opts.key(getCurrent());
+        const existingValues = getAllColumnValues(column);
+        const existingNote = notes.records[testKey] ??= {};
+        const existingValue = existingNote[column]
+        const existingValueSelection = existingValues.length === 0 ? undefined : await selection({
+            render: menuRender,
+            message: "Select existing value:",
+            commandDecoder(key, options, selected, next) {
+                if (key.name === "f12") return { name: "return" };
+                return next?.(key, options, selected, next);
+            },
+            choices: [
+                ...existingValues.map(value => ({ name: value, type: "value" as const, text: value, shortcut: undefined })),
+                { name: "-- New Text ---", type: "text" as const, shortcut: undefined },
+                { name: "-- Remove Value ---", type: "remove" as const, shortcut: undefined },
+            ],
+        });
+        if (existingValueSelection === null) return;
+        let newValue = null;
+        let isAdd = false;
+        if (existingValueSelection) {
+            isAdd = Array.isArray(existingValue) || existingValueSelection.key.name === "f12";
+            if (existingValueSelection.selection.type === "remove") {
+                if (!existingValue || typeof existingValue === "string") {
+                    delete existingNote[column];
+                    return
+                }
+                const toRemove = await menu({
+                    message: "Remove item:",
+                    choices: existingValue.map((name, index) => ({
+                        name,
+                        index
+                    }))
+                });
+                if (toRemove === null) return;
+                existingValue.splice(toRemove.index, 1);
+                return;
+            }
+
+        }
+        if (existingValueSelection?.selection.type === "value") {
+            newValue = existingValueSelection.selection.text;
+        }
+        else {
+            newValue = await input({
+                message: `${isAdd ? "Add to" : "Edit"} ${column}`,
+                value: existingValue === "string" ? existingValue : "",
+            });
+        }
+
+        if (newValue === null) return;
+        if (!isAdd) {
+            existingNote[column] = newValue;
+        } else {
+            const value =
+                !existingValue ? [] :
+                    typeof existingValue === "string" ? [existingValue] :
+                        existingValue;
+            existingNote[column] = value;
+            value.push(newValue);
+        }
+        await opts.onNotesChanged(notes);
+    }
+    async function filterColumn(column: string, negate = false) {
+        const knownValues = getAllColumnValues(column).map(v => ({
+            name: `${column} with value ${v} (${getCount({ type: "column-value", column, value: v })})`,
+            type: "value" as const,
+            text: v
+        }))
+        const filterSelection = await menu({
+            message: "Select value:",
+            choices: [
+                { name: "By regex", type: "regex" as const },
+                { name: `Missing value (${getCount({ type: "column-value-missing", column })})`, type: "empty" as const },
+                { name: `Any value (${getCount({ type: "column-value-any", column })})`, type: "any" as const },
+                ...knownValues,
+            ]
+        });
+        if (!filterSelection) return;
+        if (filterSelection.type === "any") {
+            await updateGlobalTestFilter({ type: "column-value-any", column, negate });
+        }
+        else if (filterSelection.type === "empty") {
+            await updateGlobalTestFilter({ type: "column-value-missing", column, negate });
+        }
+        else if (filterSelection.type === "regex") {
+            const regex = await inputRegex();
+            if (!regex) return;
+            await updateGlobalTestFilter({ type: "column-value-regex", regex, column, negate });
+        } else {
+            await updateGlobalTestFilter({ type: "column-value", column, value: filterSelection.text, negate });
+        }
+    }
     async function filterMenu() {
         const filterKindSelection = await selection({
             message: "Select column (hold shift for negation)",
@@ -376,35 +485,7 @@ export function makeNoteService<T, TFilters extends { type: string, negate: bool
             await updateGlobalTestFilter(await opts.makeFilter(filterKind.customType, negate));
             return true;
         }
-        const column = filterKind.column;
-        const knownValues = getAllColumnValues(column).map(v => ({
-            name: `${column} with value ${v} (${getCount({ type: "column-value", column, value: v })})`,
-            type: "value" as const,
-            text: v
-        }))
-        const filterSelection = await menu({
-            message: "Select value:",
-            choices: [
-                { name: "By regex", type: "regex" as const },
-                { name: `Missing value (${getCount({ type: "column-value-missing", column })})`, type: "empty" as const },
-                { name: `Any value (${getCount({ type: "column-value-any", column })})`, type: "any" as const },
-                ...knownValues,
-            ]
-        });
-        if (!filterSelection) return;
-        if (filterSelection.type === "any") {
-            await updateGlobalTestFilter({ type: "column-value-any", column, negate });
-        }
-        else if (filterSelection.type === "empty") {
-            await updateGlobalTestFilter({ type: "column-value-missing", column, negate });
-        }
-        else if (filterSelection.type === "regex") {
-            const regex = await inputRegex();
-            if (!regex) return;
-            await updateGlobalTestFilter({ type: "column-value-regex", regex, column, negate });
-        } else {
-            await updateGlobalTestFilter({ type: "column-value", column, value: filterSelection.text, negate });
-        }
+        await filterColumn(filterKind.column, negate)
         return true;
     }
 
@@ -452,68 +533,7 @@ export function makeNoteService<T, TFilters extends { type: string, negate: bool
         else {
             column = columnSelection.value;
         }
-
-        const existingValues = getAllColumnValues(column);
-        const existingNote = notes.records[testKey] ??= {};
-        const existingValue = existingNote[column]
-        const existingValueSelection = existingValues.length === 0 ? undefined : await selection({
-            render: menuRender,
-            message: "Select existing value:",
-            commandDecoder(key, options, selected, next) {
-                if (key.name === "f12") return { name: "return" };
-                return next?.(key, options, selected, next);
-            },
-            choices: [
-                ...existingValues.map(value => ({ name: value, type: "value" as const, text: value, shortcut: undefined })),
-                { name: "-- New Text ---", type: "text" as const, shortcut: undefined },
-                { name: "-- Remove Value ---", type: "remove" as const, shortcut: undefined },
-            ],
-        });
-        if (existingValueSelection === null) return;
-        let newValue = null;
-        let isAdd = false;
-        if (existingValueSelection) {
-            isAdd = Array.isArray(existingValue) || existingValueSelection.key.name === "f12";
-            if (existingValueSelection.selection.type === "remove") {
-                if (!existingValue || typeof existingValue === "string") {
-                    delete existingNote[column];
-                    return
-                }
-                const toRemove = await menu({
-                    message: "Remove item:",
-                    choices: existingValue.map((name, index) => ({
-                        name,
-                        index
-                    }))
-                });
-                if (toRemove === null) return;
-                existingValue.splice(toRemove.index, 1);
-                return;
-            }
-
-        }
-        if (existingValueSelection?.selection.type === "value") {
-            newValue = existingValueSelection.selection.text;
-        }
-        else {
-            newValue = await input({
-                message: `${isAdd ? "Add to" : "Edit"} ${column}`,
-                value: existingValue === "string" ? existingValue : "",
-            });
-        }
-
-        if (newValue === null) return;
-        if (!isAdd) {
-            existingNote[column] = newValue;
-        } else {
-            const value =
-                !existingValue ? [] :
-                    typeof existingValue === "string" ? [existingValue] :
-                        existingValue;
-            existingNote[column] = value;
-            value.push(newValue);
-        }
-        await opts.onNotesChanged(notes);
+        await editColumn(column);
     }
     function jumpTo(index: number) { notes.lastIndex = index }
     function jumpToOffset(offset: number) {
@@ -555,5 +575,6 @@ export function makeNoteService<T, TFilters extends { type: string, negate: bool
             return opts.getRecords().find(t => opts.key(t) === key);
         },
         getCount,
+        columnMenu,
     }
 }

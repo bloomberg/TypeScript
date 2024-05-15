@@ -101,6 +101,9 @@ async function main(baseCommit: string) {
     function applyFilters(filters = notesService.getNotes().filters) {
         filteredTests = notesService.applyFilters(typeFiles, filters);
         invalidFilter = false;
+        if(!notesService.getCurrent()) {
+            notesService.jumpTo(0);
+        }
     }
     let colOffset = 0;
     let diffOffset = 0;
@@ -128,6 +131,17 @@ async function main(baseCommit: string) {
                 shortcut: "f", name: "Filter", order: 3, action: async () => {
                     await notesService.notesMenu();
                 },
+            },
+            {
+                shortcut: "l", name: "Reload", order: 3, action: async () => {
+                    await reloadTestDiff();
+                    await applyFilters();
+                },
+            },
+            {
+                shortcut: "c", name: "Category Actions", order: 3, action: async () => {
+                    await notesService.columnMenu("categories");
+                }
             },
             {
                 shortcut: "m", name: "Show Menu", action: async () => {
