@@ -2,19 +2,18 @@
 
 // @isolatedDeclarations: true
 // @declaration: true
-//// export class A {
-////     readonly a = function foo() {return 42;}
-//// }
-
-verify.codeFixAvailable([
-    { description: "Add return type 'number'" },
-]);
+// @lib: es2019
+////export const a = {
+////    z: Symbol()
+////} as const;
 
 verify.codeFix({
-    description: "Add return type 'number'",
+    description: `Add annotation of type '{ readonly z: symbol; }'`,
     index: 0,
     newFileContent:
-`export class A {
-    readonly a = function foo(): number {return 42;}
-}`
+`export const a: {
+    readonly z: symbol;
+} = {
+    z: Symbol()
+} as const;`
 });

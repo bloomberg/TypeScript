@@ -41,9 +41,9 @@ var unused2 = { ...ab, ...ab } // ok, overwritten error doesn't apply to spreads
 
 var unused3 = { b: 1, ...abq } // ok, abq might have b: undefined
 >unused3 : { a: number; b: number; }
->        : ^^^^^      ^^^^^^^^^^^^^^
+>        : ^^^^^      ^^^^^      ^^^
 >{ b: 1, ...abq } : { a: number; b: number; }
->                 : ^^^^^      ^^^^^^^^^^^^^^
+>                 : ^^^^^      ^^^^^      ^^^
 >b : number
 >  : ^^^^^^
 >1 : 1
@@ -95,7 +95,7 @@ function g(obj: { x: number | undefined }) {
 }
 function f(obj: { x: number } | undefined) {
 >f : (obj: { x: number; } | undefined) => { x: number; }
->  : ^   ^^                          ^^^^^^^^^^^^^^^^^^^
+>  : ^   ^^                          ^^^^^^^^^^      ^^^
 >obj : { x: number; } | undefined
 >    : ^^^^^      ^^^^^^^^^^^^^^^
 >x : number
@@ -103,7 +103,7 @@ function f(obj: { x: number } | undefined) {
 
     return { x: 1, ...obj }; // ok, obj might be undefined
 >{ x: 1, ...obj } : { x: number; }
->                 : ^^^^^^^^^^^^^^
+>                 : ^^^^^      ^^^
 >x : number
 >  : ^^^^^^
 >1 : 1
@@ -133,7 +133,7 @@ function h(obj: { x: number } | { x: string }) {
 }
 function i(b: boolean, t: { command: string, ok: string }) {
 >i : (b: boolean, t: { command: string; ok: string; }) => { command: string; ok?: string | undefined; }
->  : ^ ^^       ^^ ^^                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^ ^^       ^^ ^^                                ^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >b : boolean
 >  : ^^^^^^^
 >t : { command: string; ok: string; }
@@ -145,7 +145,7 @@ function i(b: boolean, t: { command: string, ok: string }) {
 
     return { command: "hi", ...(b ? t : {}) } // ok
 >{ command: "hi", ...(b ? t : {}) } : { command: string; ok?: string | undefined; }
->                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                   : ^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >command : string
 >        : ^^^^^^
 >"hi" : "hi"
@@ -232,7 +232,7 @@ function l(anyrequired: { a: any }) {
 }
 function m(anyoptional: { a?: any }) {
 >m : (anyoptional: { a?: any; }) => { a: any; }
->  : ^           ^^            ^^^^^^^^^^^^^^^^
+>  : ^           ^^            ^^^^^^^^^^   ^^^
 >anyoptional : { a?: any; }
 >            : ^^^^^^   ^^^
 >a : any
@@ -240,7 +240,7 @@ function m(anyoptional: { a?: any }) {
 
     return { a: 'zzz', ...anyoptional } // ok
 >{ a: 'zzz', ...anyoptional } : { a: any; }
->                             : ^^^^^^^^^^^
+>                             : ^^^^^   ^^^
 >a : string
 >  : ^^^^^^
 >'zzz' : "zzz"

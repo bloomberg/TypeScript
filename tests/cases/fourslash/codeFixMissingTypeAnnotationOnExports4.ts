@@ -5,7 +5,7 @@
 ////const a = 42;
 ////const b = 42;
 ////export class C {
-////  method() { return a + b};
+////  method() { return a + b };
 ////}
 
 verify.codeFixAvailable([
@@ -19,6 +19,7 @@ verify.codeFix({
 `const a = 42;
 const b = 42;
 export class C {
-  method(): number { return a + b};
+  method(): number { return a + b };
 }`,
+
 });

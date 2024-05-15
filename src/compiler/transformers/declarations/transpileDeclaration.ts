@@ -2,7 +2,6 @@ import {
     __String,
     changeAnyExtension,
     CompilerOptions,
-    createEmitDeclarationResolver,
     createGetCanonicalFileName,
     createPrinter,
     createSourceMapGenerator,
@@ -40,7 +39,8 @@ import {
     transformDeclarations,
     TranspileDeclarationsOptions,
     TranspileDeclarationsOutput,
-} from "../../_namespaces/ts";
+} from "../../_namespaces/ts.js";
+import { createEmitDeclarationResolver } from "./emitResolver.js";
 
 /** @internal */
 export function transpileDeclarationTesting(sourceFile: SourceFile, transpileOptions: TranspileDeclarationsOptions): TranspileDeclarationsOutput {

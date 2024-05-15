@@ -2,21 +2,20 @@
 
 // @isolatedDeclarations: true
 // @declaration: true
-//// function foo() { return 42; }
-//// export class A {
-////     readonly a = () => foo();
+// @lib: es2019
+//// export function foo () {
+////     return Symbol();
 //// }
 
 verify.codeFixAvailable([
-    { description: "Add return type 'number'" },
+    { description: "Add return type 'symbol'" }
 ]);
 
 verify.codeFix({
-    description: "Add return type 'number'",
+    description: "Add return type 'symbol'",
     index: 0,
     newFileContent:
-`function foo() { return 42; }
-export class A {
-    readonly a = (): number => foo();
+`export function foo (): symbol {
+    return Symbol();
 }`
 });

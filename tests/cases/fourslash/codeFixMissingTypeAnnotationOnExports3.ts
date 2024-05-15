@@ -5,7 +5,7 @@
 ////const a = 42;
 ////const b = 42;
 ////export class C {
-////    //making sure comments are not changed
+////  //making sure comments are not changed
 ////  property =a+b; // comment should stay here
 ////}
 
@@ -16,7 +16,7 @@ verify.codeFix({
 `const a = 42;
 const b = 42;
 export class C {
-    //making sure comments are not changed
+  //making sure comments are not changed
   property: number =a+b; // comment should stay here
 }`,
 });

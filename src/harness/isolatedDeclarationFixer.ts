@@ -1,6 +1,6 @@
-import * as fake from "./_namespaces/fakes";
-import * as ts from "./_namespaces/ts";
-import * as vfs from "./_namespaces/vfs";
+import * as fake from "./_namespaces/fakes.js";
+import * as ts from "./_namespaces/ts.js";
+import * as vfs from "./_namespaces/vfs.js";
 
 export const isolatedDeclarationsErrors = new Set([
     ts.Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,

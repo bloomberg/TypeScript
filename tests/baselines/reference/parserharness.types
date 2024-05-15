@@ -2283,16 +2283,16 @@ module Harness {
                     Runnable.currentStack.pop();
 >Runnable.currentStack.pop() : Runnable
 >                            : ^^^^^^^^
->Runnable.currentStack.pop : () => Runnable
->                          : ^^^^^^^^^^^^^^
+>Runnable.currentStack.pop : () => Runnable | undefined
+>                          : ^^^^^^^^^^^^^^            
 >Runnable.currentStack : Runnable[]
 >                      : ^^^^^^^^^^
 >Runnable : typeof Runnable
 >         : ^^^^^^^^^^^^^^^
 >currentStack : Runnable[]
 >             : ^^^^^^^^^^
->pop : () => Runnable
->    : ^^^^^^^^^^^^^^
+>pop : () => Runnable | undefined
+>    : ^^^^^^^^^^^^^^            
 
                     done()
 >done() : void
@@ -2429,16 +2429,16 @@ module Harness {
                 Runnable.currentStack.pop();
 >Runnable.currentStack.pop() : Runnable
 >                            : ^^^^^^^^
->Runnable.currentStack.pop : () => Runnable
->                          : ^^^^^^^^^^^^^^
+>Runnable.currentStack.pop : () => Runnable | undefined
+>                          : ^^^^^^^^^^^^^^            
 >Runnable.currentStack : Runnable[]
 >                      : ^^^^^^^^^^
 >Runnable : typeof Runnable
 >         : ^^^^^^^^^^^^^^^
 >currentStack : Runnable[]
 >             : ^^^^^^^^^^
->pop : () => Runnable
->    : ^^^^^^^^^^^^^^
+>pop : () => Runnable | undefined
+>    : ^^^^^^^^^^^^^^            
 
                 if (e) {
 >e : any

@@ -58,11 +58,11 @@ function getMaxWidth(elementNames: string[]) {
 >elements.filter(function (e) {        return !e.isDisabled;    }) : HTMLElement[]
 >                                                                  : ^^^^^^^^^^^^^
 >elements.filter : { <S extends HTMLElement>(predicate: (value: HTMLElement, index: number, array: HTMLElement[]) => value is S, thisArg?: any): S[]; (predicate: (value: HTMLElement, index: number, array: HTMLElement[]) => unknown, thisArg?: any): HTMLElement[]; }
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^         ^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^^^^^^^^^^^
 >elements : HTMLElement[]
 >         : ^^^^^^^^^^^^^
 >filter : { <S extends HTMLElement>(predicate: (value: HTMLElement, index: number, array: HTMLElement[]) => value is S, thisArg?: any): S[]; (predicate: (value: HTMLElement, index: number, array: HTMLElement[]) => unknown, thisArg?: any): HTMLElement[]; }
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^         ^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^^^^^^^^^^^^^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ^^^   ^^^^^^^^^         ^^^     ^^^^^^^^^^^^^^^     ^^      ^^     ^^^^^^^^^^^^^^^^^^^^       ^^       ^^^   ^^^^^^^^^^^^^^^^^^^
 >function (e) {        return !e.isDisabled;    } : (e: HTMLElement) => boolean
 >                                                 : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^
 >e : HTMLElement

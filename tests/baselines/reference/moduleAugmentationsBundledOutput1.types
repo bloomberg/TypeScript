@@ -212,11 +212,11 @@ c.baz1().x.toExponential();
 >c.baz1() : import("m3").C1
 >         : ^^^^^^^^^^^^^^^
 >c.baz1 : () => import("m3").C1
->       : ^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^       ^^^^  ^^
 >c : Cls
 >  : ^^^
 >baz1 : () => import("m3").C1
->     : ^^^^^^^^^^^^^^^^^^^^^
+>     : ^^^^^^       ^^^^  ^^
 >x : number
 >  : ^^^^^^
 >toExponential : (fractionDigits?: number) => string
@@ -232,11 +232,11 @@ c.baz2().x.toLowerCase();
 >c.baz2() : import("m3").C2
 >         : ^^^^^^^^^^^^^^^
 >c.baz2 : () => import("m3").C2
->       : ^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^       ^^^^  ^^
 >c : Cls
 >  : ^^^
 >baz2 : () => import("m3").C2
->     : ^^^^^^^^^^^^^^^^^^^^^
+>     : ^^^^^^       ^^^^  ^^
 >x : string
 >  : ^^^^^^
 >toLowerCase : () => string

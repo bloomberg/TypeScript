@@ -1733,7 +1733,7 @@
         "category": "Error",
         "code": 1519
     },
-    "Expected a class set oprand.": {
+    "Expected a class set operand.": {
         "category": "Error",
         "code": 1520
     },
@@ -4199,10 +4199,6 @@
     "Extends clause for inferred type '{0}' has or is using private name '{1}'.": {
         "category": "Error",
         "code": 4085
-    },
-    "Conflicting definitions for '{0}' found at '{1}' and '{2}'. Consider installing a specific version of this library to resolve the conflict.": {
-        "category": "Error",
-        "code": 4090
     },
     "Parameter '{0}' of index signature from exported interface has or is using name '{1}' from private module '{2}'.": {
         "category": "Error",
@@ -7360,11 +7356,11 @@
         "category": "Message",
         "code": 90067
     },
-    "Add inline type assertion to '{0}'": {
+    "Add satisfies and an inline type assertion with '{0}'": {
         "category": "Message",
         "code": 90068
     },
-    "Extract to variable and replace with '{0} typeof {0}'": {
+    "Extract to variable and replace with '{0} as typeof {0}'": {
         "category": "Message",
         "code": 90069
     },

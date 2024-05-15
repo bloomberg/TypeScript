@@ -55,20 +55,16 @@ import {
     isHeritageClause,
     isIdentifier,
     isIdentifierText,
-    isNumericLiteral,
     isObjectBindingPattern,
     isObjectLiteralExpression,
     isOmittedExpression,
     isParameter,
-    isPrefixUnaryExpression,
-    isPropertyAccessExpression,
     isPropertyAssignment,
     isPropertyDeclaration,
     isShorthandPropertyAssignment,
     isSpreadAssignment,
     isSpreadElement,
     isStatement,
-    isStringLiteral,
     isValueSignatureDeclaration,
     isVariableDeclaration,
     ModifierFlags,
@@ -81,7 +77,6 @@ import {
     ParameterDeclaration,
     PropertyAccessExpression,
     PropertyDeclaration,
-    PropertyName,
     setEmitFlags,
     SignatureDeclaration,
     some,
@@ -95,10 +90,12 @@ import {
     TypeChecker,
     TypeFlags,
     TypeNode,
+    UnionReduction,
     VariableDeclaration,
     VariableStatement,
     walkUpParenthesizedExpressions,
-} from "../_namespaces/ts";
+} from "../_namespaces/ts.js";
+
 import {
     createCodeFixAction,
     createCombinedCodeActions,
@@ -106,34 +103,38 @@ import {
     eachDiagnostic,
     registerCodeFix,
     typeToAutoImportableTypeNode,
-} from "../_namespaces/ts.codefix";
+} from "../_namespaces/ts.codefix.js";
+import { getIdentifierForNode } from "../refactors/helpers.js";
 
 const fixId = "fixMissingTypeAnnotationOnExports";
+
 const addAnnotationFix = "add-annotation";
 const addInlineTypeAssertion = "add-type-assertion";
 const extractExpression = "extract-expression";
-const errorCodes = [
-    Diagnostics.Function_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations,
-    Diagnostics.Method_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations,
-    Diagnostics.At_least_one_accessor_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations,
-    Diagnostics.Variable_must_have_an_explicit_type_annotation_with_isolatedDeclarations,
-    Diagnostics.Parameter_must_have_an_explicit_type_annotation_with_isolatedDeclarations,
-    Diagnostics.Property_must_have_an_explicit_type_annotation_with_isolatedDeclarations,
-    Diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations,
-    Diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations,
-    Diagnostics.Computed_properties_must_be_number_or_string_literals_variables_or_dotted_expressions_with_isolatedDeclarations,
-    Diagnostics.Enum_member_initializers_must_be_computable_without_references_to_external_symbols_with_isolatedDeclarations,
-    Diagnostics.Extends_clause_can_t_contain_an_expression_with_isolatedDeclarations,
-    Diagnostics.Objects_that_contain_shorthand_properties_can_t_be_inferred_with_isolatedDeclarations,
-    Diagnostics.Objects_that_contain_spread_assignments_can_t_be_inferred_with_isolatedDeclarations,
-    Diagnostics.Arrays_with_spread_elements_can_t_inferred_with_isolatedDeclarations,
-    Diagnostics.Default_exports_can_t_be_inferred_with_isolatedDeclarations,
-    Diagnostics.Only_const_arrays_can_be_inferred_with_isolatedDeclarations,
-    Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function,
-    Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations,
-].map(d => d.code);
 
-const canHaveExplicitTypeAnnotation = new Set<SyntaxKind>([
+const errorCodes = [
+    Diagnostics.Function_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.Method_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.At_least_one_accessor_must_have_an_explicit_return_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.Variable_must_have_an_explicit_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.Parameter_must_have_an_explicit_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.Property_must_have_an_explicit_type_annotation_with_isolatedDeclarations.code,
+    Diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations.code,
+    Diagnostics.Computed_properties_must_be_number_or_string_literals_variables_or_dotted_expressions_with_isolatedDeclarations.code,
+    Diagnostics.Enum_member_initializers_must_be_computable_without_references_to_external_symbols_with_isolatedDeclarations.code,
+    Diagnostics.Extends_clause_can_t_contain_an_expression_with_isolatedDeclarations.code,
+    Diagnostics.Objects_that_contain_shorthand_properties_can_t_be_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Objects_that_contain_spread_assignments_can_t_be_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Arrays_with_spread_elements_can_t_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Default_exports_can_t_be_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Only_const_arrays_can_be_inferred_with_isolatedDeclarations.code,
+    Diagnostics.Assigning_properties_to_functions_without_declaring_them_is_not_supported_with_isolatedDeclarations_Add_an_explicit_declaration_for_the_properties_assigned_to_this_function.code,
+    Diagnostics.Declaration_emit_for_this_parameter_requires_implicitly_adding_undefined_to_it_s_type_This_is_not_supported_with_isolatedDeclarations.code,
+    Diagnostics.Add_satisfies_and_a_type_assertion_to_this_expression_satisfies_T_as_T_to_make_the_type_explicit.code,
+];
+
+const canHaveTypeAnnotation = new Set<SyntaxKind>([
     SyntaxKind.GetAccessor,
     SyntaxKind.MethodDeclaration,
     SyntaxKind.PropertyDeclaration,
@@ -157,39 +158,47 @@ const declarationEmitNodeBuilderFlags = NodeBuilderFlags.MultilineObjectLiterals
     | NodeBuilderFlags.NoTruncation
     | NodeBuilderFlags.WriteComputedProps;
 
+enum TypePrintMode {
+    // Prints its fully spelled out type
+    Full,
+    // Prints a relative type i.e. typeof X
+    Relative,
+    // Prints a widened type in case the expression is known to
+    // e.g. export const a = Math.random() ? "0" : "1"; the type will be `string` in d.ts files
+    Widened,
+}
+
 registerCodeFix({
     errorCodes,
     fixIds: [fixId],
     getCodeActions(context) {
         const fixes: CodeFixAction[] = [];
-        const { includeRelativeTypeFixes, includeInlineTypeFixes } = context.preferences;
 
-        addCodeAction(addAnnotationFix, fixes, context, "full", f => f.addFullAnnotation(context.span));
+        addCodeAction(addAnnotationFix, fixes, context, TypePrintMode.Full, f => f.addTypeAnnotation(context.span));
+        addCodeAction(addAnnotationFix, fixes, context, TypePrintMode.Relative, f => f.addTypeAnnotation(context.span));
+        addCodeAction(addAnnotationFix, fixes, context, TypePrintMode.Widened, f => f.addTypeAnnotation(context.span));
 
-        if (includeRelativeTypeFixes !== false) {
-            addCodeAction(addAnnotationFix, fixes, context, "relative", f => f.addFullAnnotation(context.span));
-        }
-        if (includeInlineTypeFixes !== false) {
-            addCodeAction(addInlineTypeAssertion, fixes, context, "full", f => f.addInlineAnnotation(context.span));
-        }
-        if (includeInlineTypeFixes !== false && includeRelativeTypeFixes !== false) {
-            addCodeAction(addInlineTypeAssertion, fixes, context, "relative", f => f.addInlineAnnotation(context.span));
-        }
-        addCodeAction(extractExpression, fixes, context, "full", f => f.extractAsVariable(context.span));
+        addCodeAction(addInlineTypeAssertion, fixes, context, TypePrintMode.Full, f => f.addInlineAssertion(context.span));
+        addCodeAction(addInlineTypeAssertion, fixes, context, TypePrintMode.Relative, f => f.addInlineAssertion(context.span));
+        addCodeAction(addAnnotationFix, fixes, context, TypePrintMode.Widened, f => f.addInlineAssertion(context.span));
+
+        addCodeAction(extractExpression, fixes, context, TypePrintMode.Full, f => f.extractAsVariable(context.span));
+
         return fixes;
     },
     getAllCodeActions: context => {
-        const changes = withChanges(context, "full", f => {
+        const changes = withContext(context, TypePrintMode.Full, f => {
             eachDiagnostic(context, errorCodes, diag => {
-                f.addFullAnnotation(diag);
+                f.addTypeAnnotation(diag);
             });
         });
         return createCombinedCodeActions(changes.textChanges);
     },
 });
+
 interface Fixer {
-    addFullAnnotation(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined;
-    addInlineAnnotation(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined;
+    addTypeAnnotation(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined;
+    addInlineAssertion(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined;
     extractAsVariable(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined;
 }
 
@@ -197,24 +206,24 @@ function addCodeAction(
     fixName: string,
     fixes: CodeFixAction[],
     context: CodeFixContext | CodeFixAllContext,
-    typePrinter: "relative" | "full",
+    typePrintMode: TypePrintMode,
     cb: (fixer: Fixer) => DiagnosticOrDiagnosticAndArguments | undefined,
 ) {
-    const changes = withChanges(context, typePrinter, cb);
+    const changes = withContext(context, typePrintMode, cb);
     if (changes.result && changes.textChanges.length) {
-        const newFix = createCodeFixAction(
+        fixes.push(createCodeFixAction(
             fixName,
             changes.textChanges,
             changes.result,
             fixId,
             Diagnostics.Add_all_missing_type_annotations,
-        );
-        if (!fixes.find(f => f.description === newFix.description)) fixes.push(newFix);
+        ));
     }
 }
-function withChanges<T>(
+
+function withContext<T>(
     context: CodeFixContext | CodeFixAllContext,
-    typePrinter: "relative" | "full",
+    typePrintMode: TypePrintMode,
     cb: (fixer: Fixer) => T,
 ): {
     textChanges: FileTextChanges[];
@@ -225,30 +234,37 @@ function withChanges<T>(
     const sourceFile: SourceFile = context.sourceFile;
     const program = context.program;
     const typeChecker: TypeChecker = program.getTypeChecker();
+    const emitResolver = typeChecker.getEmitResolver();
     const scriptTarget = getEmitScriptTarget(program.getCompilerOptions());
     const importAdder = createImportAdder(context.sourceFile, context.program, context.preferences, context.host);
     const fixedNodes = new Set<Node>();
     const expandoPropertiesAdded = new Set<Node>();
+    const typePrinter = createPrinter({
+        preserveSourceNewlines: false,
+    });
 
-    const result = cb({ addFullAnnotation, addInlineAnnotation, extractAsVariable });
+    const result = cb({ addTypeAnnotation, addInlineAssertion, extractAsVariable });
     importAdder.writeFixes(changeTracker);
+
     return {
         result,
         textChanges: changeTracker.getChanges(),
     };
 
-    function addFullAnnotation(span: TextSpan) {
+    function addTypeAnnotation(span: TextSpan) {
         const nodeWithDiag = getTokenAtPosition(sourceFile, span.start);
+
         const expandoFunction = findExpandoFunction(nodeWithDiag);
         if (expandoFunction) {
             if (isFunctionDeclaration(expandoFunction)) {
                 return createNamespaceForExpandoProperties(expandoFunction);
             }
-            return fixupForIsolatedDeclarations(expandoFunction);
+            return fixIsolatedDeclarationError(expandoFunction);
         }
-        const nodeWithNoType = findNearestParentWithTypeAnnotation(nodeWithDiag);
-        if (nodeWithNoType) {
-            return fixupForIsolatedDeclarations(nodeWithNoType);
+
+        const nodeMissingType = findAncestorWithMissingType(nodeWithDiag);
+        if (nodeMissingType) {
+            return fixIsolatedDeclarationError(nodeMissingType);
         }
         return undefined;
     }
@@ -261,9 +277,11 @@ function withChanges<T>(
         if (!expandoFunc.name || elements.length === 0) return undefined;
         const newProperties = [];
         for (const symbol of elements) {
-            if (!isIdentifierText(symbol.name, program.getCompilerOptions().target)) continue;
-            // If there's an existing variable declaration for this property - skip.
+            // non-valid names will not end up in declaration emit
+            if (!isIdentifierText(symbol.name, getEmitScriptTarget(program.getCompilerOptions()))) continue;
+            // already has an existing declaration
             if (symbol.valueDeclaration && isVariableDeclaration(symbol.valueDeclaration)) continue;
+
             newProperties.push(factory.createVariableStatement(
                 [factory.createModifier(SyntaxKind.ExportKeyword)],
                 factory.createVariableDeclarationList(
@@ -300,18 +318,22 @@ function withChanges<T>(
         if (needsParenthesizedExpressionForAssertion(node)) {
             node = factory.createParenthesizedExpression(node);
         }
-        return factory.createAsExpression(
-            node,
-            type,
-        );
+        return factory.createAsExpression(node, type);
     }
 
-    function addInlineAnnotation(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined {
+    function createSatisfiesAsExpression(node: Expression, type: TypeNode) {
+        if (needsParenthesizedExpressionForAssertion(node)) {
+            node = factory.createParenthesizedExpression(node);
+        }
+        return factory.createAsExpression(factory.createSatisfiesExpression(node, getSynthesizedDeepClone(type)), type);
+    }
+
+    function addInlineAssertion(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined {
         const nodeWithDiag = getTokenAtPosition(sourceFile, span.start);
         const expandoFunction = findExpandoFunction(nodeWithDiag);
         // No inline assertions for expando members
         if (expandoFunction) return;
-        const targetNode = findTargetErrorNode(nodeWithDiag, span);
+        const targetNode = findBestFittingNode(nodeWithDiag, span);
         if (!targetNode || isValueSignatureDeclaration(targetNode) || isValueSignatureDeclaration(targetNode.parent)) return;
         const isExpressionTarget = isExpression(targetNode);
         const isShorthandPropertyAssignmentTarget = isShorthandPropertyAssignment(targetNode);
@@ -349,7 +371,7 @@ function withChanges<T>(
 
         if (!(isExpressionTarget || isShorthandPropertyAssignmentTarget)) return undefined;
 
-        const { typeNode, mutatedTarget } = inferNodeType(targetNode);
+        const { typeNode, mutatedTarget } = inferType(targetNode, type);
         if (!typeNode || mutatedTarget) return undefined;
 
         if (isShorthandPropertyAssignmentTarget) {
@@ -366,96 +388,24 @@ function withChanges<T>(
             );
         }
         else if (isExpressionTarget) {
-            if (needsParenthesizedExpressionForAssertion(targetNode)) {
-                changeTracker.replaceNode(
-                    sourceFile,
-                    targetNode,
-                    createAsExpression(
-                        getSynthesizedDeepClone(targetNode),
-                        typeNode,
-                    ),
-                );
-            }
-            else {
-                changeTracker.insertNodeAt(
-                    sourceFile,
-                    targetNode.end,
-                    getSynthesizedDeepClone(typeNode),
-                    {
-                        prefix: " as ",
-                    },
-                );
-            }
+            changeTracker.replaceNode(
+                sourceFile,
+                targetNode,
+                createSatisfiesAsExpression(
+                    getSynthesizedDeepClone(targetNode),
+                    typeNode,
+                ),
+            );
         }
         else {
             Debug.assertNever(targetNode);
         }
-        return [Diagnostics.Add_inline_type_assertion_to_0, printTypeNode(typeNode)];
-    }
-
-    function suggestVariableName(node: Node) {
-        const nameParts: string[] = [];
-        while (!(isVariableDeclaration(node) || isPropertyDeclaration(node) || isStatement(node))) {
-            if (isPropertyAssignment(node)) {
-                const propName = node.name;
-                addPropertyName(propName);
-            }
-            node = node.parent;
-        }
-        if ((isVariableDeclaration(node) || isPropertyDeclaration(node)) && !isBindingPattern(node.name)) {
-            addPropertyName(node.name);
-        }
-        return nameParts.filter(s => isIdentifierText(s, program.getCompilerOptions().target)).reverse().join("_");
-
-        function addPropertyName(name: PropertyName) {
-            if (isIdentifier(name)) {
-                nameParts.push(name.text);
-            }
-            if (isStringLiteral(name)) {
-                nameParts.push(name.text);
-            }
-            if (isNumericLiteral(name)) {
-                nameParts.push(name.text);
-            }
-            if (isComputedPropertyName(name)) {
-                let computedName = name.expression;
-
-                if (isStringLiteral(computedName)) {
-                    nameParts.push(computedName.text);
-                }
-                if (isNumericLiteral(computedName)) {
-                    nameParts.push(computedName.text);
-                }
-                if (
-                    isPrefixUnaryExpression(computedName)
-                    && isNumericLiteral(computedName.operand)
-                ) {
-                    if (computedName.operator === SyntaxKind.MinusToken) {
-                        nameParts.push("M" + computedName.operand.text);
-                    }
-                    else if (computedName.operator === SyntaxKind.PlusToken) {
-                        nameParts.push("M" + computedName.operand.text);
-                    }
-                }
-
-                // We only support dotted identifiers as property keys
-                while (true) {
-                    if (isIdentifier(computedName)) {
-                        nameParts.push(computedName.text);
-                        break;
-                    }
-                    else if (isPropertyAccessExpression(computedName)) {
-                        nameParts.push(computedName.name.text);
-                        computedName = computedName.expression;
-                    }
-                }
-            }
-        }
+        return [Diagnostics.Add_satisfies_and_an_inline_type_assertion_with_0, typeToStringForDiag(typeNode)];
     }
 
     function extractAsVariable(span: TextSpan): DiagnosticOrDiagnosticAndArguments | undefined {
         const nodeWithDiag = getTokenAtPosition(sourceFile, span.start);
-        const targetNode = findTargetErrorNode(nodeWithDiag, span) as Expression;
+        const targetNode = findBestFittingNode(nodeWithDiag, span) as Expression;
         if (!targetNode || isValueSignatureDeclaration(targetNode) || isValueSignatureDeclaration(targetNode.parent)) return;
 
         const isExpressionTarget = isExpression(targetNode);
@@ -479,7 +429,7 @@ function withChanges<T>(
             if (parentPropertyAssignment === targetNode.parent && isEntityNameExpression(targetNode)) return;
 
             const tempName = factory.createUniqueName(
-                suggestVariableName(targetNode),
+                getIdentifierForNode(targetNode, sourceFile, typeChecker, sourceFile),
                 GeneratedIdentifierFlags.Optimistic,
             );
             let replacementTarget = targetNode;
@@ -524,36 +474,11 @@ function withChanges<T>(
                     ),
                 ),
             );
-            return [Diagnostics.Extract_to_variable_and_replace_with_0_typeof_0, printTypeNode(tempName)];
+            return [Diagnostics.Extract_to_variable_and_replace_with_0_as_typeof_0, typeToStringForDiag(tempName)];
         }
-    }
-
-    function findTargetErrorNode(node: Node, span: TextSpan) {
-        while (
-            node &&
-            node.end < span.start + span.length
-        ) {
-            node = node.parent;
-        }
-        while (node.parent.pos === node.pos && node.parent.end === node.end) {
-            node = node.parent;
-        }
-        if (isIdentifier(node) && hasInitializer(node.parent) && node.parent.initializer) {
-            return node.parent.initializer;
-        }
-        return node;
-    }
-    // Currently, the diagnostics for the error is not given in the exact node of which that needs type annotation.
-    // If this is coming from an ill-formed AST with syntax errors, you cannot assume that it'll find a node
-    // to annotate types, this will return undefined - meaning that it couldn't find the node to annotate types.
-    function findNearestParentWithTypeAnnotation(node: Node): Node | undefined {
-        return findAncestor(node, n =>
-            canHaveExplicitTypeAnnotation.has(n.kind)
-            && ((!isObjectBindingPattern(n) && !isArrayBindingPattern(n)) || isVariableDeclaration(n.parent)));
     }
 
     function findExpandoFunction(node: Node) {
-        // Expando property
         const expandoDeclaration = findAncestor(node, n => isStatement(n) ? "quit" : isExpandoPropertyDeclaration(n as Declaration)) as PropertyAccessExpression | ElementAccessExpression | BinaryExpression;
 
         if (expandoDeclaration && isExpandoPropertyDeclaration(expandoDeclaration)) {
@@ -583,53 +508,27 @@ function withChanges<T>(
         return undefined;
     }
 
-    /**
-     * Fixes up to support IsolatedDeclaration by either adding types when possible, or splitting statements and add type annotations
-     * for the places that cannot have type annotations (e.g. HeritageClause, default exports, ...)
-     */
-    function fixupForIsolatedDeclarations(node: Node): DiagnosticOrDiagnosticAndArguments | undefined {
+    function fixIsolatedDeclarationError(node: Node): DiagnosticOrDiagnosticAndArguments | undefined {
+        // Different --isolatedDeclarion errors might result in annotating type on the same node
+        // avoid creating a duplicated fix in those cases
         if (fixedNodes?.has(node)) return undefined;
         fixedNodes?.add(node);
+
         switch (node.kind) {
             case SyntaxKind.Parameter:
             case SyntaxKind.PropertyDeclaration:
             case SyntaxKind.VariableDeclaration:
-                const decl = node as ParameterDeclaration | PropertyDeclaration | VariableDeclaration;
-                return addTypeAnnotation(decl);
+                return addTypeToVariableLike(node as ParameterDeclaration | PropertyDeclaration | VariableDeclaration);
             case SyntaxKind.ArrowFunction:
             case SyntaxKind.FunctionExpression:
             case SyntaxKind.FunctionDeclaration:
             case SyntaxKind.MethodDeclaration:
             case SyntaxKind.GetAccessor:
-                return addTypeToFunctionLikeDeclaration(node as SignatureDeclaration, sourceFile);
+                return addTypeToSignatureDeclaration(node as SignatureDeclaration, sourceFile);
             case SyntaxKind.ExportAssignment:
-                const defaultExport = node as ExportAssignment;
-                if (!defaultExport.isExportEquals) {
-                    const { typeNode } = inferNodeType(defaultExport.expression);
-                    if (!typeNode) return undefined;
-                    changeTracker.replaceNodeWithNodes(sourceFile, node, [
-                        factory.createVariableStatement(
-                            /*modifiers*/ undefined,
-                            factory.createVariableDeclarationList(
-                                [factory.createVariableDeclaration(
-                                    "__default",
-                                    /*exclamationToken*/ undefined,
-                                    typeNode,
-                                    defaultExport.expression,
-                                )],
-                                NodeFlags.Const,
-                            ),
-                        ),
-                        factory.updateExportAssignment(defaultExport, defaultExport?.modifiers, factory.createIdentifier("__default")),
-                    ]);
-                    return [
-                        Diagnostics.Extract_default_export_to_variable,
-                    ];
-                }
-                break;
-            // Handling expression like heritage clauses e.g. class A extends mixin(B) ..
+                return transformExportAssignment(node as ExportAssignment);
             case SyntaxKind.ClassDeclaration:
-                return handleClassDeclaration(node as ClassDeclaration);
+                return transformExtendsClauseWithExpression(node as ClassDeclaration);
             case SyntaxKind.ObjectBindingPattern:
             case SyntaxKind.ArrayBindingPattern:
                 return transformDestructuringPatterns(node as BindingPattern);
@@ -638,42 +537,75 @@ function withChanges<T>(
         }
     }
 
-    function addTypeToFunctionLikeDeclaration(func: SignatureDeclaration, sourceFile: SourceFile): undefined | DiagnosticOrDiagnosticAndArguments {
+    function addTypeToSignatureDeclaration(func: SignatureDeclaration, sourceFile: SourceFile): DiagnosticOrDiagnosticAndArguments | undefined {
         if (func.type) {
             return;
         }
-        const { typeNode } = inferNodeType(func);
+        const { typeNode } = inferType(func);
         if (typeNode) {
             changeTracker.tryInsertTypeAnnotation(
                 sourceFile,
                 func,
                 typeNode,
             );
-            return [Diagnostics.Add_return_type_0, printTypeNode(typeNode)];
+            return [Diagnostics.Add_return_type_0, typeToStringForDiag(typeNode)];
         }
     }
 
-    function handleClassDeclaration(classDecl: ClassDeclaration): DiagnosticAndArguments | undefined {
-        const extendsHeritage = classDecl.heritageClauses?.find(p => p.token === SyntaxKind.ExtendsKeyword);
-        const heritageExpression = extendsHeritage?.types[0];
+    function transformExportAssignment(defaultExport: ExportAssignment): DiagnosticOrDiagnosticAndArguments | undefined {
+        if (defaultExport.isExportEquals) {
+            return;
+        }
+
+        const { typeNode } = inferType(defaultExport.expression);
+        if (!typeNode) return undefined;
+        const defaultIdentifier = factory.createUniqueName("_default");
+        changeTracker.replaceNodeWithNodes(sourceFile, defaultExport, [
+            factory.createVariableStatement(
+                /*modifiers*/ undefined,
+                factory.createVariableDeclarationList(
+                    [factory.createVariableDeclaration(
+                        defaultIdentifier,
+                        /*exclamationToken*/ undefined,
+                        typeNode,
+                        defaultExport.expression,
+                    )],
+                    NodeFlags.Const,
+                ),
+            ),
+            factory.updateExportAssignment(defaultExport, defaultExport?.modifiers, defaultIdentifier),
+        ]);
+        return [
+            Diagnostics.Extract_default_export_to_variable,
+        ];
+    }
+
+    /**
+     * Factor out expressions used extends clauses in classs definitions as a
+     * variable and annotate type on the new variable.
+     */
+    function transformExtendsClauseWithExpression(classDecl: ClassDeclaration): DiagnosticAndArguments | undefined {
+        const extendsClause = classDecl.heritageClauses?.find(p => p.token === SyntaxKind.ExtendsKeyword);
+        const heritageExpression = extendsClause?.types[0];
         if (!heritageExpression) {
             return undefined;
         }
-        const { typeNode: heritageTypeNode } = inferNodeType(heritageExpression.expression);
+        const { typeNode: heritageTypeNode } = inferType(heritageExpression.expression);
         if (!heritageTypeNode) {
             return undefined;
         }
 
-        const heritageVariableName = factory.createUniqueName(
+        const baseClassName = factory.createUniqueName(
             classDecl.name ? classDecl.name.text + "Base" : "Anonymous",
             GeneratedIdentifierFlags.Optimistic,
         );
+
         // e.g. const Point3DBase: typeof Point2D = mixin(Point2D);
         const heritageVariable = factory.createVariableStatement(
             /*modifiers*/ undefined,
             factory.createVariableDeclarationList(
                 [factory.createVariableDeclaration(
-                    heritageVariableName,
+                    baseClassName,
                     /*exclamationToken*/ undefined,
                     heritageTypeNode,
                     heritageExpression.expression,
@@ -691,7 +623,7 @@ function withChanges<T>(
                 pos: heritageExpression.getFullStart(),
                 end: realEnd,
             },
-            heritageVariableName,
+            baseClassName,
             {
                 prefix: " ",
             },
@@ -706,17 +638,17 @@ function withChanges<T>(
     }
 
     const enum ExpressionType {
-        TEXT = 0,
-        COMPUTED = 1,
-        ARRAY_ACCESS = 2,
-        IDENTIFIER = 3,
+        Text = 0,
+        Computed = 1,
+        ArrayAccess = 2,
+        Identifier = 3,
     }
 
     type SubExpression =
-        | { kind: ExpressionType.TEXT; text: string; }
-        | { kind: ExpressionType.COMPUTED; computed: Expression; }
-        | { kind: ExpressionType.ARRAY_ACCESS; arrayIndex: number; }
-        | { kind: ExpressionType.IDENTIFIER; identifier: Identifier; };
+        | { kind: ExpressionType.Text; text: string; }
+        | { kind: ExpressionType.Computed; computed: Expression; }
+        | { kind: ExpressionType.ArrayAccess; arrayIndex: number; }
+        | { kind: ExpressionType.Identifier; identifier: Identifier; };
 
     function transformDestructuringPatterns(bindingPattern: BindingPattern): DiagnosticOrDiagnosticAndArguments | undefined {
         const enclosingVariableDeclaration = bindingPattern.parent as VariableDeclaration;
@@ -728,7 +660,7 @@ function withChanges<T>(
         if (!isIdentifier(enclosingVariableDeclaration.initializer)) {
             // For complex expressions we want to create a temporary variable
             const tempHolderForReturn = factory.createUniqueName("dest", GeneratedIdentifierFlags.Optimistic);
-            baseExpr = { expression: { kind: ExpressionType.IDENTIFIER, identifier: tempHolderForReturn } };
+            baseExpr = { expression: { kind: ExpressionType.Identifier, identifier: tempHolderForReturn } };
             newNodes.push(factory.createVariableStatement(
                 /*modifiers*/ undefined,
                 factory.createVariableDeclarationList(
@@ -744,7 +676,7 @@ function withChanges<T>(
         }
         else {
             // If we are destructuring an identifier, just use that. No need for temp var.
-            baseExpr = { expression: { kind: ExpressionType.IDENTIFIER, identifier: enclosingVariableDeclaration.initializer } };
+            baseExpr = { expression: { kind: ExpressionType.Identifier, identifier: enclosingVariableDeclaration.initializer } };
         }
 
         const bindingElements: ExpressionReverseChain[] = [];
@@ -783,7 +715,7 @@ function withChanges<T>(
                 addObjectBindingPatterns(name, bindingElements, bindingElement);
             }
             else {
-                const { typeNode } = inferNodeType(name);
+                const { typeNode } = inferType(name);
                 let variableInitializer = createChainedExpression(bindingElement, expressionToVar);
                 if (bindingElement.element!.initializer) {
                     const propertyName = bindingElement.element?.propertyName;
@@ -858,7 +790,7 @@ function withChanges<T>(
             bindingElements.push({
                 element,
                 parent,
-                expression: { kind: ExpressionType.ARRAY_ACCESS, arrayIndex: i },
+                expression: { kind: ExpressionType.ArrayAccess, arrayIndex: i },
             });
         }
     }
@@ -871,7 +803,7 @@ function withChanges<T>(
                     bindingElements.push({
                         element: bindingElement,
                         parent,
-                        expression: { kind: ExpressionType.COMPUTED, computed: bindingElement.propertyName.expression },
+                        expression: { kind: ExpressionType.Computed, computed: bindingElement.propertyName.expression },
                     });
                     continue;
                 }
@@ -885,7 +817,7 @@ function withChanges<T>(
             bindingElements.push({
                 element: bindingElement,
                 parent,
-                expression: { kind: ExpressionType.TEXT, text: name },
+                expression: { kind: ExpressionType.Text, text: name },
             });
         }
     }
@@ -899,20 +831,20 @@ function withChanges<T>(
         let chainedExpression: Expression = (reverseTraverse[reverseTraverse.length - 1].expression as { identifier: Identifier; }).identifier;
         for (let i = reverseTraverse.length - 2; i >= 0; --i) {
             const nextSubExpr = reverseTraverse[i].expression;
-            if (nextSubExpr.kind === ExpressionType.TEXT) {
+            if (nextSubExpr.kind === ExpressionType.Text) {
                 chainedExpression = factory.createPropertyAccessChain(
                     chainedExpression,
                     /*questionDotToken*/ undefined,
                     factory.createIdentifier(nextSubExpr.text),
                 );
             }
-            else if (nextSubExpr.kind === ExpressionType.COMPUTED) {
+            else if (nextSubExpr.kind === ExpressionType.Computed) {
                 chainedExpression = factory.createElementAccessExpression(
                     chainedExpression,
                     expressionToVar.get(nextSubExpr.computed)!,
                 );
             }
-            else if (nextSubExpr.kind === ExpressionType.ARRAY_ACCESS) {
+            else if (nextSubExpr.kind === ExpressionType.ArrayAccess) {
                 chainedExpression = factory.createElementAccessExpression(
                     chainedExpression,
                     nextSubExpr.arrayIndex,
@@ -921,40 +853,55 @@ function withChanges<T>(
         }
         return chainedExpression;
     }
+
     interface InferenceResult {
         typeNode?: TypeNode | undefined;
         mutatedTarget: boolean;
     }
-    function inferNodeType(node: Node): InferenceResult {
-        if (typePrinter === "full") {
-            const type = isValueSignatureDeclaration(node) ?
-                tryGetReturnType(node) :
-                typeChecker.getTypeAtLocation(node);
-            if (!type) {
-                return emptyInferenceResult;
-            }
-            // if(isParameter(node) && emitResolver.requiresAddingImplicitUndefined(node)) {
-            //      type = typeChecker.getUnionType([typeChecker.getUndefinedType(), type], UnionReduction.None);
-            // }
-            const flags = (
-                    isVariableDeclaration(node) ||
-                    (isPropertyDeclaration(node) && hasSyntacticModifier(node, ModifierFlags.Static | ModifierFlags.Readonly))
-                ) && type.flags & TypeFlags.UniqueESSymbol ?
-                NodeBuilderFlags.AllowUniqueESSymbolType : NodeBuilderFlags.None;
-            return {
-                typeNode: typeToTypeNode(type, findAncestor(node, isDeclaration) ?? sourceFile, flags),
-                mutatedTarget: false,
-            };
-        }
-        else {
+
+    function inferType(node: Node, variableType?: Type | undefined): InferenceResult {
+        if (typePrintMode === TypePrintMode.Relative) {
             return relativeType(node);
         }
+
+        let type = isValueSignatureDeclaration(node) ?
+            tryGetReturnType(node) :
+            typeChecker.getTypeAtLocation(node);
+        if (!type) {
+            return emptyInferenceResult;
+        }
+
+        if (typePrintMode === TypePrintMode.Widened) {
+            if (variableType) {
+                type = variableType;
+            }
+            // Widening of types can happen on union of type literals on
+            // declaration emit so we query it.
+            const widenedType = typeChecker.getWidenedLiteralType(type);
+            if (typeChecker.isTypeAssignableTo(widenedType, type)) {
+                return emptyInferenceResult;
+            }
+            type = widenedType;
+        }
+
+        if (isParameter(node) && emitResolver.requiresAddingImplicitUndefined(node)) {
+            type = typeChecker.getUnionType([typeChecker.getUndefinedType(), type], UnionReduction.None);
+        }
+        const flags = (
+                isVariableDeclaration(node) ||
+                (isPropertyDeclaration(node) && hasSyntacticModifier(node, ModifierFlags.Static | ModifierFlags.Readonly))
+            ) && type.flags & TypeFlags.UniqueESSymbol ?
+            NodeBuilderFlags.AllowUniqueESSymbolType : NodeBuilderFlags.None;
+        return {
+            typeNode: typeToTypeNode(type, findAncestor(node, isDeclaration) ?? sourceFile, flags),
+            mutatedTarget: false,
+        };
     }
 
     function createTypeOfFromEntityNameExpression(node: EntityNameExpression) {
-        // Convert EntityNameExpression to  EntityName ?
         return factory.createTypeQueryNode(getSynthesizedDeepClone(node) as EntityName);
     }
+
     function typeFromArraySpreadElements(
         node: ArrayLiteralExpression,
         name = "temp",
@@ -989,6 +936,7 @@ function withChanges<T>(
             factory.createIntersectionTypeNode,
         );
     }
+
     function typeFromSpreads<T extends Expression, TSpread extends SpreadAssignment | SpreadElement, TElements extends TSpread | Node>(
         node: T,
         name: string,
@@ -1027,6 +975,7 @@ function withChanges<T>(
             typeNode: finalType(intersectionTypes),
             mutatedTarget: true,
         };
+
         function makeVariable(expression: Expression) {
             const tempName = factory.createUniqueName(
                 name + "_Part" + (newSpreads.length + 1),
@@ -1052,6 +1001,7 @@ function withChanges<T>(
             intersectionTypes.push(createTypeOfFromEntityNameExpression(tempName));
             newSpreads.push(createSpread(tempName));
         }
+
         function finalizesVariablePart() {
             if (currentVariableProperties) {
                 makeVariable(makeNodeOfKind(
@@ -1061,8 +1011,9 @@ function withChanges<T>(
             }
         }
     }
+
     function isConstAssertion(location: Node): location is AssertionExpression {
-        return (isAssertionExpression(location) && isConstTypeReference(location.type));
+        return isAssertionExpression(location) && isConstTypeReference(location.type);
     }
 
     function relativeType(node: Node): InferenceResult {
@@ -1094,10 +1045,7 @@ function withChanges<T>(
             const partName = variableDecl && isIdentifier(variableDecl.name) ? variableDecl.name.text : undefined;
             return typeFromObjectSpreadAssignment(node, partName);
         }
-        if (
-            isVariableDeclaration(node)
-            && node.initializer
-        ) {
+        if (isVariableDeclaration(node) && node.initializer) {
             return relativeType(node.initializer);
         }
         if (isConditionalExpression(node)) {
@@ -1135,8 +1083,8 @@ function withChanges<T>(
         }
     }
 
-    function addTypeAnnotation(decl: ParameterDeclaration | VariableDeclaration | PropertyDeclaration): undefined | DiagnosticOrDiagnosticAndArguments {
-        const { typeNode } = inferNodeType(decl);
+    function addTypeToVariableLike(decl: ParameterDeclaration | VariableDeclaration | PropertyDeclaration): DiagnosticOrDiagnosticAndArguments | undefined {
+        const { typeNode } = inferType(decl);
         if (typeNode) {
             if (decl.type) {
                 changeTracker.replaceNode(getSourceFileOfNode(decl), decl.type, typeNode);
@@ -1144,19 +1092,39 @@ function withChanges<T>(
             else {
                 changeTracker.tryInsertTypeAnnotation(getSourceFileOfNode(decl), decl, typeNode);
             }
-            return [Diagnostics.Add_annotation_of_type_0, printTypeNode(typeNode)];
+            return [Diagnostics.Add_annotation_of_type_0, typeToStringForDiag(typeNode)];
         }
     }
-    function printTypeNode(node: Node) {
+
+    function typeToStringForDiag(node: Node) {
         setEmitFlags(node, EmitFlags.SingleLine);
-        const printer = createPrinter({
-            preserveSourceNewlines: false,
-        });
-        const result = printer.printNode(EmitHint.Unspecified, node, sourceFile);
+        const result = typePrinter.printNode(EmitHint.Unspecified, node, sourceFile);
         if (result.length > defaultMaximumTruncationLength) {
-            return result.substr(0, defaultMaximumTruncationLength - "...".length) + "...";
+            return result.substring(0, defaultMaximumTruncationLength - "...".length) + "...";
         }
         setEmitFlags(node, EmitFlags.None);
         return result;
     }
+}
+
+// Some --isolatedDeclarations errors are not present on the node that directly needs type annotation, so look in the
+// ancestors to look for node that needs type annotation. This function can return undefined if the AST is ill-formed.
+function findAncestorWithMissingType(node: Node): Node | undefined {
+    return findAncestor(node, n => {
+        return canHaveTypeAnnotation.has(n.kind) &&
+            ((!isObjectBindingPattern(n) && !isArrayBindingPattern(n)) || isVariableDeclaration(n.parent));
+    });
+}
+
+function findBestFittingNode(node: Node, span: TextSpan) {
+    while (node && node.end < span.start + span.length) {
+        node = node.parent;
+    }
+    while (node.parent.pos === node.pos && node.parent.end === node.end) {
+        node = node.parent;
+    }
+    if (isIdentifier(node) && hasInitializer(node.parent) && node.parent.initializer) {
+        return node.parent.initializer;
+    }
+    return node;
 }

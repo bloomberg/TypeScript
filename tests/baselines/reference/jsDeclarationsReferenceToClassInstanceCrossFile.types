@@ -22,11 +22,11 @@ render.addRectangle();
 >render.addRectangle() : import("rectangle").Rectangle
 >                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >render.addRectangle : () => import("rectangle").Rectangle
->                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                    : ^^^^^^       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^
 >render : Render
 >       : ^^^^^^
 >addRectangle : () => import("rectangle").Rectangle
->             : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>             : ^^^^^^       ^^^^^^^^^^^^^^^^^  ^^^^^^^^^
 
 console.log("Objects", render.objects);
 >console.log("Objects", render.objects) : void

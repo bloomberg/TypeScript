@@ -412,13 +412,13 @@ function f4(x: { [P in keyof Foo]: Foo[P] }) {
 >f4 : (x: { [P in keyof Foo]: Foo[P]; }) => void
 >   : ^ ^^                             ^^^^^^^^^
 >x : { [x: string]: number; prop: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
 
     x.prop; // ok
 >x.prop : number
 >       : ^^^^^^
 >x : { [x: string]: number; prop: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
 >prop : number
 >     : ^^^^^^
 
@@ -430,7 +430,7 @@ function f4(x: { [P in keyof Foo]: Foo[P] }) {
 >x["other"] : number
 >           : ^^^^^^
 >x : { [x: string]: number; prop: number; }
->  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^
 >"other" : "other"
 >        : ^^^^^^^
 >toFixed : (fractionDigits?: number) => string

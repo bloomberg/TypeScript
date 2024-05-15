@@ -42,9 +42,9 @@ var unused2 = { ...ab, ...ab }
 
 var unused3 = { b: 1, ...abq }
 >unused3 : { a: number; b: number; }
->        : ^^^^^      ^^^^^^^^^^^^^^
+>        : ^^^^^      ^^^^^      ^^^
 >{ b: 1, ...abq } : { a: number; b: number; }
->                 : ^^^^^      ^^^^^^^^^^^^^^
+>                 : ^^^^^      ^^^^^      ^^^
 >b : number
 >  : ^^^^^^
 >1 : 1

@@ -42,8 +42,8 @@ type T06 = Unpacked<never>;  // never
 >    : ^^^^^
 
 function f1(s: string) {
->f1 : (s: string) => {    a: number;    b: string;}
->   : ^ ^^      ^^^^^^     ^^^^^^^^^     ^^^^^^^^^^
+>f1 : (s: string) => { a: number; b: string; }
+>   : ^ ^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >s : string
 >  : ^^^^^^
 
@@ -115,8 +115,8 @@ type T13 = ReturnType<(<T extends U, U extends number[]>() => T)>;  // number[]
 type T14 = ReturnType<typeof f1>;  // { a: number, b: string }
 >T14 : { a: number; b: string; }
 >    : ^^^^^^^^^^^^^^^^^^^^^^^^^
->f1 : (s: string) => {    a: number;    b: string;}
->   : ^ ^^      ^^^^^^     ^^^^^^^^^     ^^^^^^^^^^
+>f1 : (s: string) => { a: number; b: string; }
+>   : ^ ^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 type T15 = ReturnType<any>;  // any
 >T15 : any
@@ -657,7 +657,7 @@ type Test2 = EnsureIsString<42>;  // never
 
 function invoker <K extends string | number | symbol, A extends any[]> (key: K, ...args: A) {
 >invoker : <K extends string | number | symbol, A extends any[]>(key: K, ...args: A) => <T extends Record<K, (...args: A) => any>>(obj: T) => ReturnType<T[K]>
->        : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^   ^^ ^^^^^    ^^ ^^^^^^                                        ^^      ^^^^^                
+>        : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^   ^^ ^^^^^    ^^ ^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^    ^^ ^^^^^   ^^^   ^^ ^^^^^                
 >key : K
 >    : ^
 >args : A
@@ -692,7 +692,7 @@ const result = invoker('test', true)({ test: (a: boolean) => 123 })
 >invoker('test', true) : <T extends Record<"test", (args_0: boolean) => any>>(obj: T) => ReturnType<T["test"]>
 >                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >invoker : <K extends string | number | symbol, A extends any[]>(key: K, ...args: A) => <T extends Record<K, (...args: A) => any>>(obj: T) => ReturnType<T[K]>
->        : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^   ^^ ^^^^^    ^^ ^^^^^^                                        ^^      ^^^^^                
+>        : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^   ^^ ^^^^^    ^^ ^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^    ^^ ^^^^^   ^^^   ^^ ^^^^^                
 >'test' : "test"
 >       : ^^^^^^
 >true : true

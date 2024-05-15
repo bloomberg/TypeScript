@@ -108,7 +108,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >Object.assign({}, soFar, {name: instance as TYPE}) as SO_FAR & {name: TYPE} : SO_FAR & { name: TYPE; }
 >                                                                            : ^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign({}, soFar, {name: instance as TYPE}) : SO_FAR & { name: TYPE; }
->                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                   : ^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign : { <T extends {}, U>(target: T, source: U): T & U; <T extends {}, U, V>(target: T, source1: U, source2: V): T & U & V; <T extends {}, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W; (target: object, ...sources: any[]): any; }
 >              : ^^^ ^^^^^^^^^^^^^ ^^      ^^ ^^      ^^ ^^^     ^^^ ^^^^^^^^^^^^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^^         ^^^ ^^^^^^^^^^^^^ ^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^       ^^ ^^^             ^^^      ^^      ^^^^^       ^^     ^^^   ^^^
 >Object : ObjectConstructor
@@ -120,7 +120,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >soFar : SO_FAR
 >      : ^^^^^^
 >{name: instance as TYPE} : { name: TYPE; }
->                         : ^^^^^^^^^^^^^^^
+>                         : ^^^^^^^^    ^^^
 >name : TYPE
 >     : ^^^^
 >instance as TYPE : TYPE
@@ -349,7 +349,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >Object.assign({}, soFar, {identifier: instance as TYPE}) as SO_FAR & {identifier: TYPE} : SO_FAR & { identifier: TYPE; }
 >                                                                                        : ^^^^^^^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign({}, soFar, {identifier: instance as TYPE}) : SO_FAR & Record<"record", unknown> & { identifier: TYPE; }
->                                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign : { <T extends {}, U>(target: T, source: U): T & U; <T extends {}, U, V>(target: T, source1: U, source2: V): T & U & V; <T extends {}, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W; (target: object, ...sources: any[]): any; }
 >              : ^^^ ^^^^^^^^^^^^^ ^^      ^^ ^^      ^^ ^^^     ^^^ ^^^^^^^^^^^^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^^         ^^^ ^^^^^^^^^^^^^ ^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^       ^^ ^^^             ^^^      ^^      ^^^^^       ^^     ^^^   ^^^
 >Object : ObjectConstructor
@@ -361,7 +361,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >soFar : SO_FAR & Record<"record", unknown>
 >      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{identifier: instance as TYPE} : { identifier: TYPE; }
->                               : ^^^^^^^^^^^^^^^^^^^^^
+>                               : ^^^^^^^^^^^^^^    ^^^
 >identifier : TYPE
 >           : ^^^^
 >instance as TYPE : TYPE
@@ -436,7 +436,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >Object.assign({}, soFar, {record: instance as TYPE}) as SO_FAR & {record: TYPE} : SO_FAR & { record: TYPE; }
 >                                                                                : ^^^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign({}, soFar, {record: instance as TYPE}) : SO_FAR & { record: TYPE; }
->                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                     : ^^^^^^^^^^^^^^^^^^^    ^^^
 >Object.assign : { <T extends {}, U>(target: T, source: U): T & U; <T extends {}, U, V>(target: T, source1: U, source2: V): T & U & V; <T extends {}, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W; (target: object, ...sources: any[]): any; }
 >              : ^^^ ^^^^^^^^^^^^^ ^^      ^^ ^^      ^^ ^^^     ^^^ ^^^^^^^^^^^^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^^         ^^^ ^^^^^^^^^^^^^ ^^ ^^ ^^      ^^ ^^       ^^ ^^       ^^ ^^       ^^ ^^^             ^^^      ^^      ^^^^^       ^^     ^^^   ^^^
 >Object : ObjectConstructor
@@ -448,7 +448,7 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >soFar : SO_FAR
 >      : ^^^^^^
 >{record: instance as TYPE} : { record: TYPE; }
->                           : ^^^^^^^^^^^^^^^^^
+>                           : ^^^^^^^^^^    ^^^
 >record : TYPE
 >       : ^^^^
 >instance as TYPE : TYPE
@@ -495,11 +495,11 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >(    "maxMsToWaitBeforePublishing" in soFar ? {} : {      maxMsToWaitBeforePublishing: (instance: number = 0) =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: instance})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: number}>,      neverDelayPublishing: () =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}>,    }  ) as MaxMsToWaitBeforePublishingFieldConstructor<SO_FAR> : MaxMsToWaitBeforePublishingFieldConstructor<SO_FAR>
 >                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >(    "maxMsToWaitBeforePublishing" in soFar ? {} : {      maxMsToWaitBeforePublishing: (instance: number = 0) =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: instance})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: number}>,      neverDelayPublishing: () =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}>,    }  ) : {} | { maxMsToWaitBeforePublishing: (instance?: number) => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: number; }>; neverDelayPublishing: () => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>; }
->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^
+>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                                                   ^^^
 
     "maxMsToWaitBeforePublishing" in soFar ? {} : {
 >"maxMsToWaitBeforePublishing" in soFar ? {} : {      maxMsToWaitBeforePublishing: (instance: number = 0) =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: instance})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: number}>,      neverDelayPublishing: () =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}>,    } : {} | { maxMsToWaitBeforePublishing: (instance?: number) => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: number; }>; neverDelayPublishing: () => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>; }
->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^
+>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                                                   ^^^
 >"maxMsToWaitBeforePublishing" in soFar : boolean
 >                                       : ^^^^^^^
 >"maxMsToWaitBeforePublishing" : "maxMsToWaitBeforePublishing"
@@ -509,13 +509,13 @@ export enum PubSubRecordIsStoredInRedisAsA {
 >{} : {}
 >   : ^^
 >{      maxMsToWaitBeforePublishing: (instance: number = 0) =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: instance})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: number}>,      neverDelayPublishing: () =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}>,    } : { maxMsToWaitBeforePublishing: (instance?: number) => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: number; }>; neverDelayPublishing: () => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>; }
->                                                                                                                                                                                                                                                                                                                                                                                                                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^
+>                                                                                                                                                                                                                                                                                                                                                                                                                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        ^^^      ^^^^^                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                                                   ^^^
 
       maxMsToWaitBeforePublishing: (instance: number = 0) =>
 >maxMsToWaitBeforePublishing : (instance?: number) => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: number; }>
->                            : ^        ^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^
+>                            : ^        ^^^      ^^^^^                                                                        
 >(instance: number = 0) =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: instance})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: number}> : (instance?: number) => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: number; }>
->                                                                                                                                                                                                   : ^        ^^^      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^
+>                                                                                                                                                                                                   : ^        ^^^      ^^^^^                                                                        
 >instance : number
 >         : ^^^^^^
 >0 : 0
@@ -551,9 +551,9 @@ export enum PubSubRecordIsStoredInRedisAsA {
 
       neverDelayPublishing: () =>
 >neverDelayPublishing : () => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>
->                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^
+>                     : ^^^^^^                                                                   
 >() =>        buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}> : () => BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>
->                                                                                                                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^
+>                                                                                                                                                                   : ^^^^^^                                                                   
 
         buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}>,
 >buildPubSubRecordType(Object.assign({}, soFar, {maxMsToWaitBeforePublishing: 0})) as BuildPubSubRecordType<SO_FAR & {maxMsToWaitBeforePublishing: 0}> : BuildPubSubRecordType<SO_FAR & { maxMsToWaitBeforePublishing: 0; }>

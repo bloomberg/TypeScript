@@ -55,10 +55,10 @@ const v1: number = unbox(b1);
 >   : ^^^^^^^^^^^^^^^^^^
 
 const b2 = { value: su?.length as number | undefined };
->b2 : { value: number; }
->   : ^^^^^^^^^^^^^^^^^^
->{ value: su?.length as number | undefined } : { value: number; }
->                                            : ^^^^^^^^^^^^^^^^^^
+>b2 : { value: number | undefined; }
+>   : ^^^^^^^^^                  ^^^
+>{ value: su?.length as number | undefined } : { value: number | undefined; }
+>                                            : ^^^^^^^^^                  ^^^
 >value : number
 >      : ^^^^^^
 >su?.length as number | undefined : number
@@ -77,8 +77,8 @@ const v2: number = unbox(b2);
 >          : ^^^^^^
 >unbox : <T>(box: { value: T | undefined; }) => T
 >      : ^ ^^   ^^                         ^^^^^ 
->b2 : { value: number; }
->   : ^^^^^^^^^^^^^^^^^^
+>b2 : { value: number | undefined; }
+>   : ^^^^^^^^^                  ^^^
 
 const b3: { value: number | undefined } = { value: su?.length };
 >b3 : { value: number | undefined; }

@@ -5,7 +5,7 @@
 //// function foo() {
 ////     return { x: 1, y: 1 };
 //// }
-//// export const { x, y } = foo();
+//// export const { x: abcd, y: defg } = foo();
 
 verify.codeFix({
     description: ts.Diagnostics.Extract_binding_expressions_to_variable.message,
@@ -15,6 +15,6 @@ verify.codeFix({
     return { x: 1, y: 1 };
 }
 const dest = foo();
-export const x: number = dest.x;
-export const y: number = dest.y;`
+export const abcd: number = dest.x;
+export const defg: number = dest.y;`
 });

@@ -31,7 +31,7 @@ import { test } from "search/lib/index";
 
 import { getNotification } from "../API/NotificationAPIUtils";
 >getNotification : () => import("/packages/search-prefix/src/API/NotificationAPIUtils").NotificationResponse
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
 
 export const NotificationScenario = test(
 >NotificationScenario : () => import("/packages/search-prefix/src/API/NotificationAPIUtils").NotificationResponse
@@ -43,6 +43,6 @@ export const NotificationScenario = test(
 
   getNotification
 >getNotification : () => import("/packages/search-prefix/src/API/NotificationAPIUtils").NotificationResponse
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
 
 );

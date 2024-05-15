@@ -286,16 +286,16 @@ module TypeScript {
                 this.asts.pop();
 >this.asts.pop() : TypeScript.AST
 >                : ^^^^^^^^^^^^^^
->this.asts.pop : () => TypeScript.AST
->              : ^^^^^^^^^^^^^^^^^^^^
+>this.asts.pop : () => TypeScript.AST | undefined
+>              : ^^^^^^^^^^^^^^^^^^^^            
 >this.asts : TypeScript.AST[]
 >          : ^^^^^^^^^^^^^^^^
 >this : this
 >     : ^^^^
 >asts : TypeScript.AST[]
 >     : ^^^^^^^^^^^^^^^^
->pop : () => TypeScript.AST
->    : ^^^^^^^^^^^^^^^^^^^^
+>pop : () => TypeScript.AST | undefined
+>    : ^^^^^^^^^^^^^^^^^^^^            
             }
             return head;
 >head : TypeScript.AST
@@ -335,16 +335,16 @@ module TypeScript {
                 this.asts.pop();
 >this.asts.pop() : TypeScript.AST
 >                : ^^^^^^^^^^^^^^
->this.asts.pop : () => TypeScript.AST
->              : ^^^^^^^^^^^^^^^^^^^^
+>this.asts.pop : () => TypeScript.AST | undefined
+>              : ^^^^^^^^^^^^^^^^^^^^            
 >this.asts : TypeScript.AST[]
 >          : ^^^^^^^^^^^^^^^^
 >this : this
 >     : ^^^^
 >asts : TypeScript.AST[]
 >     : ^^^^^^^^^^^^^^^^
->pop : () => TypeScript.AST
->    : ^^^^^^^^^^^^^^^^^^^^
+>pop : () => TypeScript.AST | undefined
+>    : ^^^^^^^^^^^^^^^^^^^^            
             }
             this.top = this.asts.length;
 >this.top = this.asts.length : number

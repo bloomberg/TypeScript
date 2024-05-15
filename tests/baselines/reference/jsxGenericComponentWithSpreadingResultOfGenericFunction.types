@@ -12,8 +12,8 @@ Symbol count: 50,000
 // repro #51577
 
 declare function omit<T, K extends string>(names: readonly K[], obj: T): Omit<T, K>;
->omit : { <T, K extends string>(names: readonly K[], obj: T): Omit<T, K>; <K_1 extends string>(names: readonly K_1[]): <T>(obj: T_1) => Omit<T_1, K_1>; }
->     : ^^^ ^^ ^^^^^^^^^^^^^^^^^     ^^            ^^   ^^ ^^^          ^^^   ^^^^^^^^^^^^^^^^^     ^^              ^^^                               ^^^
+>omit : { <T, K extends string>(names: readonly K[], obj: T): Omit<T, K>; <K_1 extends string>(names: readonly K_1[]): <T_1>(obj: T_1) => Omit<T_1, K_1>; }
+>     : ^^^ ^^ ^^^^^^^^^^^^^^^^^     ^^            ^^   ^^ ^^^          ^^^   ^^^^^^^^^^^^^^^^^     ^^              ^^^                                 ^^^
 >names : readonly K[]
 >      : ^^^^^^^^^^^^
 >obj : T

@@ -339,7 +339,7 @@ type Obj2 = {
 
 declare const mapIntersection: {
 >mapIntersection : { a?: number | undefined; b: number; c: number; }
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^
 
     [K in keyof (Partial<Obj1> & Required<Obj2>)]: number;
 };
@@ -356,9 +356,9 @@ const accessMapped = <K extends keyof Obj2>(key: K) => mapIntersection[key].toSt
 >mapIntersection[key].toString : (radix?: number) => string
 >                              : ^     ^^^      ^^^^^      
 >mapIntersection[key] : { a?: number | undefined; b: number; c: number; }[K]
->                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^^^^
 >mapIntersection : { a?: number | undefined; b: number; c: number; }
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^^^^^^^
 >key : K
 >    : ^
 >toString : (radix?: number) => string

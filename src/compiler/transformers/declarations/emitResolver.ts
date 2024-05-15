@@ -89,7 +89,7 @@ import {
     SyntacticTypeNodeBuilderContext,
     SyntaxKind,
     VariableDeclaration,
-} from "../../_namespaces/ts";
+} from "../../_namespaces/ts.js";
 
 interface EmitSymbolLinks {
     lateBoundSymbol?: Symbol;

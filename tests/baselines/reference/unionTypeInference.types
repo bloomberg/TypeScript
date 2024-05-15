@@ -399,7 +399,7 @@ declare let xx: { a: string | undefined };
 
 baz(xx);
 >baz(xx) : { a: string | undefined; }
->        : ^^^^^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^                  ^^^
 >baz : <T>(dp: Deep<T>) => T
 >    : ^ ^^  ^^       ^^^^^ 
 >xx : { a: string | undefined; }

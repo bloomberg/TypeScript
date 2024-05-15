@@ -310,7 +310,7 @@ function from16326(this: { header: Header }, header: Header, authToken: string):
 
     return {
 >{        ...this.header,        ...header,        ...authToken && { authToken }    } : { authToken: string; head: string; body: string; }
->                                                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^      ^^^^^^^^      ^^^
+>                                                                                     : ^^^^^^^^^^^^^      ^^^^^^^^      ^^^^^^^^      ^^^
 
         ...this.header,
 >this.header : Header

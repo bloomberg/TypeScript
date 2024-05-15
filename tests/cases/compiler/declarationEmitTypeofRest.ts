@@ -1,6 +1,26 @@
 // @declaration: true
+// @target: es2015
 
 // @fileName: v1.ts
+export const v1 = (...a: [n: "n", a: "a"]): {
+    /** r rest param */
+    a: typeof a,
+} => {
+    return null!
+}
+
+// @fileName: v2.ts
+const n = Symbol();
+export const v2 = (...a: [n: "n", a: "a"]): {
+    /** r rest param */
+    a: typeof a,
+    /** module var */
+    n: typeof n,
+} => {
+    return null!
+}
+
+// @fileName: v1b.ts
 const n = 'module';
 const a = 'module'; 
 const v = 'module';
@@ -15,7 +35,7 @@ export const v1 = (...a: [n: "rest", v: "rest"]) => {
         v: typeof v 
     }
 }
-// @fileName: v2.ts
+// @fileName: v2b.ts
 const n = 'module'; 
 const a = 'module'; 
 const v = 'module';

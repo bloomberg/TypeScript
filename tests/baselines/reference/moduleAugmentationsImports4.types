@@ -26,11 +26,11 @@ let b = a.getB().x.toFixed();
 >a.getB() : import("b").B
 >         : ^^^^^^^^^^^^^^^^^^^
 >a.getB : () => import("b").B
->       : ^^^^^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^       ^^^^^^^^^  ^
 >a : A
 >  : ^
 >getB : () => import("b").B
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^
+>     : ^^^^^^       ^^^^^^^^^  ^
 >x : number
 >  : ^^^^^^
 >toFixed : (fractionDigits?: number) => string
@@ -48,11 +48,11 @@ let c = a.getCls().y.toLowerCase();
 >a.getCls() : import("C").Cls
 >           : ^^^^^^^^^^^^^^^
 >a.getCls : () => import("C").Cls
->         : ^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^       ^^^  ^^^
 >a : A
 >  : ^
 >getCls : () => import("C").Cls
->       : ^^^^^^^^^^^^^^^^^^^^^
+>       : ^^^^^^       ^^^  ^^^
 >y : string
 >  : ^^^^^^
 >toLowerCase : () => string
