@@ -222,6 +222,7 @@ async function main(baseCommit: string) {
         buffer.writeln(notesService.getDefaultColumnContent());
         buffer.suppressAfter(diffViewWindowSize);
         let maxLineLength = 0;
+        let nextLineDiff = Number.MAX_SAFE_INTEGER;
         diffLoop:
         for (const d of getAdditionsAndDeletions(lines)) {
             let writeFirstLine = true;
@@ -244,7 +245,8 @@ async function main(baseCommit: string) {
                 }
                 maxLineLength = Math.max(maxLineLength, added?.length ?? 0, removed?.length ?? 0)
                 let printedSize = 0;
-                for (const { type, text } of lineDiff.diffs) {
+                const diffs = lineDiff.diffs;
+                for (const { type, text } of diffs) {
                     const printedText = !isType ?
                         (type === "same" ? " " : "~").repeat(Math.min(text.length, columns - printedSize + colOffset)) :
                         text.substring(0, columns - printedSize + colOffset);
@@ -258,7 +260,16 @@ async function main(baseCommit: string) {
                     if (colOffset <= printedSize + printedText.length) {
                         buffer.write(color(printedText.substring(colOffset - printedSize)));
                     }
-                    if (printedText.length !== text.length) break;
+                    if (printedText.length !== text.length) {
+                        for(const { type, start } of diffs) {
+                            // Look for next diff location
+                            if(type !== "same") {
+                                nextLineDiff = Math.min(nextLineDiff, start);
+                                break;
+                            }
+                        }
+                        break;
+                    };
                     printedSize += printedText.length;
                 }
                 buffer.writeln();
@@ -295,8 +306,8 @@ async function main(baseCommit: string) {
             }, {
                 shortcut: "d", name: "View Next Diff", order: 8, action: async () => {
                     // We have something to see to the right
-                    if (maxLineLength - colOffset > columns) {
-                        colOffset += columns / 2
+                    if (maxLineLength - colOffset > columns  && nextLineDiff !== Number.MAX_SAFE_INTEGER) {
+                        colOffset = Math.max(0, nextLineDiff - 10);
                     }
                     // We have something to see below
                     else if (hasHiddenLines) {
