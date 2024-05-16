@@ -462,7 +462,7 @@
             },
             {
               "text": "value",
-              "kind": "parameterName"
+              "kind": "text"
             },
             {
               "text": " ",
@@ -828,7 +828,7 @@
             },
             {
               "text": "value",
-              "kind": "parameterName"
+              "kind": "text"
             },
             {
               "text": " ",

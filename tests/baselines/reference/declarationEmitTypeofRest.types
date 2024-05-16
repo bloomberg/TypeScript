@@ -58,3 +58,604 @@ export const v2 = (...a: [n: "n", a: "a"]): {
 >null! : null
 >      : ^^^^
 }
+
+=== v1b.ts ===
+const n = 'module';
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v1 = (...a: [n: "rest", v: "rest"]) => {
+>v1 : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>   : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+>(...a: [n: "rest", v: "rest"]) => {    const v = 'local';    return null! as {         /** r rest param */         a: typeof a,         /** module var */        n: typeof n,        /** local var */        v: typeof v     }} : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>                                                                                                                                                                                                                                : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+    const v = 'local';
+>v : "local"
+>  : ^^^^^^^
+>'local' : "local"
+>        : ^^^^^^^
+
+    return null! as { 
+>null! as {         /** r rest param */         a: typeof a,         /** module var */        n: typeof n,        /** local var */        v: typeof v     } : { a: typeof a; n: typeof n; v: "local"; }
+>                                                                                                                                                           : ^^^^^        ^^^^^        ^^^^^^^^^^^^^^^
+>null! : null
+>      : ^^^^
+
+        /** r rest param */ 
+        a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+        /** module var */
+        n: typeof n,
+>n : "module"
+>  : ^^^^^^^^
+>n : "module"
+>  : ^^^^^^^^
+
+        /** local var */
+        v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+    }
+}
+=== v2b.ts ===
+const n = 'module'; 
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v2 = () => {
+>v2 : () => (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+>() => {    const v = "local";    const g = (...a: [n: "rest", v: "rest"]) => {        return null! as {             /** r rest param */             a: typeof a,             /** module var */            n: typeof n,            /** local var */            v: typeof v         }    }    return g;} : () => (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>                                                                                                                                                                                                                                                                                                       : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+
+    const v = "local";
+>v : "local"
+>  : ^^^^^^^
+>"local" : "local"
+>        : ^^^^^^^
+
+    const g = (...a: [n: "rest", v: "rest"]) => {
+>g : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+>(...a: [n: "rest", v: "rest"]) => {        return null! as {             /** r rest param */             a: typeof a,             /** module var */            n: typeof n,            /** local var */            v: typeof v         }    } : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>                                                                                                                                                                                                                                              : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+        return null! as { 
+>null! as {             /** r rest param */             a: typeof a,             /** module var */            n: typeof n,            /** local var */            v: typeof v         } : { a: typeof a; n: typeof n; v: "local"; }
+>                                                                                                                                                                                       : ^^^^^        ^^^^^        ^^^^^^^^^^^^^^^
+>null! : null
+>      : ^^^^
+
+            /** r rest param */ 
+            a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+            /** module var */
+            n: typeof n,
+>n : "module"
+>  : ^^^^^^^^
+>n : "module"
+>  : ^^^^^^^^
+
+            /** local var */
+            v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+        }
+    }
+    return g;
+>g : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "module"; v: "local"; }
+>  : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^     ^^^^^^^   
+}
+
+=== v3.ts ===
+const n = 'module'; 
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v3 = (n: "param", ...a: [n: "rest", v: "rest"]) => {
+>v3 : (n: "param", n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>   : ^ ^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>(n: "param", ...a: [n: "rest", v: "rest"]) => {    const v = "local";    return null! as {         /** r rest param */         a: typeof a,         /** o parameter */        n: typeof n,        /** local var */        v: typeof v     }} : (n: "param", n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>                                                                                                                                                                                                                                             : ^ ^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>n : "param"
+>  : ^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+    const v = "local";
+>v : "local"
+>  : ^^^^^^^
+>"local" : "local"
+>        : ^^^^^^^
+
+    return null! as { 
+>null! as {         /** r rest param */         a: typeof a,         /** o parameter */        n: typeof n,        /** local var */        v: typeof v     } : { a: typeof a; n: typeof n; v: "local"; }
+>                                                                                                                                                            : ^^^^^        ^^^^^        ^^^^^^^^^^^^^^^
+>null! : null
+>      : ^^^^
+
+        /** r rest param */ 
+        a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+        /** o parameter */
+        n: typeof n,
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+
+        /** local var */
+        v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+    }
+}
+
+=== v4.ts ===
+const n = 'module'; 
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v4 = ({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]) => {
+>v4 : ({ n }: { n: "param"; }, n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>   : ^     ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]) => {    const v = "local";    return null! as {         /** r rest param */         a: typeof a,         /** o parameter */        n: typeof n,        /** local var */        v: typeof v     }} : ({ n }: { n: "param"; }, n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>                                                                                                                                                                                                                                                    : ^     ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+    const v = "local";
+>v : "local"
+>  : ^^^^^^^
+>"local" : "local"
+>        : ^^^^^^^
+
+    return null! as { 
+>null! as {         /** r rest param */         a: typeof a,         /** o parameter */        n: typeof n,        /** local var */        v: typeof v     } : { a: typeof a; n: typeof n; v: "local"; }
+>                                                                                                                                                            : ^^^^^        ^^^^^        ^^^^^^^^^^^^^^^
+>null! : null
+>      : ^^^^
+
+        /** r rest param */ 
+        a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+        /** o parameter */
+        n: typeof n,
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+
+        /** local var */
+        v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+    }
+}
+
+
+=== v5.ts ===
+const n = 'module'; 
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v5 = ({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]): { 
+>v5 : ({ n }: { n: "param"; }, n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>   : ^     ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]): {     /** r rest param */     a: typeof a,     /** o parameter */    n: typeof n,    /** local var */    v: typeof v } => {    const v = "local";    return null!} : ({ n }: { n: "param"; }, n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>                                                                                                                                                                                                                      : ^     ^^               ^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+    /** r rest param */ 
+    a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+    /** o parameter */
+    n: typeof n,
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+
+    /** local var */
+    v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+
+} => {
+    const v = "local";
+>v : "local"
+>  : ^^^^^^^
+>"local" : "local"
+>        : ^^^^^^^
+
+    return null!
+>null! : null
+>      : ^^^^
+}
+
+=== v6.ts ===
+const n = 'module'; 
+>n : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const a = 'module'; 
+>a : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+const v = 'module';
+>v : "module"
+>  : ^^^^^^^^
+>'module' : "module"
+>         : ^^^^^^^^
+
+export const v6 = (n: "param") => {
+>v6 : (n: "param") => (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>   : ^ ^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>(n: "param") => {    const g = (v: "local") => (...a: [n: "rest", v: "rest"]) => {        return null! as {             /** g rest param */             a: typeof a,             /** param of v6 */            n: typeof n,            /** g param */            v: typeof v         }    }    return g("local");} : (n: "param") => (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>                                                                                                                                                                                                                                                                                                                   : ^ ^^       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>n : "param"
+>  : ^^^^^^^
+
+    const g = (v: "local") => (...a: [n: "rest", v: "rest"]) => {
+>g : (v: "local") => (...a: [n: "rest", v: "rest"]) => { a: typeof a; n: typeof n; v: typeof v; }
+>  : ^ ^^       ^^^^^^                            ^^^^^                                          
+>(v: "local") => (...a: [n: "rest", v: "rest"]) => {        return null! as {             /** g rest param */             a: typeof a,             /** param of v6 */            n: typeof n,            /** g param */            v: typeof v         }    } : (v: "local") => (...a: [n: "rest", v: "rest"]) => { a: typeof a; n: typeof n; v: typeof v; }
+>                                                                                                                                                                                                                                                             : ^ ^^       ^^^^^^                            ^^^^^                                          
+>v : "local"
+>  : ^^^^^^^
+>(...a: [n: "rest", v: "rest"]) => {        return null! as {             /** g rest param */             a: typeof a,             /** param of v6 */            n: typeof n,            /** g param */            v: typeof v         }    } : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>                                                                                                                                                                                                                                             : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+        return null! as { 
+>null! as {             /** g rest param */             a: typeof a,             /** param of v6 */            n: typeof n,            /** g param */            v: typeof v         } : { a: typeof a; n: typeof n; v: typeof v; }
+>                                                                                                                                                                                      : ^^^^^        ^^^^^        ^^^^^        ^^^
+>null! : null
+>      : ^^^^
+
+            /** g rest param */ 
+            a: typeof a, 
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+>a : [n: "rest", v: "rest"]
+>  : ^^^^^^^^^^^^^^^^^^^^^^
+
+            /** param of v6 */
+            n: typeof n,
+>n : "param"
+>  : ^^^^^^^
+>n : "param"
+>  : ^^^^^^^
+
+            /** g param */
+            v: typeof v 
+>v : "local"
+>  : ^^^^^^^
+>v : "local"
+>  : ^^^^^^^
+        }
+    }
+    return g("local");
+>g("local") : (n: "rest", v: "rest") => { a: [n: "rest", v: "rest"]; n: "param"; v: "local"; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^     ^^^^^^^   
+>g : (v: "local") => (...a: [n: "rest", v: "rest"]) => { a: typeof a; n: typeof n; v: typeof v; }
+>  : ^ ^^       ^^^^^^                            ^^^^^                                          
+>"local" : "local"
+>        : ^^^^^^^
+}
+
+
+
+=== v8.ts ===
+export function foo(p: "l0") {
+>foo : (p: "l0") => (p: "l1", cb?: (p: "l2", cb?: (p: "l3") => typeof p) => typeof p) => typeof p
+>    : ^ ^^    ^^^^^^       ^^  ^  ^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        ^^^^^        
+>p : "l0"
+>  : ^^^^
+
+    function l3(p: "l3") {
+>l3 : (p: "l3") => typeof p
+>   : ^ ^^    ^^^^^        
+>p : "l3"
+>  : ^^^^
+
+        return p as typeof p;
+>p as typeof p : "l3"
+>              : ^^^^
+>p : "l3"
+>  : ^^^^
+>p : "l3"
+>  : ^^^^
+    }
+
+    function l2(p: "l2", cb = l3) {
+>l2 : (p: "l2", cb?: (p: "l3") => typeof p) => typeof p
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        
+>p : "l2"
+>  : ^^^^
+>cb : (p: "l3") => typeof p
+>   : ^ ^^    ^^^^^        
+>l3 : (p: "l3") => typeof p
+>   : ^ ^^    ^^^^^        
+
+        return p as typeof p;
+>p as typeof p : "l2"
+>              : ^^^^
+>p : "l2"
+>  : ^^^^
+>p : "l2"
+>  : ^^^^
+    }
+
+    return function l1(p: "l1", cb = l2) {
+>function l1(p: "l1", cb = l2) {        return p as typeof p;    } : (p: "l1", cb?: (p: "l2", cb?: (p: "l3") => typeof p) => typeof p) => typeof p
+>                                                                  : ^ ^^    ^^  ^^^^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        ^^^^^        
+>l1 : (p: "l1", cb?: (p: "l2", cb?: (p: "l3") => typeof p) => typeof p) => typeof p
+>   : ^ ^^    ^^  ^^^^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        ^^^^^        
+>p : "l1"
+>  : ^^^^
+>cb : (p: "l2", cb?: (p: "l3") => typeof p) => typeof p
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        
+>l2 : (p: "l2", cb?: (p: "l3") => typeof p) => typeof p
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^        ^^^^^        
+
+        return p as typeof p;
+>p as typeof p : "l1"
+>              : ^^^^
+>p : "l1"
+>  : ^^^^
+>p : "l1"
+>  : ^^^^
+    }
+}
+
+=== v9.ts ===
+export function foo(p: "l0") {
+>foo : (p: "l0") => (p: string, cb?: (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }) => any
+>    : ^ ^^    ^^^^^^         ^^  ^  ^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           ^^^^^^^^
+>p : "l0"
+>  : ^^^^
+
+    function l3(p: "l3") {
+>l3 : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+>p : "l3"
+>  : ^^^^
+
+        return null! as { [p]: 0 };
+>null! as { [p]: 0 } : { l3: 0; }
+>                    : ^^^^^^ ^^^
+>null! : null
+>      : ^^^^
+>[p] : 0
+>    : ^
+>p : "l3"
+>  : ^^^^
+    }
+
+    function l2(p: "l2", cb = l3) {
+>l2 : (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           
+>p : "l2"
+>  : ^^^^
+>cb : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+>l3 : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+
+        return null! as { [p]: 0 };
+>null! as { [p]: 0 } : { l2: 0; }
+>                    : ^^^^^^ ^^^
+>null! : null
+>      : ^^^^
+>[p] : 0
+>    : ^
+>p : "l2"
+>  : ^^^^
+    }
+
+    return function l1(p: string, cb = l2) {
+>function l1(p: string, cb = l2) {        return null!;    } : (p: string, cb?: (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }) => any
+>                                                            : ^ ^^      ^^  ^^^^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           ^^^^^^^^
+>l1 : (p: string, cb?: (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }) => any
+>   : ^ ^^      ^^  ^^^^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           ^^^^^^^^
+>p : string
+>  : ^^^^^^
+>cb : (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           
+>l2 : (p: "l2", cb?: (p: "l3") => { [p]: 0; }) => { [p]: 0; }
+>   : ^ ^^    ^^  ^^^^ ^^    ^^^^^           ^^^^^           
+
+        return null!;
+>null! : null
+>      : ^^^^
+    }
+}
+
+=== v10.ts ===
+const l3 = function l3(p: "l3") {
+>l3 : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+>function l3(p: "l3") {    return null! as { [p]: 0 };} : (p: "l3") => { [p]: 0; }
+>                                                       : ^ ^^    ^^^^^           
+>l3 : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+>p : "l3"
+>  : ^^^^
+
+    return null! as { [p]: 0 };
+>null! as { [p]: 0 } : { l3: 0; }
+>                    : ^^^^^^ ^^^
+>null! : null
+>      : ^^^^
+>[p] : 0
+>    : ^
+>p : "l3"
+>  : ^^^^
+}
+
+export function foo() {
+>foo : () => (p: string, cb?: (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }) => any
+>    : ^^^^^^^         ^^  ^  ^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      ^^^^^^^^
+
+    const p: "l0" = "l0";
+>p : "l0"
+>  : ^^^^
+>"l0" : "l0"
+>     : ^^^^
+
+    function l2(cb = l3) {
+>l2 : (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }
+>   : ^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      
+>cb : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+>l3 : (p: "l3") => { [p]: 0; }
+>   : ^ ^^    ^^^^^           
+
+        return null! as { [p]: 0 };
+>null! as { [p]: 0 } : { l0: 0; }
+>                    : ^^^^^^ ^^^
+>null! : null
+>      : ^^^^
+>[p] : 0
+>    : ^
+>p : "l0"
+>  : ^^^^
+    }
+
+    return function l1(p: string, cb = l2) {
+>function l1(p: string, cb = l2) {        return null!;    } : (p: string, cb?: (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }) => any
+>                                                            : ^ ^^      ^^  ^^^^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      ^^^^^^^^
+>l1 : (p: string, cb?: (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }) => any
+>   : ^ ^^      ^^  ^^^^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      ^^^^^^^^
+>p : string
+>  : ^^^^^^
+>cb : (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }
+>   : ^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      
+>l2 : (cb?: (p: "l3") => { [p]: 0; }) => { l0: 0; }
+>   : ^  ^^^^ ^^    ^^^^^           ^^^^^  ^^      
+
+        return null!;
+>null! : null
+>      : ^^^^
+    }
+}

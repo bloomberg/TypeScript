@@ -150,7 +150,7 @@ export namespace f {
 export function g(a: {
     x: string;
 }, b: {
-    y: typeof import(".").b;
+    y: () => void;
 }): void;
 /**
  * @param {{x: string}} a
@@ -159,7 +159,7 @@ export function g(a: {
 export function h(a: {
     x: string;
 }, b: {
-    y: typeof import(".").b;
+    y: () => void;
 }): void;
 export function i(): void;
 export function ii(): void;
