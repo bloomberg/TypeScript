@@ -5814,7 +5814,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     function isClassInstanceSide(type: Type) {
         return !!type.symbol && !!(type.symbol.flags & SymbolFlags.Class) && (type === getDeclaredTypeOfClassOrInterface(type.symbol) || (!!(type.flags & TypeFlags.Object) && !!(getObjectFlags(type) & ObjectFlags.IsClassInstanceClone)));
     }
-
+    /**
+     * Same as getTypeFromTypeNode, but for use in createNodeBuilder
+     * Inside createNodeBuilder we shadow getTypeFromTypeNode to make sure anyone using this function will call the local version that does type mapping if appropriate
+     * This function is used to still be able to call the original getTypeFromTypeNode from the local scope version of getTypeFromTypeNode
+     */
+    function getTypeFromTypeNodeWithoutContext(node: TypeNode) {
+        return getTypeFromTypeNode(node);
+    }
     function createNodeBuilder() {
         const syntacticBuilderResolver: SyntacticTypeNodeBuilderResolver = {
             isExpandoFunctionDeclaration,
@@ -5832,18 +5839,18 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             serializeExistingTypeNode,
             serializeReturnTypeForSignature(context: NodeBuilderContext, signatureDeclaration) {
                 const signature = getSignatureFromDeclaration(signatureDeclaration);
-                const returnType = tryMapTypeInContext(context, getReturnTypeOfSignature(signature));
+                const returnType = instantiateType(getReturnTypeOfSignature(signature), context.mapper);
                 return serializeInferredReturnTypeForSignature(context, signature, returnType);
             },
             serializeTypeOfExpression(context: NodeBuilderContext, expr) {
-                const type = getWidenedType(getRegularTypeOfExpression(expr));
-                return typeToTypeNodeHelper(tryMapTypeInContext(context, type), context);
+                const type = instantiateType(getWidenedType(getRegularTypeOfExpression(expr)), context.mapper);
+                return typeToTypeNodeHelper(type, context);
             },
             serializeTypeOfDeclaration(context: NodeBuilderContext, declaration) {
                 // Get type of the symbol if this is the valid symbol otherwise get type at location
                 const symbol = getSymbolOfDeclaration(declaration);
                 const type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
-                    ? tryMapTypeInContext(context, getTypeOfSymbol(symbol))
+                    ? instantiateType(getTypeOfSymbol(symbol), context.mapper)
                     : errorType;
                 return serializeInferredTypeForDeclaration(symbol, context, type);
             },
@@ -5859,8 +5866,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             serializeTypeName,
             getJsDocPropertyOverride(context: NodeBuilderContext, jsDocTypeLiteral, jsDocProperty) {
                 const name = isIdentifier(jsDocProperty.name) ? jsDocProperty.name : jsDocProperty.name.right;
-                const typeViaParent = getTypeOfPropertyOfType(getTypeFromTypeNode(jsDocTypeLiteral), name.escapedText);
-                const overrideTypeNode = typeViaParent && jsDocProperty.typeExpression && getTypeFromTypeNode(jsDocProperty.typeExpression.type) !== typeViaParent ? typeToTypeNodeHelper(typeViaParent, context) : undefined;
+                const typeViaParent = getTypeOfPropertyOfType(getTypeFromTypeNode(context, jsDocTypeLiteral), name.escapedText);
+                const overrideTypeNode = typeViaParent && jsDocProperty.typeExpression && getTypeFromTypeNode(context, jsDocProperty.typeExpression.type) !== typeViaParent ? typeToTypeNodeHelper(typeViaParent, context) : undefined;
                 return overrideTypeNode;
             },
             enterNewScope(context: NodeBuilderContext, node) {
@@ -5903,8 +5910,14 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             symbolToNode: (symbol: Symbol, meaning: SymbolFlags, enclosingDeclaration?: Node, flags?: NodeBuilderFlags, tracker?: SymbolTracker) => withContext(enclosingDeclaration, flags, tracker, context => symbolToNode(symbol, context, meaning)),
         };
 
-        function tryMapTypeInContext(context: NodeBuilderContext, type: Type) {
-            return context.mapper ? getMappedType(type, context.mapper) : type
+        function getTypeFromTypeNode(context: NodeBuilderContext, node: TypeNode, noMappedTypes?: false): Type;
+        function getTypeFromTypeNode(context: NodeBuilderContext, node: TypeNode, noMappedTypes: true): Type | undefined;
+        function getTypeFromTypeNode(context: NodeBuilderContext, node: TypeNode, noMappedTypes?: boolean): Type | undefined {
+            const type = getTypeFromTypeNodeWithoutContext(node);
+            if (!context.mapper) return type;
+
+            const mappedType = instantiateType(type, context.mapper);
+            return noMappedTypes && mappedType !== type ? undefined : mappedType;
         }
         /** 
          * Unlike the utilities `setTextRange`, this checks if the `location` we're trying to set on `range` is within the
@@ -6263,8 +6276,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     context.inferTypeParameters = type.root.inferTypeParameters;
                     const extendsTypeNode = typeToTypeNodeHelper(instantiateType(type.root.extendsType, newMapper), context);
                     context.inferTypeParameters = saveInferTypeParameters;
-                    const trueTypeNode = typeToTypeNodeOrCircularityElision(instantiateType(getTypeFromTypeNode(type.root.node.trueType), newMapper));
-                    const falseTypeNode = typeToTypeNodeOrCircularityElision(instantiateType(getTypeFromTypeNode(type.root.node.falseType), newMapper));
+                    const trueTypeNode = typeToTypeNodeOrCircularityElision(instantiateType(getTypeFromTypeNode(context, type.root.node.trueType), newMapper));
+                    const falseTypeNode = typeToTypeNodeOrCircularityElision(instantiateType(getTypeFromTypeNode(context, type.root.node.falseType), newMapper));
 
                     // outermost conditional makes `T` a type parameter, allowing the inner conditionals to be distributive
                     // second conditional makes `T` have `T & checkType` substitution, so it is correctly usable as the checkType
@@ -6361,7 +6374,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     // homomorphic mapped type with a non-homomorphic naive inlining
                     // wrap it with a conditional like `SomeModifiersType extends infer U ? {..the mapped type...} : never` to ensure the resulting
                     // type stays homomorphic
-                    const originalConstraint = instantiateType(getConstraintOfTypeParameter(getTypeFromTypeNode((type.declaration.typeParameter.constraint! as TypeOperatorNode).type) as TypeParameter) || unknownType, type.mapper);
+                    const originalConstraint = instantiateType(getConstraintOfTypeParameter(getTypeFromTypeNode(context, (type.declaration.typeParameter.constraint! as TypeOperatorNode).type) as TypeParameter) || unknownType, type.mapper);
                     return factory.createConditionalTypeNode(
                         typeToTypeNodeHelper(getModifiersTypeFromMappedType(type), context),
                         factory.createInferTypeNode(factory.createTypeParameterDeclaration(/*modifiers*/ undefined, factory.cloneNode(newTypeVariable!.typeName) as Identifier, originalConstraint.flags & TypeFlags.Unknown ? undefined : typeToTypeNodeHelper(originalConstraint, context))),
@@ -6402,7 +6415,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         // ErrAlias<number> = typeof Err<number> = typeof ErrImpl & (<number>() => number)
                         // The problem is each constituent of the intersection will be associated with typeof Err<number>
                         // And when extracting a type for typeof ErrImpl from typeof Err<number> does not make sense.
-                        if (isTypeQueryNode(existing) && getTypeFromTypeNode(existing) === type) {
+                        if (isTypeQueryNode(existing) && getTypeFromTypeNode(context, existing) === type) {
                             const typeNode = syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(context, existing);
                             if (typeNode) {
                                 return typeNode;
@@ -7320,7 +7333,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         /*dotDotDotToken*/ undefined,
                         "this",
                         /*questionToken*/ undefined,
-                        typeToTypeNodeHelper(getTypeFromTypeNode(thisTag.typeExpression), context),
+                        typeToTypeNodeHelper(getTypeFromTypeNode(context, thisTag.typeExpression), context),
                     );
                 }
             }
@@ -8102,7 +8115,13 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             const returnType = getReturnTypeOfSignature(signature);
             if (signature.declaration && !nodeIsSynthesized(signature.declaration)) {
                 const declarationSignature = getSignatureFromDeclaration(signature.declaration);
-                if (declarationSignature === signature || getReturnTypeOfSignature(declarationSignature) === returnType) {
+                if (
+                    // If the current signature is the declaration signature we don't need to look any further, the return type should be reliable
+                    declarationSignature === signature 
+                    // Default constructor signatures inherited from base classes return the derived class but have the base class declaration
+                    // To ensure we don't serialize the wrong type we check that that return type of the signature corresponds to the declaration signature return type signature
+                    || instantiateType(getReturnTypeOfSignature(declarationSignature), context.mapper) === returnType
+                ) {
                     returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
                 }
             }
@@ -8245,8 +8264,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             }
             if (isThisTypeNode(existing)) {
                 if (context.mapper === undefined) return true;
-                const type = getTypeFromTypeNode(existing);
-                return tryMapTypeInContext(context, type) === type;
+                const type = getTypeFromTypeNode(context, existing, /*noMappedTypes*/ true);
+                return !!type;
             }
             if (isTypeReferenceNode(existing)) {
                 if (isConstTypeReference(existing)) return false;
@@ -8255,7 +8274,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                 if (!symbol) return false;
                 if (symbol.flags & SymbolFlags.TypeParameter) {
                     const type = getDeclaredTypeOfSymbol(symbol);
-                    if (tryMapTypeInContext(context, type) !== type) {
+                    if (context.mapper && getMappedType(type, context.mapper) !== type) {
                         return false;
                     }
                 }
@@ -8277,7 +8296,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
 
         function serializeExistingTypeNode(context: NodeBuilderContext, typeNode: TypeNode, addUndefined: boolean) {
-            const type = tryMapTypeInContext(context, getTypeFromTypeNode(typeNode));
+            const type = getTypeFromTypeNode(context, typeNode);
             if (
                 addUndefined &&
                 !someType(type, t => !!(t.flags & TypeFlags.Undefined)) &&
@@ -9065,7 +9084,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                         expr,
                         map(e.typeArguments, a =>
                             syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(context, a)
-                            || typeToTypeNodeHelper(getTypeFromTypeNode(a), context)),
+                            || typeToTypeNodeHelper(getTypeFromTypeNode(context, a), context)),
                     ));
 
                     function cleanup<T>(result: T): T {
