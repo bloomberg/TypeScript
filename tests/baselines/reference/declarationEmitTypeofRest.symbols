@@ -36,3 +36,341 @@ export const v2 = (...a: [n: "n", a: "a"]): {
 } => {
     return null!
 }
+
+=== v1b.ts ===
+const n = 'module';
+>n : Symbol(n, Decl(v1b.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v1b.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v1b.ts, 2, 5))
+
+export const v1 = (...a: [n: "rest", v: "rest"]) => {
+>v1 : Symbol(v1, Decl(v1b.ts, 3, 12))
+>a : Symbol(a, Decl(v1b.ts, 3, 19))
+
+    const v = 'local';
+>v : Symbol(v, Decl(v1b.ts, 4, 9))
+
+    return null! as { 
+        /** r rest param */ 
+        a: typeof a, 
+>a : Symbol(a, Decl(v1b.ts, 5, 21))
+>a : Symbol(a, Decl(v1b.ts, 3, 19))
+
+        /** module var */
+        n: typeof n,
+>n : Symbol(n, Decl(v1b.ts, 7, 20))
+>n : Symbol(n, Decl(v1b.ts, 0, 5))
+
+        /** local var */
+        v: typeof v 
+>v : Symbol(v, Decl(v1b.ts, 9, 20))
+>v : Symbol(v, Decl(v1b.ts, 4, 9))
+    }
+}
+=== v2b.ts ===
+const n = 'module'; 
+>n : Symbol(n, Decl(v2b.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v2b.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v2b.ts, 2, 5))
+
+export const v2 = () => {
+>v2 : Symbol(v2, Decl(v2b.ts, 3, 12))
+
+    const v = "local";
+>v : Symbol(v, Decl(v2b.ts, 4, 9))
+
+    const g = (...a: [n: "rest", v: "rest"]) => {
+>g : Symbol(g, Decl(v2b.ts, 5, 9))
+>a : Symbol(a, Decl(v2b.ts, 5, 15))
+
+        return null! as { 
+            /** r rest param */ 
+            a: typeof a, 
+>a : Symbol(a, Decl(v2b.ts, 6, 25))
+>a : Symbol(a, Decl(v2b.ts, 5, 15))
+
+            /** module var */
+            n: typeof n,
+>n : Symbol(n, Decl(v2b.ts, 8, 24))
+>n : Symbol(n, Decl(v2b.ts, 0, 5))
+
+            /** local var */
+            v: typeof v 
+>v : Symbol(v, Decl(v2b.ts, 10, 24))
+>v : Symbol(v, Decl(v2b.ts, 4, 9))
+        }
+    }
+    return g;
+>g : Symbol(g, Decl(v2b.ts, 5, 9))
+}
+
+=== v3.ts ===
+const n = 'module'; 
+>n : Symbol(n, Decl(v3.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v3.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v3.ts, 2, 5))
+
+export const v3 = (n: "param", ...a: [n: "rest", v: "rest"]) => {
+>v3 : Symbol(v3, Decl(v3.ts, 3, 12))
+>n : Symbol(n, Decl(v3.ts, 3, 19))
+>a : Symbol(a, Decl(v3.ts, 3, 30))
+
+    const v = "local";
+>v : Symbol(v, Decl(v3.ts, 4, 9))
+
+    return null! as { 
+        /** r rest param */ 
+        a: typeof a, 
+>a : Symbol(a, Decl(v3.ts, 5, 21))
+>a : Symbol(a, Decl(v3.ts, 3, 30))
+
+        /** o parameter */
+        n: typeof n,
+>n : Symbol(n, Decl(v3.ts, 7, 20))
+>n : Symbol(n, Decl(v3.ts, 3, 19))
+
+        /** local var */
+        v: typeof v 
+>v : Symbol(v, Decl(v3.ts, 9, 20))
+>v : Symbol(v, Decl(v3.ts, 4, 9))
+    }
+}
+
+=== v4.ts ===
+const n = 'module'; 
+>n : Symbol(n, Decl(v4.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v4.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v4.ts, 2, 5))
+
+export const v4 = ({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]) => {
+>v4 : Symbol(v4, Decl(v4.ts, 3, 12))
+>n : Symbol(n, Decl(v4.ts, 3, 20))
+>n : Symbol(n, Decl(v4.ts, 3, 25))
+>a : Symbol(a, Decl(v4.ts, 3, 37))
+
+    const v = "local";
+>v : Symbol(v, Decl(v4.ts, 4, 9))
+
+    return null! as { 
+        /** r rest param */ 
+        a: typeof a, 
+>a : Symbol(a, Decl(v4.ts, 5, 21))
+>a : Symbol(a, Decl(v4.ts, 3, 37))
+
+        /** o parameter */
+        n: typeof n,
+>n : Symbol(n, Decl(v4.ts, 7, 20))
+>n : Symbol(n, Decl(v4.ts, 3, 20))
+
+        /** local var */
+        v: typeof v 
+>v : Symbol(v, Decl(v4.ts, 9, 20))
+>v : Symbol(v, Decl(v4.ts, 4, 9))
+    }
+}
+
+
+=== v5.ts ===
+const n = 'module'; 
+>n : Symbol(n, Decl(v5.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v5.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v5.ts, 2, 5))
+
+export const v5 = ({n}: {n: "param"}, ...a: [n: "rest", v: "rest"]): { 
+>v5 : Symbol(v5, Decl(v5.ts, 3, 12))
+>n : Symbol(n, Decl(v5.ts, 3, 20))
+>n : Symbol(n, Decl(v5.ts, 3, 25))
+>a : Symbol(a, Decl(v5.ts, 3, 37))
+
+    /** r rest param */ 
+    a: typeof a, 
+>a : Symbol(a, Decl(v5.ts, 3, 70))
+>a : Symbol(a, Decl(v5.ts, 3, 37))
+
+    /** o parameter */
+    n: typeof n,
+>n : Symbol(n, Decl(v5.ts, 5, 16))
+>n : Symbol(n, Decl(v5.ts, 3, 20))
+
+    /** local var */
+    v: typeof v 
+>v : Symbol(v, Decl(v5.ts, 7, 16))
+>v : Symbol(v, Decl(v5.ts, 11, 9))
+
+} => {
+    const v = "local";
+>v : Symbol(v, Decl(v5.ts, 11, 9))
+
+    return null!
+}
+
+=== v6.ts ===
+const n = 'module'; 
+>n : Symbol(n, Decl(v6.ts, 0, 5))
+
+const a = 'module'; 
+>a : Symbol(a, Decl(v6.ts, 1, 5))
+
+const v = 'module';
+>v : Symbol(v, Decl(v6.ts, 2, 5))
+
+export const v6 = (n: "param") => {
+>v6 : Symbol(v6, Decl(v6.ts, 3, 12))
+>n : Symbol(n, Decl(v6.ts, 3, 19))
+
+    const g = (v: "local") => (...a: [n: "rest", v: "rest"]) => {
+>g : Symbol(g, Decl(v6.ts, 4, 9))
+>v : Symbol(v, Decl(v6.ts, 4, 15))
+>a : Symbol(a, Decl(v6.ts, 4, 31))
+
+        return null! as { 
+            /** g rest param */ 
+            a: typeof a, 
+>a : Symbol(a, Decl(v6.ts, 5, 25))
+>a : Symbol(a, Decl(v6.ts, 4, 31))
+
+            /** param of v6 */
+            n: typeof n,
+>n : Symbol(n, Decl(v6.ts, 7, 24))
+>n : Symbol(n, Decl(v6.ts, 3, 19))
+
+            /** g param */
+            v: typeof v 
+>v : Symbol(v, Decl(v6.ts, 9, 24))
+>v : Symbol(v, Decl(v6.ts, 4, 15))
+        }
+    }
+    return g("local");
+>g : Symbol(g, Decl(v6.ts, 4, 9))
+}
+
+
+
+=== v8.ts ===
+export function foo(p: "l0") {
+>foo : Symbol(foo, Decl(v8.ts, 0, 0))
+>p : Symbol(p, Decl(v8.ts, 0, 20))
+
+    function l3(p: "l3") {
+>l3 : Symbol(l3, Decl(v8.ts, 0, 30))
+>p : Symbol(p, Decl(v8.ts, 1, 16))
+
+        return p as typeof p;
+>p : Symbol(p, Decl(v8.ts, 1, 16))
+>p : Symbol(p, Decl(v8.ts, 1, 16))
+    }
+
+    function l2(p: "l2", cb = l3) {
+>l2 : Symbol(l2, Decl(v8.ts, 3, 5))
+>p : Symbol(p, Decl(v8.ts, 5, 16))
+>cb : Symbol(cb, Decl(v8.ts, 5, 24))
+>l3 : Symbol(l3, Decl(v8.ts, 0, 30))
+
+        return p as typeof p;
+>p : Symbol(p, Decl(v8.ts, 5, 16))
+>p : Symbol(p, Decl(v8.ts, 5, 16))
+    }
+
+    return function l1(p: "l1", cb = l2) {
+>l1 : Symbol(l1, Decl(v8.ts, 9, 10))
+>p : Symbol(p, Decl(v8.ts, 9, 23))
+>cb : Symbol(cb, Decl(v8.ts, 9, 31))
+>l2 : Symbol(l2, Decl(v8.ts, 3, 5))
+
+        return p as typeof p;
+>p : Symbol(p, Decl(v8.ts, 9, 23))
+>p : Symbol(p, Decl(v8.ts, 9, 23))
+    }
+}
+
+=== v9.ts ===
+export function foo(p: "l0") {
+>foo : Symbol(foo, Decl(v9.ts, 0, 0))
+>p : Symbol(p, Decl(v9.ts, 0, 20))
+
+    function l3(p: "l3") {
+>l3 : Symbol(l3, Decl(v9.ts, 0, 30))
+>p : Symbol(p, Decl(v9.ts, 1, 16))
+
+        return null! as { [p]: 0 };
+>[p] : Symbol([p], Decl(v9.ts, 2, 25))
+>p : Symbol(p, Decl(v9.ts, 1, 16))
+    }
+
+    function l2(p: "l2", cb = l3) {
+>l2 : Symbol(l2, Decl(v9.ts, 3, 5))
+>p : Symbol(p, Decl(v9.ts, 5, 16))
+>cb : Symbol(cb, Decl(v9.ts, 5, 24))
+>l3 : Symbol(l3, Decl(v9.ts, 0, 30))
+
+        return null! as { [p]: 0 };
+>[p] : Symbol([p], Decl(v9.ts, 6, 25))
+>p : Symbol(p, Decl(v9.ts, 5, 16))
+    }
+
+    return function l1(p: string, cb = l2) {
+>l1 : Symbol(l1, Decl(v9.ts, 9, 10))
+>p : Symbol(p, Decl(v9.ts, 9, 23))
+>cb : Symbol(cb, Decl(v9.ts, 9, 33))
+>l2 : Symbol(l2, Decl(v9.ts, 3, 5))
+
+        return null!;
+    }
+}
+
+=== v10.ts ===
+const l3 = function l3(p: "l3") {
+>l3 : Symbol(l3, Decl(v10.ts, 0, 5))
+>l3 : Symbol(l3, Decl(v10.ts, 0, 10))
+>p : Symbol(p, Decl(v10.ts, 0, 23))
+
+    return null! as { [p]: 0 };
+>[p] : Symbol([p], Decl(v10.ts, 1, 21))
+>p : Symbol(p, Decl(v10.ts, 0, 23))
+}
+
+export function foo() {
+>foo : Symbol(foo, Decl(v10.ts, 2, 1))
+
+    const p: "l0" = "l0";
+>p : Symbol(p, Decl(v10.ts, 5, 9))
+
+    function l2(cb = l3) {
+>l2 : Symbol(l2, Decl(v10.ts, 5, 25))
+>cb : Symbol(cb, Decl(v10.ts, 7, 16))
+>l3 : Symbol(l3, Decl(v10.ts, 0, 5))
+
+        return null! as { [p]: 0 };
+>[p] : Symbol([p], Decl(v10.ts, 8, 25))
+>p : Symbol(p, Decl(v10.ts, 5, 9))
+    }
+
+    return function l1(p: string, cb = l2) {
+>l1 : Symbol(l1, Decl(v10.ts, 11, 10))
+>p : Symbol(p, Decl(v10.ts, 11, 23))
+>cb : Symbol(cb, Decl(v10.ts, 11, 33))
+>l2 : Symbol(l2, Decl(v10.ts, 5, 25))
+
+        return null!;
+    }
+}
