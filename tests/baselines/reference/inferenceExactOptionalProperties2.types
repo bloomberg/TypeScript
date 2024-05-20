@@ -95,7 +95,7 @@ declare function setup<
   TActors extends Record<string, UnknownActorLogic> = {},
 >(implementations?: {
 >implementations : { actors?: { [K in keyof TActors]: TActors[K]; }; } | undefined
->                : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                : ^^^^^^^^^^^                                     ^^^^^^^^^^^^^^^
 
   actors?: { [K in keyof TActors]: TActors[K] };
 >actors : { [K in keyof TActors]: TActors[K]; } | undefined

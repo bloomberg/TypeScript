@@ -5,9 +5,9 @@ const { Thing, useThing, cbThing } = require("./index");
 >Thing : Readonly<{ a: "thing"; b: "chill"; }>
 >      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >useThing : (x: Thing) => void
->         : ^ ^^^^^^^^^^^^^^^^
+>         : ^ ^^     ^^^^^^^^^
 >cbThing : (x: (x: Thing) => void) => void
->        : ^ ^^    ^^^^^         ^^^^^^^^^
+>        : ^ ^^                  ^^^^^^^^^
 >require("./index") : typeof import("index")
 >                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >require : any
@@ -18,7 +18,7 @@ useThing(Thing.a);
 >useThing(Thing.a) : void
 >                  : ^^^^
 >useThing : (x: Thing) => void
->         : ^ ^^^^^^^^^^^^^^^^
+>         : ^ ^^     ^^^^^^^^^
 >Thing.a : "thing"
 >        : ^^^^^^^
 >Thing : Readonly<{ a: "thing"; b: "chill"; }>
@@ -36,7 +36,7 @@ cbThing(type => {
 >cbThing(type => {    /** @type {LogEntry} */    const logEntry = {        time: Date.now(),        type,    };}) : void
 >                                                                                                                 : ^^^^
 >cbThing : (x: (x: Thing) => void) => void
->        : ^ ^^    ^^^^^         ^^^^^^^^^
+>        : ^ ^^                  ^^^^^^^^^
 >type => {    /** @type {LogEntry} */    const logEntry = {        time: Date.now(),        type,    };} : (type: string) => void
 >                                                                                                        : ^    ^^^^^^^^^^^^^^^^^
 >type : string
