@@ -8,14 +8,14 @@ declare const fA: <T>() => { v: T };
 >  : ^
 
 const fB = <T>() => {
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
-><T>() => {    return { v: '' as any as T };} : <T>() => { v: T; }
->                                             : ^ ^^^^^^^^^^^^ ^^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
+><T>() => {    return { v: '' as any as T };} : <T>() => {    v: T;}
+>                                             : ^ ^^^^^^^^     ^^ ^^
 
     return { v: '' as any as T };
 >{ v: '' as any as T } : { v: T; }
->                      : ^^^^^ ^^^
+>                      : ^^^^^^^^^
 >v : T
 >  : ^
 >'' as any as T : T
@@ -50,10 +50,10 @@ type TA = typeof fA;
 >   : ^ ^^^^^^^         
 
 type TB = typeof fB;
->TB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
+>TB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
 
 type TC = typeof fC;
 >TC : <T>() => { v: T; }
@@ -76,8 +76,8 @@ declare function accA(x: TA): void;
 declare function accB(x: TB): void;
 >accB : (x: TB) => void
 >     : ^ ^^  ^^^^^    
->x : <T>() => { v: T; }
->  : ^ ^^^^^^^^^^^^ ^^^
+>x : <T>() => {    v: T;}
+>  : ^ ^^^^^^^^     ^^ ^^
 
 declare function accC(x: TC): void;
 >accC : (x: TC) => void
@@ -103,8 +103,8 @@ accA(fA); accA(fB); accA(fC);
 >         : ^^^^
 >accA : (x: TA) => void
 >     : ^ ^^  ^^^^^    
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
 >accA(fC) : void
 >         : ^^^^
 >accA : (x: TA) => void
@@ -124,8 +124,8 @@ accB(fA); accB(fB); accB(fC);
 >         : ^^^^
 >accB : (x: TB) => void
 >     : ^ ^^  ^^^^^    
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
 >accB(fC) : void
 >         : ^^^^
 >accB : (x: TB) => void
@@ -145,8 +145,8 @@ accC(fA); accC(fB); accC(fC);
 >         : ^^^^
 >accC : (x: TC) => void
 >     : ^ ^^  ^^^^^    
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
 >accC(fC) : void
 >         : ^^^^
 >accC : (x: TC) => void
@@ -166,8 +166,8 @@ accL(fA); accL(fB); accL(fC);
 >         : ^^^^
 >accL : (x: TL) => void
 >     : ^ ^^  ^^^^^    
->fB : <T>() => { v: T; }
->   : ^ ^^^^^^^^^^^^ ^^^
+>fB : <T>() => {    v: T;}
+>   : ^ ^^^^^^^^     ^^ ^^
 >accL(fC) : void
 >         : ^^^^
 >accL : (x: TL) => void

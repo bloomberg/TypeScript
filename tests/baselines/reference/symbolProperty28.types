@@ -42,8 +42,8 @@ var obj = c[Symbol.toStringTag]().x;
 >                          : ^^^^^^
 >c[Symbol.toStringTag]() : { x: string; }
 >                        : ^^^^^^^^^^^^^^
->c[Symbol.toStringTag] : () => { x: string; }
->                      : ^^^^^^^^^^^^^^^^^^^^
+>c[Symbol.toStringTag] : () => {    x: string;}
+>                      : ^^^^^^^     ^^^^^^^^^^
 >c : C2
 >  : ^^
 >Symbol.toStringTag : unique symbol

@@ -29,12 +29,12 @@ declare const x: X<void>;
 x.f() // no error because f expects void
 >x.f() : { a: void; }
 >      : ^^^^^^^^^^^^
->x.f : (t: void) => { a: void; }
->    : ^ ^^^^^^^^^^^^^^^^^^^^^^^
+>x.f : (t: void) => {    a: void;}
+>    : ^ ^^^^^^^^^^^^     ^^^^^^^^
 >x : X<void>
 >  : ^^^^^^^
->f : (t: void) => { a: void; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^^^
+>f : (t: void) => {    a: void;}
+>  : ^ ^^^^^^^^^^^^     ^^^^^^^^
 
 declare const xUnion: X<void | number>;
 >xUnion : X<number | void>
@@ -43,24 +43,24 @@ declare const xUnion: X<void | number>;
 xUnion.f(42) // no error because f accepts number
 >xUnion.f(42) : { a: number | void; }
 >             : ^^^^^^^^^^^^^^^^^^^^^
->xUnion.f : (t: number | void) => { a: number | void; }
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>xUnion.f : (t: number | void) => {    a: number | void;}
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
 >xUnion : X<number | void>
 >       : ^^^^^^^^^^^^^^^^
->f : (t: number | void) => { a: number | void; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>f : (t: number | void) => {    a: number | void;}
+>  : ^ ^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
 >42 : 42
 >   : ^^
 
 xUnion.f() // no error because f accepts void
 >xUnion.f() : { a: number | void; }
 >           : ^^^^^^^^^^^^^^^^^^^^^
->xUnion.f : (t: number | void) => { a: number | void; }
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>xUnion.f : (t: number | void) => {    a: number | void;}
+>         : ^ ^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
 >xUnion : X<number | void>
 >       : ^^^^^^^^^^^^^^^^
->f : (t: number | void) => { a: number | void; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>f : (t: number | void) => {    a: number | void;}
+>  : ^ ^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
 
 declare const xAny: X<any>;
 >xAny : X<any>
@@ -69,12 +69,12 @@ declare const xAny: X<any>;
 xAny.f() // error, any still expects an argument
 >xAny.f() : { a: any; }
 >         : ^^^^^^^^^^^
->xAny.f : (t: any) => { a: any; }
->       : ^ ^^^^^^^^^^^^^^^^^^^^^
+>xAny.f : (t: any) => {    a: any;}
+>       : ^ ^^^^^^^^^^^     ^^^^^^^
 >xAny : X<any>
 >     : ^^^^^^
->f : (t: any) => { a: any; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^
+>f : (t: any) => {    a: any;}
+>  : ^ ^^^^^^^^^^^     ^^^^^^^
 
 declare const xUnknown: X<unknown>;
 >xUnknown : X<unknown>
@@ -83,12 +83,12 @@ declare const xUnknown: X<unknown>;
 xUnknown.f() // error, unknown still expects an argument
 >xUnknown.f() : { a: unknown; }
 >             : ^^^^^^^^^^^^^^^
->xUnknown.f : (t: unknown) => { a: unknown; }
->           : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>xUnknown.f : (t: unknown) => {    a: unknown;}
+>           : ^ ^^^^^^^^^^^^^^^     ^^^^^^^^^^^
 >xUnknown : X<unknown>
 >         : ^^^^^^^^^^
->f : (t: unknown) => { a: unknown; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>f : (t: unknown) => {    a: unknown;}
+>  : ^ ^^^^^^^^^^^^^^^     ^^^^^^^^^^^
 
 declare const xNever: X<never>;
 >xNever : X<never>
@@ -97,12 +97,12 @@ declare const xNever: X<never>;
 xNever.f() // error, never still expects an argument
 >xNever.f() : { a: never; }
 >           : ^^^^^^^^^^^^^
->xNever.f : (t: never) => { a: never; }
->         : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^
+>xNever.f : (t: never) => {    a: never;}
+>         : ^ ^^^^^^^^^^^^^     ^^^^^^^^^
 >xNever : X<never>
 >       : ^^^^^^^^
->f : (t: never) => { a: never; }
->  : ^ ^^^^^^^^^^^^^^^^^^^^^^^^^
+>f : (t: never) => {    a: never;}
+>  : ^ ^^^^^^^^^^^^^     ^^^^^^^^^
 
 
 // Promise has previously been updated to work without arguments, but to show this fixes the issue too.
