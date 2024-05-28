@@ -10296,6 +10296,7 @@ export interface EvaluationResolver {
 /** @internal */
 export type HasInferredType =
     | PropertyAssignment
+    | ShorthandPropertyAssignment
     | PropertyAccessExpression
     | BinaryExpression
     | ElementAccessExpression

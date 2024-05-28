@@ -1500,7 +1500,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
     var checkBinaryExpression = createCheckBinaryExpression();
 
     var { hasVisibleDeclarations, isEntityNameVisible, collectLinkedAliases } = createEntityVisibilityChecker({
-        defaultSymbolAccessibility: SymbolAccessibility.NotAccessible,
+        defaultSymbolAccessibility: SymbolAccessibility.NotResolved,
         isThisAccessible,
         isDeclarationVisible,
         markDeclarationAsVisible(declaration) {
@@ -8089,15 +8089,15 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
                     result = syntacticNodeBuilder.serializeTypeOfAccessor(decl, context);
                 }
                 else if (hasInferredType(decl) 
-                    && (
-                        !isTransientSymbol(symbol) || 
-                        !isPropertyAssignment(decl)
-                    )
-                    && symbol.valueDeclaration 
-                    && !nodeIsSynthesized(symbol.valueDeclaration)
-                    && type === getTypeOfSymbol(getSymbolOfDeclaration(symbol.valueDeclaration))
+                    && !nodeIsSynthesized(decl)
+                    && !(getObjectFlags(type) & ObjectFlags.RequiresWidening)
                 ) {
-                    result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, context);
+                    const allDeclarationsAgreeOnType = symbol.declarations && symbol.declarations.length > 1 ?
+                        every(symbol.declarations, (d) => getNonMissingTypeOfSymbol(getSymbolOfDeclaration(d)) === type) :
+                        type === getNonMissingTypeOfSymbol(getSymbolOfDeclaration(decl));
+                    if(allDeclarationsAgreeOnType) {
+                        result = syntacticNodeBuilder.serializeTypeOfDeclaration(decl, context);
+                    }
                 }
             }
             if (!result) {
@@ -8141,7 +8141,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             context.suppressReportInferenceFallback = true;
             const typePredicate = getTypePredicateOfSignature(signature);
             const returnTypeNode = typePredicate ?
-                typePredicateToTypePredicateNodeHelper(typePredicate, context) :
+                typePredicateToTypePredicateNodeHelper(context.mapper ? instantiateTypePredicate(typePredicate, context.mapper): typePredicate, context) :
                 typeToTypeNodeHelper(returnType, context);
             context.suppressReportInferenceFallback = false;
             return returnTypeNode;

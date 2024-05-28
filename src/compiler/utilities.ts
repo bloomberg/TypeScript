@@ -11144,8 +11144,7 @@ export function createNameResolver({
                                 // to make sure that they reference no variables declared after them.
                                 useResult = lastLocation.kind === SyntaxKind.Parameter ||
                                     !!(lastLocation.flags & NodeFlags.Synthesized) || // Synthetic fake scopes are added for signatures so parameters are accessible from them
-                                    lastLocation.kind === SyntaxKind.JSDocParameterTag ||
-                                    lastLocation.kind === SyntaxKind.JSDocReturnTag ||                                    (
+                                    (
                                         lastLocation === (location as FunctionLikeDeclaration).type &&
                                         !!findAncestor(result.valueDeclaration, isParameter)
                                     );
@@ -11643,6 +11642,7 @@ export function hasInferredType(node: Node): node is HasInferredType {
         case SyntaxKind.VariableDeclaration:
         case SyntaxKind.ExportAssignment:
         case SyntaxKind.PropertyAssignment:
+        case SyntaxKind.ShorthandPropertyAssignment:
         case SyntaxKind.JSDocParameterTag:
         case SyntaxKind.JSDocPropertyTag:
             return true;

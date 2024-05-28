@@ -785,15 +785,22 @@ export namespace Debug {
                     },
                     __debugGetText: {
                         value(this: Node, includeTrivia?: boolean) {
-                            if (nodeIsSynthesized(this)) return "";
                             // avoid recomputing
                             let text = weakNodeTextMap.get(this);
+                            if(text !== undefined) return text;
+
+                            if (this.flags & NodeFlags.Synthesized) {
+                                const writer: ts.EmitTextWriter = ts.createTextWriter("")
+                                const printer = ts.createPrinterWithDefaults();
+                                printer.writeNode(ts.EmitHint.Unspecified, this, undefined, writer);
+                                text = "S:" + writer.getText();
+                            };
                             if (text === undefined) {
                                 const parseNode = getParseTreeNode(this);
                                 const sourceFile = parseNode && getSourceFileOfNode(parseNode);
                                 text = sourceFile ? getSourceTextOfNodeFromSourceFile(sourceFile, parseNode, includeTrivia) : "";
-                                weakNodeTextMap.set(this, text);
                             }
+                            weakNodeTextMap.set(this, text);
                             return text;
                         },
                     },

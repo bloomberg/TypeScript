@@ -107,6 +107,7 @@ import {
     setCommentRange,
     setEmitFlags,
     setOriginalNode,
+    ShorthandPropertyAssignment,
     SignatureDeclaration,
     StringLiteral,
     SyntacticTypeNodeBuilderContext,
@@ -320,7 +321,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 if (introducesError) {
                     const serializedName = resolver.serializeTypeName(context, node.exprName, /*isTypeOf*/ true);
                     if(serializedName) {
-                        return serializedName;
+                        return  resolver.markNodeReuse(context, serializedName, node.exprName);
                     }
                     return resolver.serializeExistingTypeNode(context, node);
                 }
@@ -336,10 +337,6 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     return factory.updateComputedPropertyName(node, result);
                 }
                 else {
-                    const serializedName = resolver.serializeEntityName(context, node.expression);
-                    if(serializedName) {
-                        return factory.updateComputedPropertyName(node, serializedName);
-                    }
                     const computedPropertyNameType = resolver.serializeTypeOfExpression(context, node.expression);
                     Debug.assertNode(computedPropertyNameType, isLiteralTypeNode);
                     const literal = computedPropertyNameType.literal;
@@ -426,7 +423,10 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
     }
 
-    function serializeExistingTypeAnnotation(typeNode: TypeNode, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean) {
+    function serializeExistingTypeAnnotation(typeNode: TypeNode, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean): TypeNode;
+    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean): TypeNode | undefined;
+    function serializeExistingTypeAnnotation(typeNode: TypeNode | undefined, context: SyntacticTypeNodeBuilderContext, addUndefined?: boolean) {
+        if(!typeNode) return undefined;
         let result;
         if (
             (!addUndefined || canAddUndefined(typeNode)) &&
@@ -474,10 +474,27 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             case SyntaxKind.BinaryExpression:
                 return typeFromExpandoProperty(node, context);
             case SyntaxKind.PropertyAssignment:
-                return typeFromExpression(node.initializer, context) ?? inferTypeOfDeclaration(node, context);
+            case SyntaxKind.ShorthandPropertyAssignment:
+                return typeFromPropertyAssignment(node, context)
             default:
                 Debug.assertNever(node, `Node needs to be an inferrable node, found ${Debug.formatSyntaxKind((node as Node).kind)}`);
         }
+    }
+
+    function typeFromPropertyAssignment(node: PropertyAssignment | ShorthandPropertyAssignment, context: SyntacticTypeNodeBuilderContext) {
+        const typeAnnotation = getEffectiveTypeAnnotationNode(node);
+        let result = serializeExistingTypeAnnotation(typeAnnotation, context);
+        if (!result && node.kind === SyntaxKind.PropertyAssignment) {
+            const initializer = node.initializer;
+            const type = isJSDocTypeAssertion(initializer) ? getJSDocTypeAssertionType(initializer):
+                initializer.kind === SyntaxKind.AsExpression || initializer.kind === SyntaxKind.TypeAssertionExpression ? (initializer as AsExpression | TypeAssertion).type:
+                undefined;
+
+            if(type && !isConstTypeReference(type)) {
+                result = serializeExistingTypeAnnotation(type, context);
+            }
+        }
+        return inferTypeOfDeclaration(node, context);
     }
     function serializeReturnTypeForSignature(node: SignatureDeclaration | JSDocSignature, context: SyntacticTypeNodeBuilderContext): TypeNode | undefined {
         switch (node.kind) {
