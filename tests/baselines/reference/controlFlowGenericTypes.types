@@ -554,11 +554,11 @@ function once<ET, T extends EventEmitter<ET>>(emittingObject: T, eventName: keyo
 >emittingObject.off(eventName, 0) : void
 >                                 : ^^^^
 >emittingObject.off : <K extends keyof ET>(...args: [unknown, string] | [K, number]) => void
->                   : ^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
+>                   : ^^^^^^^^^^^      ^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
 >emittingObject : T
 >               : ^
 >off : <K extends keyof ET>(...args: [unknown, string] | [K, number]) => void
->    : ^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
+>    : ^^^^^^^^^^^      ^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
 >eventName : keyof ET
 >          : ^^^^^^^^
 >0 : 0
@@ -568,11 +568,11 @@ function once<ET, T extends EventEmitter<ET>>(emittingObject: T, eventName: keyo
 >emittingObject.off(eventName as typeof eventName, 0) : void
 >                                                     : ^^^^
 >emittingObject.off : <K extends keyof ET>(...args: [unknown, string] | [K, number]) => void
->                   : ^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
+>                   : ^^^^^^^^^^^      ^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
 >emittingObject : T
 >               : ^
 >off : <K extends keyof ET>(...args: [unknown, string] | [K, number]) => void
->    : ^^^^^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
+>    : ^^^^^^^^^^^      ^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
 >eventName as typeof eventName : keyof ET
 >                              : ^^^^^^^^
 >eventName : keyof ET

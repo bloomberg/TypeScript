@@ -69,7 +69,7 @@ type T = number
 
 export function foo2(p = (ip = 10 as T, v: number): void => {}): void{}
 >foo2 : (p?: (ip: T | undefined, v: number) => void) => void
->     : ^ ^^^^  ^^ ^^^^^^^^^^^^^^ ^^      ^^^^^    ^^^^^    
+>     : ^ ^^^^     ^^^^^^^^^^^^^^         ^^^^^    ^^^^^    
 >p : (ip: T | undefined, v: number) => void
 >  : ^  ^^ ^^^^^^^^^^^^^^ ^^      ^^^^^    
 >(ip = 10 as T, v: number): void => {} : (ip: T | undefined, v: number) => void

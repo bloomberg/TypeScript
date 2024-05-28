@@ -585,11 +585,11 @@ c.setState({ a: "test", b: 43 });
 >c.setState({ a: "test", b: 43 }) : void
 >                                 : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ a: "test", b: 43 } : { a: string; b: number; }
 >                     : ^^^^^^^^^^^^^^^^^^^^^^^^^
 >a : string
@@ -605,11 +605,11 @@ c.setState({ a: "hi" });
 >c.setState({ a: "hi" }) : void
 >                        : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ a: "hi" } : { a: string; }
 >            : ^^^^^^^^^^^^^^
 >a : string
@@ -621,11 +621,11 @@ c.setState({ b: undefined });
 >c.setState({ b: undefined }) : void
 >                             : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ b: undefined } : { b: undefined; }
 >                 : ^^^^^^^^^^^^^^^^^
 >b : undefined
@@ -637,11 +637,11 @@ c.setState({ });
 >c.setState({ }) : void
 >                : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ } : {}
 >    : ^^
 
@@ -649,11 +649,11 @@ c.setState(foo);
 >c.setState(foo) : void
 >                : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >foo : Foo
 >    : ^^^
 
@@ -661,11 +661,11 @@ c.setState({ a: undefined });  // Error
 >c.setState({ a: undefined }) : void
 >                             : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ a: undefined } : { a: undefined; }
 >                 : ^^^^^^^^^^^^^^^^^
 >a : undefined
@@ -677,11 +677,11 @@ c.setState({ c: true });  // Error
 >c.setState({ c: true }) : void
 >                        : ^^^^
 >c.setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->           : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>           : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >c : C<Foo>
 >  : ^^^^^^
 >setState : <K extends keyof Foo>(props: Pick<Foo, K>) => void
->         : ^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
+>         : ^^^^^^^^^^^      ^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^
 >{ c: true } : { c: boolean; }
 >            : ^^^^^^^^^^^^^^^
 >c : boolean
