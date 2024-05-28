@@ -566,13 +566,13 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             return serializeTypeOfAccessor(parent, context);
         }
         const declaredType = getEffectiveTypeAnnotationNode(node);
+        const addUndefined = resolver.requiresAddingImplicitUndefined(node);
         let resultType;
-        const requiresAddingImplicitUndefined = resolver.requiresAddingImplicitUndefined(node);
         if (declaredType) {
-            return serializeExistingTypeAnnotationWithFallback(declaredType, context, requiresAddingImplicitUndefined);
+            return serializeExistingTypeAnnotationWithFallback(declaredType, context, addUndefined);
         }
         if (node.initializer && isIdentifier(node.name) && !isContextuallyTyped(node)) {
-            resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, requiresAddingImplicitUndefined);
+            resultType = typeFromExpression(node.initializer, context, /*isConstContext*/ undefined, addUndefined);
         }
         return resultType ?? inferTypeOfDeclaration(node, context);
     }
@@ -785,7 +785,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             }
             else if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
                 const expression = prop.name.expression;
-                if (!isPrimitiveLiteralValue(expression, /*includeBigInt*/ false) && !isEntityNameExpression(expression)) {
+                if (!isPrimitiveLiteralValue(expression, /*includeBigInt*/ false)) {
                     context.tracker.reportInferenceFallback(prop.name);
                     result = false;
                 }
@@ -802,34 +802,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         for (const prop of objectLiteral.properties) {
             Debug.assert(!isShorthandPropertyAssignment(prop) && !isSpreadAssignment(prop));
 
-            let name = prop.name;
-            if (prop.name.kind === SyntaxKind.ComputedPropertyName) {
-                let computedNameExpressionType;
-                if (isEntityNameExpression(prop.name.expression)) {
-                    if (!resolver.isNonNarrowedBindableName(prop.name)) {
-                        context.tracker.reportInferenceFallback(prop.name);
-                    }
-                    const { introducesError, node } = resolver.trackExistingEntityName(context, prop.name.expression);
-                    if (!introducesError) {
-                        name = factory.createComputedPropertyName(node);
-                    }
-                    else {
-                        context.tracker.reportInferenceFallback(prop.name);
-                        computedNameExpressionType = inferExpressionType(prop.name.expression, context, /*reportFallback*/ false);
-                        if (computedNameExpressionType) {
-                            if (
-                                isTypeQueryNode(computedNameExpressionType) &&
-                                (isIdentifier(computedNameExpressionType.exprName) || isEntityNameExpression(computedNameExpressionType.exprName))
-                            ) {
-                                name = factory.createComputedPropertyName(computedNameExpressionType.exprName);
-                            }
-                            else if (isLiteralTypeNode(computedNameExpressionType)) {
-                                name = factory.createComputedPropertyName(computedNameExpressionType.literal);
-                            }
-                        }
-                    }
-                }
-            }
+            const name = prop.name;
             let newProp;
             switch (prop.kind) {
                 case SyntaxKind.MethodDeclaration:

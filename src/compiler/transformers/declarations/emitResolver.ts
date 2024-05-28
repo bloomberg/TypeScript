@@ -370,20 +370,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         return false;
     }
 
-    function isNonNarrowedBindableName(node: ComputedPropertyName) {
-        // Best effort implementation. We can't know for sure  if node is valid as a computed name
-        // - it might be a narrowed symbol
-        // - the type might not be appropriate as a computed property name.
-        const expression = node.expression;
-        if (isPrimitiveLiteralValue(expression, /*includeBigInt*/ false)) {
-            return true;
-        }
-        if (!isEntityNameExpression(expression)) {
-            return false;
-        }
-        return true;
-    }
-
     function isIdentifierComputedName(name: DeclarationName | undefined): boolean {
         if (!name) return false;
         if (!(name.kind === SyntaxKind.ComputedPropertyName || name.kind === SyntaxKind.ElementAccessExpression)) {
@@ -449,7 +435,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
             return isEntityNameVisible(name, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible);
         },
         isExpandoFunctionDeclaration,
-        isNonNarrowedBindableName,
         isOptionalParameter,
         isUndefinedIdentifierExpression(name) {
             return !!resolveName(name, name.escapedText, SymbolFlags.Value);
@@ -511,7 +496,6 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         },
         isDeclarationVisible,
         isLiteralConstDeclaration,
-        isNonNarrowedBindableName,
         getPropertiesOfContainerFunction(node: FunctionDeclaration | VariableDeclaration) {
             const symbol = getSymbolOfDeclaration(node);
             return [...symbol.exports?.values() ?? [], ...resolveAllLateBoundSymbols(symbol, /*isStatic*/ true).values()];

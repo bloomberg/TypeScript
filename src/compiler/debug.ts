@@ -66,7 +66,6 @@ import {
     Node,
     NodeArray,
     NodeFlags,
-    nodeIsSynthesized,
     noop,
     objectAllocator,
     ObjectFlags,
@@ -792,9 +791,9 @@ export namespace Debug {
                             if (this.flags & NodeFlags.Synthesized) {
                                 const writer: ts.EmitTextWriter = ts.createTextWriter("")
                                 const printer = ts.createPrinterWithDefaults();
-                                printer.writeNode(ts.EmitHint.Unspecified, this, undefined, writer);
+                                printer.writeNode(ts.EmitHint.Unspecified, this, /*sourceFile*/ undefined, writer);
                                 text = "S:" + writer.getText();
-                            };
+                            }
                             if (text === undefined) {
                                 const parseNode = getParseTreeNode(this);
                                 const sourceFile = parseNode && getSourceFileOfNode(parseNode);
