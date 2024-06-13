@@ -424,6 +424,7 @@ import {
     ModuleBlock,
     ModuleDeclaration,
     ModuleDetectionKind,
+    ModuleExportName,
     ModuleKind,
     ModuleResolutionKind,
     moduleResolutionOptionDeclarations,
@@ -1229,7 +1230,28 @@ function isJSDocTypeExpressionOrChild(node: Node): boolean {
 
 /** @internal */
 export function isExportNamespaceAsDefaultDeclaration(node: Node): boolean {
-    return !!(isExportDeclaration(node) && node.exportClause && isNamespaceExport(node.exportClause) && node.exportClause.name.escapedText === "default");
+    return !!(isExportDeclaration(node) && node.exportClause && isNamespaceExport(node.exportClause) && moduleExportNameIsDefault(node.exportClause.name));
+}
+
+/** @internal */
+export function moduleExportNameTextUnescaped(node: ModuleExportName): string {
+    return node.kind === SyntaxKind.StringLiteral ? node.text : unescapeLeadingUnderscores(node.escapedText);
+}
+
+/** @internal */
+export function moduleExportNameTextEscaped(node: ModuleExportName): __String {
+    return node.kind === SyntaxKind.StringLiteral ? escapeLeadingUnderscores(node.text) : node.escapedText;
+}
+
+/**
+ * Equality checks against a keyword without underscores don't need to bother
+ * to turn "__" into "___" or vice versa, since they will never be equal in
+ * either case. So we can ignore those cases to improve performance.
+ *
+ * @internal
+ */
+export function moduleExportNameIsDefault(node: ModuleExportName): boolean {
+    return (node.kind === SyntaxKind.StringLiteral ? node.text : node.escapedText) === InternalSymbolName.Default;
 }
 
 /** @internal */
@@ -2319,6 +2341,17 @@ export function getErrorSpanForNode(sourceFile: SourceFile, node: Node): TextSpa
         case SyntaxKind.JSDocSatisfiesTag: {
             const pos = skipTrivia(sourceFile.text, (node as JSDocSatisfiesTag).tagName.pos);
             return getSpanOfTokenAtPosition(sourceFile, pos);
+        }
+        case SyntaxKind.Constructor: {
+            const constructorDeclaration = node as ConstructorDeclaration;
+            const start = skipTrivia(sourceFile.text, constructorDeclaration.pos);
+            const scanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/ true, sourceFile.languageVariant, sourceFile.text, /*onError*/ undefined, start);
+            let token = scanner.scan();
+            while (token !== SyntaxKind.ConstructorKeyword && token !== SyntaxKind.EndOfFileToken) {
+                token = scanner.scan();
+            }
+            const end = scanner.getTokenEnd();
+            return createTextSpanFromBounds(start, end);
         }
     }
 
@@ -10099,7 +10132,28 @@ export function skipTypeChecking(sourceFile: SourceFile, options: CompilerOption
     return (options.skipLibCheck && sourceFile.isDeclarationFile ||
         options.skipDefaultLibCheck && sourceFile.hasNoDefaultLib) ||
         options.noCheck ||
-        host.isSourceOfProjectReferenceRedirect(sourceFile.fileName);
+        host.isSourceOfProjectReferenceRedirect(sourceFile.fileName) ||
+        !canIncludeBindAndCheckDiagnsotics(sourceFile, options);
+}
+
+/** @internal */
+export function canIncludeBindAndCheckDiagnsotics(sourceFile: SourceFile, options: CompilerOptions) {
+    if (!!sourceFile.checkJsDirective && sourceFile.checkJsDirective.enabled === false) return false;
+    if (
+        sourceFile.scriptKind === ScriptKind.TS ||
+        sourceFile.scriptKind === ScriptKind.TSX ||
+        sourceFile.scriptKind === ScriptKind.External
+    ) return true;
+
+    const isJs = sourceFile.scriptKind === ScriptKind.JS || sourceFile.scriptKind === ScriptKind.JSX;
+    const isCheckJs = isJs && isCheckJsEnabledForFile(sourceFile, options);
+    const isPlainJs = isPlainJsFile(sourceFile, options.checkJs);
+
+    // By default, only type-check .ts, .tsx, Deferred, plain JS, checked JS and External
+    // - plain JS: .js files with no // ts-check and checkJs: undefined
+    // - check JS: .js files with either // ts-check or checkJs: true
+    // - external: files that are added by plugins
+    return isPlainJs || isCheckJs || sourceFile.scriptKind === ScriptKind.Deferred;
 }
 
 /** @internal */
@@ -11849,9 +11903,9 @@ export function createEntityVisibilityChecker({ isDeclarationVisible, isThisAcce
         excludeGlobals?: boolean,
     ): Symbol | undefined;
 }) {
-    function collectLinkedAliases(node: Identifier, setVisibility?: boolean): Node[] | undefined {
+    function collectLinkedAliases(node: ModuleExportName, setVisibility?: boolean): Node[] | undefined {
         let exportSymbol: Symbol | undefined;
-        if (node.parent && node.parent.kind === SyntaxKind.ExportAssignment) {
+        if (node.kind !== SyntaxKind.StringLiteral && node.parent && node.parent.kind === SyntaxKind.ExportAssignment) {
             exportSymbol = resolveName(node, node.escapedText, SymbolFlags.Value | SymbolFlags.Type | SymbolFlags.Namespace | SymbolFlags.Alias, /*nameNotFoundMessage*/ undefined, /*isUse*/ false);
         }
         else if (node.parent.kind === SyntaxKind.ExportSpecifier) {

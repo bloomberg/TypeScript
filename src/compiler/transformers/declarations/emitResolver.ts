@@ -431,6 +431,8 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
         getModuleSpecifierOverride: notImplemented,
         serializeEntityName: notImplemented,
         serializeTypeName: notImplemented,
+        createRecoveryBoundary: notImplemented,
+        isDefinitelyReferenceToGlobalSymbolObject: notImplemented,
         isEntityNameVisible(context, name, shouldComputeAliasToMakeVisible) {
             return isEntityNameVisible(name, context.enclosingDeclaration!, shouldComputeAliasToMakeVisible);
         },
@@ -471,6 +473,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
 
     function withContext<T>(enclosingDeclaration: Node, flags: NodeBuilderFlags, tracker: SymbolTracker, cb: (context: SyntacticTypeNodeBuilderContext) => T) {
         const context: SyntacticTypeNodeBuilderContext = {
+            enclosingFile: undefined,
             approximateLength: 0,
             enclosingDeclaration,
             flags,
