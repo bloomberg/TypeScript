@@ -10386,7 +10386,7 @@ export interface SyntacticTypeNodeBuilderResolver {
     createRecoveryBoundary(context: SyntacticTypeNodeBuilderContext): {
         startRecoveryScope(): () => void;
         finalizeBoundary(): boolean;
-        markError(unreportedError?: () => void): void;
+        markError(): void;
         hadError(): boolean;
     }
 }

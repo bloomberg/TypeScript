@@ -38,8 +38,7 @@ declare enum EnumExample {
 }
 export default EnumExample;
 //// [index.d.ts]
-import EnumExample from './EnumExample';
 declare const _default: {
-    [EnumExample.TEST]: {};
+    TEST: {};
 };
 export default _default;

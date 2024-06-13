@@ -623,7 +623,7 @@ interface Plugs {
     [key: symbol]: (...args: any) => unknown;
 }
 declare const plugins: {
-    "user": Plugs;
+    user: Plugs;
     [system]: Plugs;
 };
 declare var theAnswer: symbol;

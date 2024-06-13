@@ -32,9 +32,9 @@ declare const STATUS: {
 };
 declare const hundredStr = "100";
 declare const obj: {
-    [hundredStr]: string;
+    "100": string;
 };
 declare const hundredNum = 100;
 declare const obj2: {
-    [hundredNum]: string;
+    100: string;
 };
