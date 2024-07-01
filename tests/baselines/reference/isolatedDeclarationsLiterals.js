@@ -128,9 +128,9 @@ export declare const constObject: {
     /** Value Of 1 */
     readonly one: 1;
     /** Value Of 0o1 */
-    readonly oneOctal: 0o1;
+    readonly oneOctal: 1;
     /** Value Of 0x1 */
-    readonly oneHex: 0x1;
+    readonly oneHex: 1;
     /** Value Of +1 */
     readonly pOne: 1;
     /** Value Of -1 */
@@ -143,7 +143,7 @@ export declare const constObject: {
     /** Value Of "1" */
     readonly oneStrDoubleQuote: "1";
     /** Value Of '1' */
-    readonly oneStrSingleQuote: '1';
+    readonly oneStrSingleQuote: "1";
     /** Value Of `1` */
     readonly oneStrTemplate: `1`;
     /** A method */

@@ -566,9 +566,9 @@ declare function foo<T extends keyof Foo>(prop: T, f: Required<Foo>): void;
 declare function bar(t: string): void;
 declare function makeCompleteLookupMapping<T extends ReadonlyArray<any>, Attr extends keyof T[number]>(ops: T, attr: Attr): { [Item in T[number] as Item[Attr]]: Item; };
 declare const ALL_BARS: readonly [{
-    readonly name: 'a';
+    readonly name: "a";
 }, {
-    readonly name: 'b';
+    readonly name: "b";
 }];
 declare const BAR_LOOKUP: {
     a: {
