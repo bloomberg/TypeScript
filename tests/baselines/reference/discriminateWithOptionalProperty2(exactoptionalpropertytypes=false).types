@@ -155,7 +155,7 @@ function mapAsyncIterable<T, U, R = undefined>(
 
       return typeof iterator.return === "function"
 >typeof iterator.return === "function"        ? mapResult(await iterator.return())        : { value: undefined as any, done: true } : Promise<IteratorResult<U, R>> | { value: any; done: true; }
->                                                                                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                                                                                                   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^
 >typeof iterator.return === "function" : boolean
 >                                      : ^^^^^^^
 >typeof iterator.return : "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function"
@@ -187,7 +187,7 @@ function mapAsyncIterable<T, U, R = undefined>(
 
         : { value: undefined as any, done: true };
 >{ value: undefined as any, done: true } : { value: any; done: true; }
->                                        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                        : ^^^^^^^^^   ^^^^^^^^^^^^^^^
 >value : any
 >undefined as any : any
 >undefined : undefined

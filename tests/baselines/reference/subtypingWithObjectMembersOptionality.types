@@ -68,9 +68,9 @@ var a: { Foo?: Base; };
 
 var b = { Foo: <Derived>null };
 >b : { Foo: Derived; }
->  : ^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^       ^^^
 >{ Foo: <Derived>null } : { Foo: Derived; }
->                       : ^^^^^^^^^^^^^^^^^
+>                       : ^^^^^^^       ^^^
 >Foo : Derived
 >    : ^^^^^^^
 ><Derived>null : Derived
@@ -86,7 +86,7 @@ var r = true ? a : b;
 >a : { Foo?: Base; }
 >  : ^^^^^^^^    ^^^
 >b : { Foo: Derived; }
->  : ^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^       ^^^
 
 module TwoLevels {
 >TwoLevels : typeof TwoLevels
@@ -137,9 +137,9 @@ module TwoLevels {
 
     var b = { Foo: <Derived2>null };
 >b : { Foo: Derived2; }
->  : ^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^        ^^^
 >{ Foo: <Derived2>null } : { Foo: Derived2; }
->                        : ^^^^^^^^^^^^^^^^^^
+>                        : ^^^^^^^        ^^^
 >Foo : Derived2
 >    : ^^^^^^^^
 ><Derived2>null : Derived2
@@ -155,5 +155,5 @@ module TwoLevels {
 >a : { Foo?: Base; }
 >  : ^^^^^^^^    ^^^
 >b : { Foo: Derived2; }
->  : ^^^^^^^^^^^^^^^^^^
+>  : ^^^^^^^        ^^^
 }

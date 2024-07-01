@@ -78,7 +78,7 @@ var b: { [x: string]: Derived; } = { foo: <Derived>null };
 >x : string
 >  : ^^^^^^
 >{ foo: <Derived>null } : { foo: Derived; }
->                       : ^^^^^^^^^^^^^^^^^
+>                       : ^^^^^^^       ^^^
 >foo : Derived
 >    : ^^^^^^^
 ><Derived>null : Derived

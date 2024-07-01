@@ -91,7 +91,7 @@ var p = { x: 1, y: <number>undefined };
 >p : Point
 >  : ^^^^^
 >{ x: 1, y: <number>undefined } : { x: number; y: number; }
->                               : ^^^^^^^^^^^^^^^^^^^^^^^^^
+>                               : ^^^^^^^^^^^^^^^^      ^^^
 >x : number
 >  : ^^^^^^
 >1 : 1

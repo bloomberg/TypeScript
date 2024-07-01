@@ -148,6 +148,11 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         tryReuseExistingTypeNodeHelper,
     };
 
+    function reuseNode<T extends Node>(context: SyntacticTypeNodeBuilderContext, node: T): T
+    function reuseNode<T extends Node>(context: SyntacticTypeNodeBuilderContext, node: T | undefined): T | undefined
+    function reuseNode<T extends Node>(context: SyntacticTypeNodeBuilderContext, node: T | undefined) {
+        return node === undefined ? undefined : resolver.markNodeReuse(context, factory.cloneNode(node), node)
+    }
     function tryReuseExistingTypeNodeHelper(context: SyntacticTypeNodeBuilderContext, existing: TypeNode) {
         const { finalizeBoundary, startRecoveryScope, hadError, markError } = resolver.createRecoveryBoundary(context);
         const transformed = visitNode(existing, visitExistingNodeTreeSymbols, isTypeNode);
@@ -180,7 +185,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             //  is set to build for (even though we are reusing the node structure, the position information
             //  would make the printer print invalid spans for literals and identifiers, and the formatter would
             //  choke on the mismatched positonal spans between a parent and an injected child from another file).
-            return result === node ? resolver.markNodeReuse(context, factory.cloneNode(result), node) : result;
+            return result ? resolver.markNodeReuse(context, result, node) : undefined;
         }
 
         function tryVisitSimpleTypeNode(node: TypeNode): TypeNode | undefined {
@@ -558,8 +563,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         if(!typeNode) return undefined;
         let result;
         if (
-            (!addUndefined || canAddUndefined(typeNode)) &&
-            resolver.canReuseTypeNode(context, typeNode)
+            (!addUndefined || canAddUndefined(typeNode))
         ) {
             result = tryReuseExistingTypeNodeHelper(context, typeNode);
             if (result) {
@@ -623,7 +627,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 result = serializeExistingTypeAnnotation(type, context);
             }
         }
-        return inferTypeOfDeclaration(node, context);
+        return result ?? inferTypeOfDeclaration(node, context, false);
     }
     function serializeReturnTypeForSignature(node: SignatureDeclaration | JSDocSignature, context: SyntacticTypeNodeBuilderContext): TypeNode | undefined {
         switch (node.kind) {
@@ -952,7 +956,11 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         }
 
         context.flags = oldFlags;
-        return addUndefinedIfNeeded(factory.createTypeLiteralNode(properties), requiresAddingUndefined, context);
+        const typeNode = factory.createTypeLiteralNode(properties);
+        if(!(context.flags & NodeBuilderFlags.MultilineObjectLiterals)) {
+            setEmitFlags(typeNode, EmitFlags.SingleLine);
+        }
+        return addUndefinedIfNeeded(typeNode, requiresAddingUndefined, context);
     }
 
     function typeFromObjectLiteralPropertyAssignment(prop: PropertyAssignment, name: PropertyName, context: SyntacticTypeNodeBuilderContext, isConstContext: boolean) {
@@ -962,7 +970,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         const typeNode = typeFromExpression(prop.initializer, context, isConstContext) ?? inferTypeOfDeclaration(prop, context);
         return factory.createPropertySignature(
             modifiers,
-            name,
+            reuseNode(context, name),
             /*questionToken*/ undefined,
             typeNode,
         );
@@ -972,9 +980,9 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         return factory.updateParameterDeclaration(
             p,
             [],
-            p.dotDotDotToken,
+            reuseNode(context, p.dotDotDotToken),
             resolver.serializeNameOfParameter(context, p),
-            resolver.isOptionalParameter(p) ? (p.questionToken || factory.createToken(SyntaxKind.QuestionToken)) : undefined,
+            resolver.isOptionalParameter(p) ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
             typeFromParameter(p, context), // Ignore private param props, since this type is going straight back into a param
             /*initializer*/ undefined,
         );
@@ -983,8 +991,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         return typeParameters?.map(tp =>
             factory.updateTypeParameterDeclaration(
                 tp,
-                tp.modifiers,
-                tp.name,
+                tp.modifiers?.map(m => reuseNode(context, m)),
+                reuseNode(context, tp.name),
                 serializeExistingTypeAnnotationWithFallback(tp.constraint, context),
                 serializeExistingTypeAnnotationWithFallback(tp.default, context),
             )
@@ -998,8 +1006,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         if (isConstContext) {
             return factory.createPropertySignature(
                 [factory.createModifier(SyntaxKind.ReadonlyKeyword)],
-                name,
-                method.questionToken,
+                reuseNode(context, name),
+                reuseNode(context, method.questionToken),
                 factory.createFunctionTypeNode(
                     typeParameters,
                     parameters,
@@ -1013,8 +1021,8 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             }
             return factory.createMethodSignature(
                 [],
-                name,
-                method.questionToken,
+                reuseNode(context, name),
+                reuseNode(context, method.questionToken),
                 typeParameters,
                 parameters,
                 returnType,
@@ -1034,7 +1042,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     return factory.updateGetAccessorDeclaration(
                         accessor,
                         [],
-                        name,
+                        reuseNode(context, name),
                         parameters,
                         serializeExistingTypeAnnotationWithFallback(getAccessorType, context),
                         /*body*/ undefined,
@@ -1044,7 +1052,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                     return factory.updateSetAccessorDeclaration(
                         accessor,
                         [],
-                        name,
+                        reuseNode(context, name),
                         parameters,
                         /*body*/ undefined,
                     );
@@ -1059,7 +1067,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
 
             const propertySignature = factory.createPropertySignature(
                 allAccessors.setAccessor === undefined ? [factory.createModifier(SyntaxKind.ReadonlyKeyword)] : [],
-                name,
+                reuseNode(context, name),
                 /*questionToken*/ undefined,
                 propertyType,
             );
@@ -1078,9 +1086,9 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         let result;
         if (preserveLiterals) {
             if (node.kind === SyntaxKind.PrefixUnaryExpression && node.operator === SyntaxKind.PlusToken) {
-                result = factory.createLiteralTypeNode(node.operand);
+                result = factory.createLiteralTypeNode(reuseNode(context, node.operand));
             }
-            result = factory.createLiteralTypeNode(node);
+            result = factory.createLiteralTypeNode(reuseNode(context, node));
         }
         else {
             result = factory.createKeywordTypeNode(baseType);

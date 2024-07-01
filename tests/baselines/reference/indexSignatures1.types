@@ -1219,9 +1219,9 @@ interface Plugs {
 
 const plugins = {
 >plugins : { user: Plugs; [system]: Plugs; }
->        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^^^^     ^^^^^^^^^^^^     ^^^
 >{    "user": {} as Plugs,    [system]: {} as Plugs} : { user: Plugs; [system]: Plugs; }
->                                                    : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                    : ^^^^^^^^     ^^^^^^^^^^^^     ^^^
 
     "user": {} as Plugs,
 >"user" : Plugs
@@ -1251,7 +1251,7 @@ plugins[system][SomeSytePlugin] = () => console.log('awsome');
 >plugins[system] : Plugs
 >                : ^^^^^
 >plugins : { user: Plugs; [system]: Plugs; }
->        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^^^^     ^^^^^^^^^^^^     ^^^
 >system : unique symbol
 >       : ^^^^^^^^^^^^^
 >SomeSytePlugin : unique symbol
@@ -1277,7 +1277,7 @@ plugins[system][SomeSytePlugin]();
 >plugins[system] : Plugs
 >                : ^^^^^
 >plugins : { user: Plugs; [system]: Plugs; }
->        : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>        : ^^^^^^^^     ^^^^^^^^^^^^     ^^^
 >system : unique symbol
 >       : ^^^^^^^^^^^^^
 >SomeSytePlugin : unique symbol

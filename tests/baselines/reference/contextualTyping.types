@@ -246,7 +246,7 @@ var c3t12: IBar = {
 >c3t12 : IBar
 >      : ^^^^
 >{    foo: <IFoo>({})} : { foo: IFoo; }
->                      : ^^^^^^^^^^^^^^
+>                      : ^^^^^^^    ^^^
 
     foo: <IFoo>({})
 >foo : IFoo
@@ -801,7 +801,7 @@ objc8.t11 = [function(n, s) { return s; }];
 
 objc8.t12 = {
 >objc8.t12 = {    foo: <IFoo>({})} : { foo: IFoo; }
->                                  : ^^^^^^^^^^^^^^
+>                                  : ^^^^^^^    ^^^
 >objc8.t12 : IBar
 >          : ^^^^
 >objc8 : { t1: (s: string) => string; t2: IFoo; t3: number[]; t4: () => IFoo; t5: (n: number) => IFoo; t6: (n: number, s: string) => IFoo; t7: { (n: number, s: string): number; }; t8: (n: number, s: string) => number; t9: number[][]; t10: IFoo[]; t11: { (n: number, s: string): string; }[]; t12: IBar; t13: IFoo; t14: IFoo; }
@@ -809,7 +809,7 @@ objc8.t12 = {
 >t12 : IBar
 >    : ^^^^
 >{    foo: <IFoo>({})} : { foo: IFoo; }
->                      : ^^^^^^^^^^^^^^
+>                      : ^^^^^^^    ^^^
 
     foo: <IFoo>({})
 >foo : IFoo
@@ -1139,7 +1139,7 @@ var c12t12 = <IBar> {
 ><IBar> {    foo: <IFoo>({})} : IBar
 >                             : ^^^^
 >{    foo: <IFoo>({})} : { foo: IFoo; }
->                      : ^^^^^^^^^^^^^^
+>                      : ^^^^^^^    ^^^
 
     foo: <IFoo>({})
 >foo : IFoo

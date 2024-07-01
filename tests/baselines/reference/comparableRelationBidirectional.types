@@ -64,7 +64,7 @@ export function getMockData(): ExtensionData {
 
     return {
 >{        settings: {            presets: [],            automation: {                mode: "",            },        } as UserSettings,    } : { settings: UserSettings; }
->                                                                                                                                            : ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                                                                                                            : ^^^^^^^^^^^^            ^^^
 
         settings: {
 >settings : UserSettings

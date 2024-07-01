@@ -51473,12 +51473,8 @@ class SymbolTrackerImpl implements SymbolTracker {
 
     reportInferenceFallback(node: Node): void {
         if (this.inner?.reportInferenceFallback && !this.context.suppressReportInferenceFallback) {
+            this.onDiagnosticReported();
             this.inner.reportInferenceFallback(node);
-        }
-    }
-    reportMissingSymbol(node: EntityNameOrEntityNameExpression) {
-        if (this.inner?.reportMissingSymbol) {
-            this.inner.reportMissingSymbol(node);
         }
     }
 }

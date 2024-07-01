@@ -9867,7 +9867,6 @@ export interface SymbolTracker {
     // with import statements it previously saw (but chose not to emit).
     trackSymbol?(symbol: Symbol, enclosingDeclaration: Node | undefined, meaning: SymbolFlags): boolean;
     reportInaccessibleThisError?(): void;
-    reportMissingSymbol?(node: EntityNameOrEntityNameExpression): void;
     reportPrivateInBaseOfClassExpression?(propertyName: string): void;
     reportInaccessibleUniqueSymbolError?(): void;
     reportCyclicStructureError?(): void;
