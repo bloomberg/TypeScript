@@ -57,7 +57,7 @@ function f2() {
 
 function f3() {
 >f3 : () => (a: number, b: number) => number
->   : ^^^^^^^   ^^^^^^^^   ^^^^^^^^^^^      
+>   : ^^^^^^^ ^^^^^^^^^^ ^^^^^^^^^^^^^      
 
     /** @type {(a: number, b: number) => number} */
     return (a, b) => {
@@ -80,7 +80,7 @@ function f3() {
 
 function f4() {
 >f4 : () => (a: number, b: number) => number
->   : ^^^^^^^   ^^^^^^^^   ^^^^^^^^^^^      
+>   : ^^^^^^^ ^^^^^^^^^^ ^^^^^^^^^^^^^      
 
     /** @type {(a: number, b: number) => number} */
     return function (a, b){

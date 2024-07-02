@@ -1365,7 +1365,7 @@ const resWithConditionalExpression = withConditionalExpression({
 >withConditionalExpression : <T, T2, T3>(arg: { a: (arg1: string) => T; b: (arg2: T) => T2; c: (arg2: T2) => T3; }) => [T, T2, T3]
 >                          : ^ ^^  ^^  ^^   ^^                                                                    ^^^^^           
 >{  a: (arg) => [arg],  b: Math.random() ? (arg) => "first" as const : (arg) => "two" as const,  c: (arg) => Boolean(arg),} : { a: (arg: string) => string[]; b: ((arg: string[]) => "first") | ((arg: string[]) => "two"); c: (arg: "first" | "two") => boolean; }
->                                                                                                                           : ^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^       ^^^^^^   ^^^^^^^^^^^^^^^     ^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>                                                                                                                           : ^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   a: (arg) => [arg],
 >a : (arg: string) => string[]
@@ -1381,9 +1381,9 @@ const resWithConditionalExpression = withConditionalExpression({
 
   b: Math.random() ? (arg) => "first" as const : (arg) => "two" as const,
 >b : ((arg: string[]) => "first") | ((arg: string[]) => "two")
->  : ^^   ^^^^^^^^^^^^^^^       ^^^^^^   ^^^^^^^^^^^^^^^     ^
+>  : ^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^
 >Math.random() ? (arg) => "first" as const : (arg) => "two" as const : ((arg: string[]) => "first") | ((arg: string[]) => "two")
->                                                                    : ^^   ^^^^^^^^^^^^^^^       ^^^^^^   ^^^^^^^^^^^^^^^     ^
+>                                                                    : ^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^
 >Math.random() : number
 >              : ^^^^^^
 >Math.random : () => number
@@ -1393,7 +1393,7 @@ const resWithConditionalExpression = withConditionalExpression({
 >random : () => number
 >       : ^^^^^^      
 >(arg) => "first" as const : (arg: string[]) => "first"
->                          : ^   ^^^^^^^^^^^^^^^       
+>                          : ^   ^^^^^^^^^^^^^^^^^^^^^^
 >arg : string[]
 >    : ^^^^^^^^
 >"first" as const : "first"
@@ -1401,7 +1401,7 @@ const resWithConditionalExpression = withConditionalExpression({
 >"first" : "first"
 >        : ^^^^^^^
 >(arg) => "two" as const : (arg: string[]) => "two"
->                        : ^   ^^^^^^^^^^^^^^^     
+>                        : ^   ^^^^^^^^^^^^^^^^^^^^
 >arg : string[]
 >    : ^^^^^^^^
 >"two" as const : "two"
