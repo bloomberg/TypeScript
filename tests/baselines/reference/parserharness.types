@@ -13553,8 +13553,8 @@ module Harness {
         }
 
         function compareToBaseline(actual: string, relativeFilename: string, opts: BaselineOptions) {
->compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => {    expected: string;    actual: string;}
->                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^            ^^^^^^^^^          ^^^^^^^^^^
+>compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => { expected: string; actual: string; }
+>                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^^        ^^^^^^^^^^      ^^^^^^^^^^^
 >actual : string
 >       : ^^^^^^
 >relativeFilename : string
@@ -13955,8 +13955,8 @@ module Harness {
 >           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >compareToBaseline(actual, relativeFilename, opts) : { expected: string; actual: string; }
 >                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => {    expected: string;    actual: string;}
->                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^            ^^^^^^^^^          ^^^^^^^^^^
+>compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => { expected: string; actual: string; }
+>                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^^        ^^^^^^^^^^      ^^^^^^^^^^^
 >actual : string
 >       : ^^^^^^
 >relativeFilename : string
@@ -14044,8 +14044,8 @@ module Harness {
 >           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >compareToBaseline(actual, relativeFilename, opts) : { expected: string; actual: string; }
 >                                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => {    expected: string;    actual: string;}
->                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^            ^^^^^^^^^          ^^^^^^^^^^
+>compareToBaseline : (actual: string, relativeFilename: string, opts: BaselineOptions) => { expected: string; actual: string; }
+>                  : ^      ^^      ^^                ^^      ^^    ^^               ^^^^^^^        ^^^^^^^^^^      ^^^^^^^^^^^
 >actual : string
 >       : ^^^^^^
 >relativeFilename : string

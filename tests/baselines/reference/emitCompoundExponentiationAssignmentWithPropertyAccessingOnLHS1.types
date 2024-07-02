@@ -8,8 +8,8 @@ var globalCounter = 0;
 >  : ^
 
 function foo() {
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 
     globalCounter += 1;
 >globalCounter += 1 : number
@@ -34,8 +34,8 @@ foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2
@@ -50,8 +50,8 @@ var result0 = foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2
@@ -64,8 +64,8 @@ foo().prop **= foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >foo().prop **= 2 : number
@@ -74,8 +74,8 @@ foo().prop **= foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2
@@ -90,8 +90,8 @@ var result1 = foo().prop **= foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >foo().prop **= 2 : number
@@ -100,8 +100,8 @@ var result1 = foo().prop **= foo().prop **= 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2
@@ -114,8 +114,8 @@ foo().prop **= foo().prop ** 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >foo().prop ** 2 : number
@@ -124,8 +124,8 @@ foo().prop **= foo().prop ** 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2
@@ -140,8 +140,8 @@ var result2 = foo().prop **= foo().prop ** 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >foo().prop ** 2 : number
@@ -150,8 +150,8 @@ var result2 = foo().prop **= foo().prop ** 2;
 >           : ^^^^^^
 >foo() : { prop: number; }
 >      : ^^^^^^^^^^^^^^^^^
->foo : () => {    prop: number;}
->    : ^^^^^^^        ^^^^^^^^^^
+>foo : () => { prop: number; }
+>    : ^^^^^^^^    ^^^^^^^^^^^
 >prop : number
 >     : ^^^^^^
 >2 : 2

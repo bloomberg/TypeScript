@@ -4,8 +4,8 @@
 // Should compile, x and y should not be picked up from the properties
 
 function makePoint(x: number, y: number) {
->makePoint : (x: number, y: number) => {    readonly x: number;    readonly y: number;    dist: () => number;}
->          : ^ ^^      ^^ ^^      ^^^^^^    ^^^^^^^^^ ^^^^^^^^^    ^^^^^^^^^ ^^^^^^^^^        ^^^^^^^^^^^^^^^^
+>makePoint : (x: number, y: number) => { readonly x: number; readonly y: number; dist: () => number; }
+>          : ^ ^^      ^^ ^^      ^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^    ^^^^^^^^^^^^^^^^^
 >x : number
 >  : ^^^^^^
 >y : number

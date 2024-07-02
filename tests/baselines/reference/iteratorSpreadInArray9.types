@@ -6,8 +6,8 @@ class SymbolIterator {
 >               : ^^^^^^^^^^^^^^
 
     next() {
->next : () => {    value: symbol;}
->     : ^^^^^^^         ^^^^^^^^^^
+>next : () => { value: symbol; }
+>     : ^^^^^^^^     ^^^^^^^^^^^
 
         return {
 >{            value: Symbol()        } : { value: symbol; }

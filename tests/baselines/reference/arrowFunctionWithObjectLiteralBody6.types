@@ -40,10 +40,10 @@ var b = () => (<Error>{ name: "foo", message: "bar" });
 >      : ^^^^^
 
 var c = () => ({ name: "foo", message: "bar" });           
->c : () => {    name: string;    message: string;}
->  : ^^^^^^^        ^^^^^^^^^           ^^^^^^^^^^
->() => ({ name: "foo", message: "bar" }) : () => {    name: string;    message: string;}
->                                        : ^^^^^^^        ^^^^^^^^^           ^^^^^^^^^^
+>c : () => { name: string; message: string; }
+>  : ^^^^^^^^    ^^^^^^^^^^       ^^^^^^^^^^^
+>() => ({ name: "foo", message: "bar" }) : () => { name: string; message: string; }
+>                                        : ^^^^^^^^    ^^^^^^^^^^       ^^^^^^^^^^^
 >({ name: "foo", message: "bar" }) : { name: string; message: string; }
 >                                  : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 >{ name: "foo", message: "bar" } : { name: string; message: string; }

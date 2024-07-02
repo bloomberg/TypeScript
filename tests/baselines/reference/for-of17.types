@@ -6,8 +6,8 @@ class NumberIterator {
 >               : ^^^^^^^^^^^^^^
 
     next() {
->next : () => {    value: number;    done: boolean;}
->     : ^^^^^^^         ^^^^^^^^^        ^^^^^^^^^^^
+>next : () => { value: number; done: boolean; }
+>     : ^^^^^^^^     ^^^^^^^^^^    ^^^^^^^^^^^^
 
         return {
 >{            value: 0,            done: false        } : { value: number; done: boolean; }

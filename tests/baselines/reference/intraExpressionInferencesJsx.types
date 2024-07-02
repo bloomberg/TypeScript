@@ -169,16 +169,16 @@ const Component = <T extends Animations>({
 >          : ^ ^^^^^^^^^          ^^                      ^^                    ^^^^^^^^^^^^^^^^
 
   animations={{
->animations : { test: { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }; }
->           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
->{    test: {      kind: "a",      value: 1,      a: true,      func() {        return {          a: true,        };      },    },  } : { test: { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }; }
->                                                                                                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
+>animations : { test: { kind: "a"; value: number; a: true; func(): { a: boolean; }; }; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^
+>{    test: {      kind: "a",      value: 1,      a: true,      func() {        return {          a: true,        };      },    },  } : { test: { kind: "a"; value: number; a: true; func(): { a: boolean; }; }; }
+>                                                                                                                                     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^
 
     test: {
->test : { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^
->{      kind: "a",      value: 1,      a: true,      func() {        return {          a: true,        };      },    } : { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }
->                                                                                                                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^
+>test : { kind: "a"; value: number; a: true; func(): { a: boolean; }; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
+>{      kind: "a",      value: 1,      a: true,      func() {        return {          a: true,        };      },    } : { kind: "a"; value: number; a: true; func(): { a: boolean; }; }
+>                                                                                                                      : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
 
       kind: "a",
 >kind : "a"
@@ -199,8 +199,8 @@ const Component = <T extends Animations>({
 >     : ^^^^
 
       func() {
->func : () => {    a: boolean;}
->     : ^^^^^^^     ^^^^^^^^^^^
+>func : () => { a: boolean; }
+>     : ^^^^^^^^ ^^^^^^^^^^^^
 
         return {
 >{          a: true,        } : { a: true; }
@@ -217,12 +217,12 @@ const Component = <T extends Animations>({
     },
   }}
   style={(anim) => {
->style : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }; }>) => string
->      : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->(anim) => {    return "";  } : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }; }>) => string
->                             : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->anim : StyleParam<{ test: { kind: "a"; value: number; a: true; func(): {    a: boolean;}; }; }>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^
+>style : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func(): { a: boolean; }; }; }>) => string
+>      : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>(anim) => {    return "";  } : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func(): { a: boolean; }; }; }>) => string
+>                             : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>anim : StyleParam<{ test: { kind: "a"; value: number; a: true; func(): { a: boolean; }; }; }>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^
 
     return "";
 >"" : ""
@@ -237,16 +237,16 @@ const Component = <T extends Animations>({
 >          : ^ ^^^^^^^^^          ^^                      ^^                    ^^^^^^^^^^^^^^^^
 
   animations={{
->animations : { test: { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }; }
->           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
->{    test: {      kind: "a",      value: 1,      a: true,      func: () => {        return {          a: true,        };      },    },  } : { test: { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }; }
->                                                                                                                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^
+>animations : { test: { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }; }
+>           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^
+>{    test: {      kind: "a",      value: 1,      a: true,      func: () => {        return {          a: true,        };      },    },  } : { test: { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }; }
+>                                                                                                                                          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^
 
     test: {
->test : { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^
->{      kind: "a",      value: 1,      a: true,      func: () => {        return {          a: true,        };      },    } : { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }
->                                                                                                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^
+>test : { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
+>{      kind: "a",      value: 1,      a: true,      func: () => {        return {          a: true,        };      },    } : { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }
+>                                                                                                                           : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^
 
       kind: "a",
 >kind : "a"
@@ -267,10 +267,10 @@ const Component = <T extends Animations>({
 >     : ^^^^
 
       func: () => {
->func : () => {    a: boolean;}
->     : ^^^^^^^     ^^^^^^^^^^^
->() => {        return {          a: true,        };      } : () => {    a: boolean;}
->                                                           : ^^^^^^^     ^^^^^^^^^^^
+>func : () => { a: boolean; }
+>     : ^^^^^^^^ ^^^^^^^^^^^^
+>() => {        return {          a: true,        };      } : () => { a: boolean; }
+>                                                           : ^^^^^^^^ ^^^^^^^^^^^^
 
         return {
 >{          a: true,        } : { a: true; }
@@ -287,12 +287,12 @@ const Component = <T extends Animations>({
     },
   }}
   style={(anim) => {
->style : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }; }>) => string
->      : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->(anim) => {    return "";  } : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }; }>) => string
->                             : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->anim : StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => {    a: boolean;}; }; }>
->     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^
+>style : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }; }>) => string
+>      : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>(anim) => {    return "";  } : (anim: StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }; }>) => string
+>                             : ^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>anim : StyleParam<{ test: { kind: "a"; value: number; a: true; func: () => { a: boolean; }; }; }>
+>     : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^
 
     return "";
 >"" : ""

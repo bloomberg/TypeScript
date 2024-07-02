@@ -145,10 +145,10 @@ export { one, bee, sec };
 >    : ^^^^^
 
 const getFoo = () => ({
->getFoo : () => {    foo: string;}
->       : ^^^^^^^       ^^^^^^^^^^
->() => ({    foo: 'foo'}) : () => {    foo: string;}
->                         : ^^^^^^^       ^^^^^^^^^^
+>getFoo : () => { foo: string; }
+>       : ^^^^^^^^   ^^^^^^^^^^^
+>() => ({    foo: 'foo'}) : () => { foo: string; }
+>                         : ^^^^^^^^   ^^^^^^^^^^^
 >({    foo: 'foo'}) : { foo: string; }
 >                   : ^^^^^^^^^^^^^^^^
 >{    foo: 'foo'} : { foo: string; }
@@ -169,8 +169,8 @@ const { foo: foo2 } = getFoo();
 >     : ^^^^^^
 >getFoo() : { foo: string; }
 >         : ^^^^^^^^^^^^^^^^
->getFoo : () => {    foo: string;}
->       : ^^^^^^^       ^^^^^^^^^^
+>getFoo : () => { foo: string; }
+>       : ^^^^^^^^   ^^^^^^^^^^^
 
 export { foo2 };
 >foo2 : string

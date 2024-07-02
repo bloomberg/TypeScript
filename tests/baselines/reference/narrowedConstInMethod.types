@@ -3,8 +3,8 @@
 === narrowedConstInMethod.ts ===
 // Fixes #10501, possibly null 'x'
 function f() {
->f : () => {    bar(): number;}
->  : ^^^^^^^       ^^^^^^^^^^^^
+>f : () => { bar(): number; }
+>  : ^^^^^^^^   ^^^^^^^^^^^^^
 
     const x: string | null = <any>{};
 >x : string | null

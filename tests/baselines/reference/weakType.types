@@ -12,8 +12,8 @@ interface Settings {
 }
 
 function getDefaultSettings() {
->getDefaultSettings : () => {    timeout: number;}
->                   : ^^^^^^^           ^^^^^^^^^^
+>getDefaultSettings : () => { timeout: number; }
+>                   : ^^^^^^^^       ^^^^^^^^^^^
 
     return { timeout: 1000 };
 >{ timeout: 1000 } : { timeout: number; }
@@ -43,8 +43,8 @@ doSomething(getDefaultSettings);
 >                                : ^^^^
 >doSomething : (settings: Settings) => void
 >            : ^        ^^        ^^^^^^^^^
->getDefaultSettings : () => {    timeout: number;}
->                   : ^^^^^^^           ^^^^^^^^^^
+>getDefaultSettings : () => { timeout: number; }
+>                   : ^^^^^^^^       ^^^^^^^^^^^
 
 doSomething(() => ({ timeout: 1000 }));
 >doSomething(() => ({ timeout: 1000 })) : void
