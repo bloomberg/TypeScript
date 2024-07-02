@@ -260,7 +260,7 @@ module Errors {
 >foo2 : { (a2: (x: number) => string[]): typeof a2; (a2: any): any; }
 >     : ^^^  ^^                       ^^^         ^^^  ^^   ^^^   ^^^
 ><T, U>(x: T) => <U[]>null : <T, U>(x: T) => U[]
->                          : ^ ^^ ^^ ^^ ^^^^^^^^
+>                          : ^ ^^ ^^ ^^ ^^^^^   
 >x : T
 >  : ^
 ><U[]>null : U[]
