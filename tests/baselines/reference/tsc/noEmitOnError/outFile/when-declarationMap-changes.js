@@ -227,7 +227,7 @@ declare const y = 10;
 //# sourceMappingURL=outFile.d.ts.map
 
 //// [/src/outFile.d.ts.map]
-{"version":3,"file":"outFile.d.ts","sourceRoot":"","sources":["project/a.ts","project/b.ts"],"names":[],"mappings":"AAAA,QAAA,MAAM,CAAC,KAAK,CAAC;ACAb,QAAA,MAAM,CAAC,KAAK,CAAC"}
+{"version":3,"file":"outFile.d.ts","sourceRoot":"","sources":["project/a.ts","project/b.ts"],"names":[],"mappings":"AAAA,QAAA,MAAM,CAAC,GAAG,EAAE,CAAC;ACAb,QAAA,MAAM,CAAC,GAAG,EAAE,CAAC"}
 
 //// [/src/outFile.js] file written with same contents
 //// [/src/outFile.tsbuildinfo]

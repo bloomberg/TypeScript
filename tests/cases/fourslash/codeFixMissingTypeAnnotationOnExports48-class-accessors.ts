@@ -6,7 +6,7 @@
 
 // @Filename: /code.ts
 ////export class Cls {
-////    get getSetOnly() { return 0 }
+////    get getSetOnly() { return Math.random(); }
 ////    set getSetOnly(value/*a*/) {  }
 ////}
 
@@ -16,7 +16,7 @@ verify.codeFix({
     index: 0,
     newFileContent:
 `export class Cls {
-    get getSetOnly(): number { return 0 }
+    get getSetOnly(): number { return Math.random(); }
     set getSetOnly(value) {  }
 }`
 });

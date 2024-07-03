@@ -21,19 +21,19 @@ verify.codeFixAvailable([
     "description": "Extract default export to variable"
   },
   {
-    "description": "Add inline type assertion to 'Person'"
+    "description": "Add satisfies and an inline type assertion with 'Person'"
   },
   {
-    "description": "Extract to variable and replace with 'person_1 typeof person_1'"
+    "description": "Extract to variable and replace with 'newLocal as typeof newLocal'"
   }
 ])
 
 verify.codeFix({
-    description: "Add inline type assertion to 'Person'",
+    description: "Add satisfies and an inline type assertion with 'Person'",
     index: 1,
     newFileContent:
 `import { getPerson, Person } from "./person-code";
 export default {
-  person: getPerson() as Person
+  person: getPerson() satisfies Person as Person
 };`
 });

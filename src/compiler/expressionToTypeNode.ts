@@ -35,6 +35,7 @@ import {
     IndexedAccessTypeNode,
     IntersectionTypeNode,
     IntroducesNewScopeNode,
+    isAsExpression,
     isBlock,
     isCallExpression,
     isComputedPropertyName,
@@ -76,6 +77,7 @@ import {
     isStringLiteral,
     isThisTypeNode,
     isTupleTypeNode,
+    isTypeAssertionExpression,
     isTypeLiteralNode,
     isTypeNode,
     isTypeOperatorNode,
@@ -111,7 +113,6 @@ import {
     setCommentRange,
     setEmitFlags,
     setOriginalNode,
-    setTextRange,
     setTextRangePosEnd,
     ShorthandPropertyAssignment,
     SignatureDeclaration,
@@ -527,7 +528,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 if (result) {
                     if (result.pos !== -1 || result.end !== -1) {
                         if (result === nodes) {
-                            result = factory.createNodeArray(nodes, nodes.hasTrailingComma);
+                            result = factory.createNodeArray([...nodes], nodes.hasTrailingComma);
                         }
                         setTextRangePosEnd(result, -1, -1);
                     }
@@ -627,7 +628,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
                 result = serializeExistingTypeAnnotation(type, context);
             }
         }
-        return result ?? inferTypeOfDeclaration(node, context, false);
+        return result ?? inferTypeOfDeclaration(node, context, /*reportFallback*/ false);
     }
     function serializeReturnTypeForSignature(node: SignatureDeclaration | JSDocSignature, context: SyntacticTypeNodeBuilderContext): TypeNode | undefined {
         switch (node.kind) {
@@ -1146,7 +1147,7 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
         let candidateExpr: Expression | undefined;
         if (declaration && !nodeIsMissing(declaration.body)) {
             const flags = getFunctionFlags(declaration);
-            if (flags & FunctionFlags.AsyncGenerator || isContextuallyTyped(declaration)) return undefined;
+            if (flags & FunctionFlags.AsyncGenerator) return undefined;
 
             const body = declaration.body;
             if (body && isBlock(body)) {
@@ -1165,7 +1166,16 @@ export function createSyntacticTypeNodeBuilder(options: CompilerOptions, resolve
             }
         }
         if (candidateExpr) {
-            return typeFromExpression(candidateExpr, context);
+            if(isContextuallyTyped(candidateExpr)) {
+                const type = isJSDocTypeAssertion(candidateExpr) ? getJSDocTypeAssertionType(candidateExpr):
+                    isAsExpression(candidateExpr) || isTypeAssertionExpression(candidateExpr) ? candidateExpr.type:
+                    undefined;
+                if(type && !isConstTypeReference(type)) {
+                    return serializeExistingTypeAnnotation(type, context);
+                }
+            } else {
+                return typeFromExpression(candidateExpr, context);
+            }
         }
     }
 

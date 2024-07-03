@@ -9,7 +9,7 @@
 ////};
 
 verify.codeFix({
-    description: "Add inline type assertion to 'number'",
+    description: "Add satisfies and an inline type assertion with 'number'",
     index: 1,
     newFileContent:
 `const x = 1;
@@ -19,7 +19,7 @@ export default {
 });
 
 verify.codeFix({
-  description: "Add inline type assertion to 'typeof x'",
+  description: "Add satisfies and an inline type assertion with 'typeof x'",
   index: 2,
   newFileContent:
 `const x = 1;

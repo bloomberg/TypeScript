@@ -1,0 +1,40 @@
+//// [tests/cases/compiler/declarationEmitClassNestedScopes.ts] ////
+
+=== index.js ===
+const  cb = {
+>cb : Symbol(cb, Decl(index.js, 0, 5))
+
+  o:  /** 
+>o : Symbol(o, Decl(index.js, 0, 13))
+
+    @template T
+    @param {string} name 
+    @return {{name: T }}
+  */ function (name) {
+>name : Symbol(name, Decl(index.js, 5, 15))
+
+    return /** @type {any} */(null);
+  }
+};
+
+
+=== index2.ts ===
+const  cb2 = () => Math.random() ? null:  ({
+>cb2 : Symbol(cb2, Decl(index2.ts, 0, 5))
+>Math.random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+>Math : Symbol(Math, Decl(lib.es5.d.ts, --, --), Decl(lib.es5.d.ts, --, --))
+>random : Symbol(Math.random, Decl(lib.es5.d.ts, --, --))
+
+  o: function <T>(name: string): { name: T } {
+>o : Symbol(o, Decl(index2.ts, 0, 44))
+>T : Symbol(T, Decl(index2.ts, 1, 15))
+>name : Symbol(name, Decl(index2.ts, 1, 18))
+>name : Symbol(name, Decl(index2.ts, 1, 34))
+>T : Symbol(T, Decl(index2.ts, 1, 15))
+
+    return null!;
+  }
+});
+
+
+

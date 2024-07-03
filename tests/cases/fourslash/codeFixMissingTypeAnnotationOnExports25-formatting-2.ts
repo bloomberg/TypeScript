@@ -7,7 +7,7 @@
 //// * Docs
 //// */
 ////export const bar = () => 
-////    10;
+////    Math.random();
 ////// Trivia
 
 
@@ -23,7 +23,7 @@ verify.codeFix({
  * Docs
  */
 export const bar = (): number => 
-    10;
+    Math.random();
 // Trivia`
 
 });

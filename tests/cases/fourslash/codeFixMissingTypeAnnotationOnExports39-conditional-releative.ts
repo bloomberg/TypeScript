@@ -15,17 +15,23 @@ verify.codeFixAvailable([
       "description": "Add annotation of type 'typeof A | typeof B'"
     },
     {
-      "description": "Add inline type assertion to '\"A\" | \"B\"'"
+      "description": "Add annotation of type 'string'"
     },
     {
-      "description": "Add inline type assertion to 'typeof A | typeof B'"
+      "description": "Add satisfies and an inline type assertion with '\"A\" | \"B\"'"
+    },
+    {
+      "description": "Add satisfies and an inline type assertion with 'typeof A | typeof B'"
+    },
+    {
+      "description": "Add satisfies and an inline type assertion with 'string'"
     }
 ])
 verify.codeFix({
-    description: "Add inline type assertion to 'typeof A | typeof B'" ,
-    index: 3,
+    description: "Add satisfies and an inline type assertion with 'typeof A | typeof B'",
+    index: 4,
     newFileContent:
 `const A = "A"
 const B = "B"
-export const AB = (Math.random() ? A : B) as typeof A | typeof B;`
+export const AB = (Math.random() ? A : B) satisfies typeof A | typeof B as typeof A | typeof B;`
 });

@@ -1,0 +1,25 @@
+//// [tests/cases/compiler/declarationEmitShdowedParameters.ts] ////
+
+=== declarationEmitShdowedParameters.ts ===
+const x = 1;
+>x : Symbol(x, Decl(declarationEmitShdowedParameters.ts, 0, 5))
+
+export const foo = (cb: (x: number) => typeof x): void => {
+>foo : Symbol(foo, Decl(declarationEmitShdowedParameters.ts, 1, 12))
+>cb : Symbol(cb, Decl(declarationEmitShdowedParameters.ts, 1, 20))
+>x : Symbol(x, Decl(declarationEmitShdowedParameters.ts, 1, 25))
+>x : Symbol(x, Decl(declarationEmitShdowedParameters.ts, 1, 25))
+}
+
+const y = 1;
+>y : Symbol(y, Decl(declarationEmitShdowedParameters.ts, 4, 5))
+
+export const foo2 = (cb: (y: number) => void) : typeof y => {
+>foo2 : Symbol(foo2, Decl(declarationEmitShdowedParameters.ts, 5, 12))
+>cb : Symbol(cb, Decl(declarationEmitShdowedParameters.ts, 5, 21))
+>y : Symbol(y, Decl(declarationEmitShdowedParameters.ts, 5, 26))
+>y : Symbol(y, Decl(declarationEmitShdowedParameters.ts, 4, 5))
+
+    return y;
+>y : Symbol(y, Decl(declarationEmitShdowedParameters.ts, 4, 5))
+}

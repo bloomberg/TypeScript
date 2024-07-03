@@ -18,11 +18,11 @@
 goTo.file("/code.ts");
 
 verify.codeFix({
-    description: "Add inline type assertion to 'Person'",
+    description: "Add satisfies and an inline type assertion with 'Person'",
     index: 1,
     newFileContent:
 `import { getPerson, Person } from "./person-code";
 export const exp = {
-  person: getPerson() as Person
+  person: getPerson() satisfies Person as Person
 };`
 });

@@ -7519,7 +7519,8 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
         }
 
         function typeToTypeNodeHelperWithPossibleReusableTypeNode(type: Type, typeNode: TypeNode | undefined, context: NodeBuilderContext) {
-            return typeNode && syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(context, typeNode) || typeToTypeNodeHelper(type, context);
+            return typeNode && getTypeFromTypeNode(context, typeNode) === type && syntacticNodeBuilder.tryReuseExistingTypeNodeHelper(context, typeNode) 
+                || typeToTypeNodeHelper(type, context);
         }
 
         function typeParameterToDeclaration(type: TypeParameter, context: NodeBuilderContext, constraint = getConstraintOfTypeParameter(type)): TypeParameterDeclaration {
@@ -8257,7 +8258,7 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
          */
         function serializeTypeForDeclaration(context: NodeBuilderContext, declaration: Declaration | undefined, type: Type, symbol: Symbol) {
             let result;
-            const decl = declaration ?? symbol.valueDeclaration ?? symbol.declarations?.[0];
+            const decl = declaration ?? symbol.valueDeclaration ?? getDeclarationWithTypeAnnotation(symbol) ?? symbol.declarations?.[0];
             if (decl) {
                 if (isAccessor(decl)) {
                     result = syntacticNodeBuilder.serializeTypeOfAccessor(decl, context);
@@ -8287,25 +8288,26 @@ export function createTypeChecker(host: TypeCheckerHost): TypeChecker {
             let returnTypeNode: TypeNode | undefined;
 
             const returnType = getReturnTypeOfSignature(signature);
-            if (signature.declaration && !nodeIsSynthesized(signature.declaration)) {
-                const declarationSignature = getSignatureFromDeclaration(signature.declaration);
-                if (
-                    // If the current signature is the declaration signature we don't need to look any further, the return type should be reliable
-                    declarationSignature === signature 
-                    // Default constructor signatures inherited from base classes return the derived class but have the base class declaration
-                    // To ensure we don't serialize the wrong type we check that that return type of the signature corresponds to the declaration signature return type signature
-                    || instantiateType(getReturnTypeOfSignature(declarationSignature), context.mapper) === returnType
-                ) {
-                    returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+            if(!(suppressAny && isTypeAny(returnType))) {
+                if (signature.declaration && !nodeIsSynthesized(signature.declaration)) {
+                    const declarationSignature = getSignatureFromDeclaration(signature.declaration);
+                    if (
+                        // If the current signature is the declaration signature we don't need to look any further, the return type should be reliable
+                        declarationSignature === signature 
+                        // Default constructor signatures inherited from base classes return the derived class but have the base class declaration
+                        // To ensure we don't serialize the wrong type we check that that return type of the signature corresponds to the declaration signature return type signature
+                        || instantiateType(getReturnTypeOfSignature(declarationSignature), context.mapper) === returnType
+                    ) {
+                        returnTypeNode = syntacticNodeBuilder.serializeReturnTypeForSignature(signature.declaration, context);
+                    }
                 }
-            }
-            if (!returnTypeNode) {
-                if (returnType && !(suppressAny && isTypeAny(returnType))) {
+                if (!returnTypeNode) {
                     returnTypeNode = serializeInferredReturnTypeForSignature(context, signature, returnType);
                 }
-                else if (!suppressAny) {
-                    returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
-                }
+            }
+
+            if (!returnTypeNode && !suppressAny) {
+                returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
             }
 
             context.flags = flags;
