@@ -21,7 +21,7 @@ import {
     CallExpression,
     CallSignatureDeclaration,
     canHaveLocals,
-    canIncludeBindAndCheckDiagnsotics,
+    canIncludeBindAndCheckDiagnostics,
     CaseBlock,
     CaseClause,
     CaseOrDefaultClause,
@@ -131,7 +131,6 @@ import {
     getEmitFlags,
     getEmitHelpers,
     getEmitModuleKind,
-    getEmitModuleResolutionKind,
     getEmitScriptTarget,
     getExternalModuleName,
     getIdentifierTypeArguments,
@@ -421,6 +420,7 @@ import {
     WithStatement,
     writeCommentRange,
     writeFile,
+    WriteFileCallbackData,
     YieldExpression,
 } from "./_namespaces/ts.js";
 import * as performance from "./_namespaces/ts.performance.js";
@@ -480,7 +480,7 @@ export function forEachEmittedFile<T>(
 
 export function getTsBuildInfoEmitOutputFilePath(options: CompilerOptions) {
     const configFile = options.configFilePath;
-    if (!isIncrementalCompilation(options)) return undefined;
+    if (!canEmitTsBuildInfo(options)) return undefined;
     if (options.tsBuildInfoFile) return options.tsBuildInfoFile;
     const outPath = options.outFile;
     let buildInfoExtensionLess: string;
@@ -500,7 +500,11 @@ export function getTsBuildInfoEmitOutputFilePath(options: CompilerOptions) {
 }
 
 /** @internal */
-export function getOutputPathsForBundle(options: CompilerOptions, forceDtsPaths: boolean): EmitFileNames {
+export function canEmitTsBuildInfo(options: CompilerOptions) {
+    return isIncrementalCompilation(options) || !!options.tscBuild;
+}
+
+function getOutputPathsForBundle(options: CompilerOptions, forceDtsPaths: boolean): EmitFileNames {
     const outPath = options.outFile!;
     const jsFilePath = options.emitDeclarationOnly ? undefined : outPath;
     const sourceMapFilePath = jsFilePath && getSourceMapFilePath(jsFilePath, options);
@@ -868,7 +872,7 @@ export function emitFiles(
             sourceFile => {
                 if (
                     compilerOptions.noCheck ||
-                    !canIncludeBindAndCheckDiagnsotics(sourceFile, compilerOptions)
+                    !canIncludeBindAndCheckDiagnostics(sourceFile, compilerOptions)
                 ) markLinkedReferences(sourceFile);
             },
         );
@@ -881,7 +885,6 @@ export function emitFiles(
             newLine: compilerOptions.newLine,
             noEmitHelpers: compilerOptions.noEmitHelpers,
             module: getEmitModuleKind(compilerOptions),
-            moduleResolution: getEmitModuleResolutionKind(compilerOptions),
             target: getEmitScriptTarget(compilerOptions),
             sourceMap: compilerOptions.sourceMap,
             inlineSourceMap: compilerOptions.inlineSourceMap,
@@ -935,7 +938,7 @@ export function emitFiles(
                 (emitOnly && !getEmitDeclarations(compilerOptions)) ||
                 compilerOptions.noCheck ||
                 emitResolverSkipsTypeChecking(emitOnly, forceDtsEmit) ||
-                !canIncludeBindAndCheckDiagnsotics(sourceFile, compilerOptions)
+                !canIncludeBindAndCheckDiagnostics(sourceFile, compilerOptions)
             ) {
                 collectLinkedAliases(sourceFile);
             }
@@ -957,7 +960,6 @@ export function emitFiles(
                 newLine: compilerOptions.newLine,
                 noEmitHelpers: true,
                 module: compilerOptions.module,
-                moduleResolution: compilerOptions.moduleResolution,
                 target: compilerOptions.target,
                 sourceMap: !forceDtsEmit && compilerOptions.declarationMap,
                 inlineSourceMap: compilerOptions.inlineSourceMap,
@@ -975,7 +977,7 @@ export function emitFiles(
                 isEmitNotificationEnabled: declarationTransform.isEmitNotificationEnabled,
                 substituteNode: declarationTransform.substituteNode,
             });
-            printSourceFileOrBundle(
+            const dtsWritten = printSourceFileOrBundle(
                 declarationFilePath,
                 declarationMapPath,
                 declarationTransform,
@@ -989,7 +991,7 @@ export function emitFiles(
                 },
             );
             if (emittedFilesList) {
-                emittedFilesList.push(declarationFilePath);
+                if (dtsWritten) emittedFilesList.push(declarationFilePath);
                 if (declarationMapPath) {
                     emittedFilesList.push(declarationMapPath);
                 }
@@ -1080,10 +1082,12 @@ export function emitFiles(
 
         // Write the output file
         const text = writer.getText();
-        writeFile(host, emitterDiagnostics, jsFilePath, text, !!compilerOptions.emitBOM, sourceFiles, { sourceMapUrlPos, diagnostics: transform.diagnostics });
+        const data: WriteFileCallbackData = { sourceMapUrlPos, diagnostics: transform.diagnostics };
+        writeFile(host, emitterDiagnostics, jsFilePath, text, !!compilerOptions.emitBOM, sourceFiles, data);
 
         // Reset state
         writer.clear();
+        return !data.skippedDtsWrite;
     }
 
     function shouldEmitSourceMaps(mapOptions: SourceMapOptions, sourceFileOrBundle: SourceFile | Bundle) {

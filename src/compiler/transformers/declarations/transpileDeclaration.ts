@@ -90,9 +90,7 @@ export function transpileDeclarationTesting(sourceFile: SourceFile, transpileOpt
     const declarationPath = getDeclarationEmitOutputFilePathWorker(
         sourceFile.fileName,
         compilerOptions,
-        emitHost.getCurrentDirectory(),
-        emitHost.getCommonSourceDirectory(),
-        emitHost.getCanonicalFileName,
+        emitHost
     );
     const declarationMapPath = declarationPath + ".map";
     const sourceMap = getSourceMapGenerator(declarationPath, declarationMapPath);
@@ -191,10 +189,6 @@ export function transpileDeclarationTesting(sourceFile: SourceFile, transpileOpt
             redirectTargetsMap: new Map(),
             getFileIncludeReasons: notImplemented,
             createHash: notImplemented,
-            shouldTransformImportCall: notImplemented,
-            getEmitModuleFormatOfFile: notImplemented,
-            getDefaultResolutionModeForFile: notImplemented,
-            getModeForResolutionAtIndex: notImplemented,
         };
     }
 }

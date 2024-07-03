@@ -424,6 +424,7 @@ export function createEmitDeclarationResolver(file: SourceFile, options: Compile
     }
 
     const syntacticPrinter = createSyntacticTypeNodeBuilder(options, {
+        evaluateEntityNameExpression: notImplemented,
         trackExistingEntityName: notImplemented,
         enterNewScope: notImplemented,
         getAllAccessorDeclarations: notImplemented,
